@@ -16,7 +16,7 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
-    if: contains('["onuratakan"]', github.actor)
+    if: contains('["khulnasoft"]', github.actor)
 
     steps:
       - name: Checkout Repository
