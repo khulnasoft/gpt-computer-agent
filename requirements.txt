@@ -10,7 +10,7 @@ upsonic
 langchain==0.2.2
 langchain_community==0.2.1
 pyautogui==0.9.54
-sounddevice==0.4.6
+sounddevice==0.4.7
 soundfile==0.12.1
 pydub==0.25.1
 pyscreeze
