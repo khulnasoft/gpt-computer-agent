@@ -1,4 +1,4 @@
-langgraph==0.0.55
+langgraph==0.0.62
 pyqt5==5.15.10
 scipy==1.13.1
 pygame==2.5.2
