@@ -16,7 +16,7 @@ try:
     tools = Tiger()
     tools.enable_auto_requirements = True
     tools = tools.langchain()
-except:
+except ImportError:
     from langchain.agents import Tool
     from langchain_experimental.utilities import PythonREPL
     python_repl = PythonREPL()
