@@ -90,8 +90,11 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
             mixer.init()
             mixer.music.load(response_path)
             mixer.music.play()
-            while mixer.music.get_busy():
+            timeout = time.time() + 60  # 1 minute timeout
+            while mixer.music.get_busy() and time.time() < timeout:
                 time.sleep(0.1)
+            if mixer.music.get_busy():
+                mixer.music.stop()
             signal_handler.agent_response_stopped.emit()
         
 
