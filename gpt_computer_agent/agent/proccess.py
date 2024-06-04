@@ -33,7 +33,7 @@ last_ai_response = None
 
 
 def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image=False):
-    global audio_data, last_ai_response
+    global last_ai_response
 
     
 
