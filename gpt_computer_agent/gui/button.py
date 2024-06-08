@@ -1,4 +1,3 @@
-
 from .signal import *
 
 from ..audio.record import *
@@ -10,19 +9,27 @@ from ..agent.proccess import *
 from ..agent.chat_history import clear_chat_history
 
 import pyautogui
+
 recording_thread = None
 
 
-from ..utils.db import screenshot_path, save_api_key, load_api_key, activate_just_text_model, deactivate_just_text_model, is_just_text_model_active, set_profile, get_profile
+from ..utils.db import (
+    screenshot_path,
+    save_api_key,
+    load_api_key,
+    activate_just_text_model,
+    deactivate_just_text_model,
+    is_just_text_model_active,
+    set_profile,
+    get_profile,
+)
 from ..screen.shot import take_screenshot
-
-
 
 
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
 
 
-class ButtonHandler():
+class ButtonHandler:
     def __init__(self, main_window):
         self.recording = False
         self.main_window = main_window
@@ -34,8 +41,9 @@ class ButtonHandler():
         signal_handler.agent_response_ready.connect(self.on_agent_response_ready)
         signal_handler.agent_response_stopped.connect(self.on_agent_response_stopped)
 
-
-    def toggle_recording(self, no_screenshot=False, take_system_audio=False, dont_save_image=False):
+    def toggle_recording(
+        self, no_screenshot=False, take_system_audio=False, dont_save_image=False
+    ):
 
         if self.recording:
             stop_recording()
@@ -47,7 +55,6 @@ class ButtonHandler():
 
                 screenshot.save(screenshot_path)
 
-            
             self.no_screenshot = no_screenshot
 
             self.take_system_audio = take_system_audio
@@ -55,50 +62,53 @@ class ButtonHandler():
 
             global recording_thread
             if recording_thread is None or not recording_thread.is_alive():
-                recording_thread = threading.Thread(target=start_recording, args=(take_system_audio,))
+                recording_thread = threading.Thread(
+                    target=start_recording, args=(take_system_audio,)
+                )
                 recording_thread.start()
             signal_handler.recording_started.emit()
 
     def on_recording_started(self):
         self.recording = True
-        self.main_window.update_state('talking')
+        self.main_window.update_state("talking")
+
     def on_recording_stopped(self):
         print("ON RECORDING STOPPED")
         self.recording = False
-        self.main_window.update_state('thinking')
-        if self.process_audio_thread is None or not self.process_audio_thread.is_alive():
+        self.main_window.update_state("thinking")
+        if (
+            self.process_audio_thread is None
+            or not self.process_audio_thread.is_alive()
+        ):
             signal_handler.agent_thinking.emit()
-            self.process_audio_thread = threading.Thread(target=process_audio, args=(not self.no_screenshot,self.take_system_audio, self.dont_save_image))
+            self.process_audio_thread = threading.Thread(
+                target=process_audio,
+                args=(
+                    not self.no_screenshot,
+                    self.take_system_audio,
+                    self.dont_save_image,
+                ),
+            )
             self.process_audio_thread.start()
 
-
-
     def just_screenshot(self):
-        
+
         take_screenshot()
         self.process_audio_thread = threading.Thread(target=process_screenshot)
         self.process_audio_thread.start()
 
-
-
-
-
-
-
     def on_agent_response_stopped(self):
-        self.main_window.update_state('idle')
+        self.main_window.update_state("idle")
 
     def on_agent_thinking(self):
-        self.main_window.update_state('thinking')
+        self.main_window.update_state("thinking")
 
     def on_agent_response_ready(self):
-        self.main_window.update_state('talking')
-
-
-
+        self.main_window.update_state("talking")
 
     def settings_popup(self):
         from ..gpt_computer_agent import the_input_box
+
         # Create a settings dialog and inside of it create a text input about openai_api_key and a button to save it
         settings_dialog = QDialog()
         settings_dialog.setWindowTitle("Settings")
@@ -154,8 +164,7 @@ class ButtonHandler():
 
             just_text_button.clicked.connect(activate_just_text_model_)
 
-
-        #create a input form and save button to change profile
+        # create a input form and save button to change profile
         settings_dialog.layout().addWidget(QLabel("Profile"))
         profile_input = QLineEdit()
 
@@ -171,32 +180,35 @@ class ButtonHandler():
         profile_save_button.clicked.connect(lambda: set_profile_(profile_input.text()))
         settings_dialog.layout().addWidget(profile_save_button)
 
-
-
-        
         settings_dialog.exec_()
-    
-
-
 
     def input_text(self, text):
-        
-        self.main_window.update_state('thinking')
-        if self.process_audio_thread is None or not self.process_audio_thread.is_alive():
-            signal_handler.agent_thinking.emit()
-            self.process_audio_thread = threading.Thread(target=process_text, args=(text,))
-            self.process_audio_thread.start()
 
+        self.main_window.update_state("thinking")
+        if (
+            self.process_audio_thread is None
+            or not self.process_audio_thread.is_alive()
+        ):
+            signal_handler.agent_thinking.emit()
+            self.process_audio_thread = threading.Thread(
+                target=process_text, args=(text,)
+            )
+            self.process_audio_thread.start()
 
     def input_text_screenshot(self, text):
         screenshot = pyautogui.screenshot()
 
         screenshot.save(screenshot_path)
 
-            
-
-        self.main_window.update_state('thinking')
-        if self.process_audio_thread is None or not self.process_audio_thread.is_alive():
+        self.main_window.update_state("thinking")
+        if (
+            self.process_audio_thread is None
+            or not self.process_audio_thread.is_alive()
+        ):
             signal_handler.agent_thinking.emit()
-            self.process_audio_thread = threading.Thread(target=process_text, args=(text,), kwargs={"screenshot_path":screenshot_path})
-            self.process_audio_thread.start()            
+            self.process_audio_thread = threading.Thread(
+                target=process_text,
+                args=(text,),
+                kwargs={"screenshot_path": screenshot_path},
+            )
+            self.process_audio_thread.start()

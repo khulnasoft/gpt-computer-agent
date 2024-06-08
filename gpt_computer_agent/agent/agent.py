@@ -1,24 +1,21 @@
 from ..llm import *
 
 
-
-
 from langgraph.checkpoint.sqlite import SqliteSaver
-
-
-
 
 
 from langgraph.prebuilt import chat_agent_executor
 
 try:
     from upsonic import Tiger
+
     tools = Tiger()
     tools.enable_auto_requirements = True
     tools = tools.langchain()
 except ImportError:
     from langchain.agents import Tool
     from langchain_experimental.utilities import PythonREPL
+
     python_repl = PythonREPL()
     # You can create the tool to pass to an agent
     repl_tool = Tool(
@@ -29,10 +26,8 @@ except ImportError:
     tools = [repl_tool]
 
 
-
 def get_agent_executor():
     return chat_agent_executor.create_tool_calling_executor(get_model(), tools)
-
 
 
 """
