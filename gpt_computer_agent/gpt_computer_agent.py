@@ -137,7 +137,8 @@ class CustomTextEdit(QTextEdit):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            self.return_key_event()
+            global return_key_event
+            return_key_event()
         super(CustomTextEdit, self).keyPressEvent(event)  # Process other key events normally
 
 
