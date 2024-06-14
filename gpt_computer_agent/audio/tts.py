@@ -1,13 +1,22 @@
-from ..llm import *
-
+try:
+    from ..llm import *
+    from ..utils.db import artifacts_dir
+except ImportError:
+    from llm import *
+    from utils.db import artifacts_dir
 import os
 
 import hashlib
 
-from ..utils.db import artifacts_dir
-
-
 def text_to_speech(text):
+    """Converts text to speech using an external service.
+
+    Args:
+        text (str): The text to be converted to speech.
+
+    Returns:
+        str: The file path of the generated speech audio file.
+    """
     # create sha256 hash of text and save it if already exists just return it
     # if not exists create it and save it
 
