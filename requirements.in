@@ -28,5 +28,5 @@ langchain-core==0.1.52
 # custom tools
 pyperclip==1.8.2
 google==3.0.0
-duckduckgo-search==5.3.0
+duckduckgo-search==6.1.6
 beautifulsoup4==4.12.3
