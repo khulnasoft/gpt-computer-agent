@@ -190,15 +190,14 @@ def settings_popup(self):
         online_tools_button.setText("Disable Upsonic Tiger Tools - Low Capability (Not Recommended)")
 
         def deactivate_online_tools_():
-            deactivate_online_tools_setting()
-            the_main_window.update_from_thread("Disabled Upsonic Tiger Tools - Low Capability (Not Recommended)")
-            settings_dialog.close()
-
-        online_tools_button.clicked.connect(deactivate_online_tools_)
-    else:
-            
-            def activate_online_tools_():
+            try:
                 activate_online_tools_setting()
+            except Exception as e:
+                the_main_window.update_from_thread(f"Failed to activate: {str(e)}")
+            try:
+                deactivate_online_tools_setting()
+            except Exception as e:
+                the_main_window.update_from_thread(f"Failed to deactivate: {str(e)}")
                 the_main_window.update_from_thread("Enabled Upsonic Tiger Tools - More Capability (Recommended)")
                 settings_dialog.close()
     
