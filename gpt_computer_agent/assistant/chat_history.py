@@ -1,12 +1,14 @@
 from langchain_community.chat_message_histories import SQLChatMessageHistory
-from .background import llm_history_oiginal
-
 import os
-from ..utils.db import get_history_db
+from .background import llm_history_oiginal
+try:
+    from ..utils.db import get_history_db
+except ImportError:
+    from utils.db import get_history_db
 
 
 def get_chat_message_history():
-    print("HISTORY DB", get_history_db())
+
     connection = SQLChatMessageHistory(
         session_id="abc123", connection_string=f"sqlite:///{get_history_db()}"
     )
