@@ -7,7 +7,7 @@ with open("requirements.txt") as fp:
     install_requires = fp.read()
 setup(
     name="gpt_computer_agent",
-    version="0.1.1",
+    version="0.11.1",
     description="""GPT""",
     long_description="".join(open("README.md", encoding="utf-8").readlines()),
     long_description_content_type="text/markdown",
@@ -17,7 +17,7 @@ setup(
     license="MIT",
     packages=[
         "gpt_computer_agent",
-        "gpt_computer_agent.agent",
+        "gpt_computer_agent.assistant",
         "gpt_computer_agent.gui",
         "gpt_computer_agent.screen",
         "gpt_computer_agent.utils",
