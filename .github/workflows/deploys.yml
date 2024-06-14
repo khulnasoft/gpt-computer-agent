@@ -25,7 +25,7 @@ jobs:
       OS: ${{ matrix.os }}
       PYTHON: '3.8'
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v3
         with:
           fetch-depth: 0
       - name: Getting Tag
@@ -38,7 +38,8 @@ jobs:
           TAG=${{ steps.tag_extractor.outputs.latest_tag }}   
           echo "latest_tag_2=${TAG:1} " >> "$GITHUB_OUTPUT"
       
-
+    outputs:
+      tag: ${{ steps.tag_extractor.outputs.latest_tag }}
 
   pypi:
     needs: tagext
@@ -50,11 +51,11 @@ jobs:
         python-version: [3.8]
 
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
+      uses: actions/setup-python@v2
       with:
         python-version: ${{ matrix.python-version }}
 
@@ -68,3 +69,76 @@ jobs:
         pip install setuptools wheel twine      
         python setup.py sdist
         twine upload dist/*
+
+
+  windows:
+    permissions: write-all
+    needs: tagext
+    runs-on: windows-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+    
+      - name: Set Up Python
+        uses: actions/setup-python@v2
+        with:
+            python-version: 3.11
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[default]
+          pip install .[assistantc]
+          pip install embedchain[poe]
+          pip install pyinstaller
+
+        
+      - name: Run PyInstaller
+        run: |
+          pyinstaller app.spec
+          mv dist/GPT_Computer_Agent.exe GPT_Computer_Agent_windows.exe
+        
+
+      - uses: AButler/upload-release-assets@v3.0
+        with:
+          files: "GPT_Computer_Agent_windows.exe"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{ needs.tagext.outputs.tag }}
+
+
+
+
+  macos:
+    permissions: write-all
+    needs: tagext
+    runs-on: macos-latest
+    steps:
+      
+      - name: Checkout Repository
+        uses: actions/checkout@v2
+    
+      - name: Set Up Python
+        uses: actions/setup-python@v2
+        with:
+            python-version: 3.11
+
+      - name: Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install .[default]
+          pip install .[assistantc]
+          pip install embedchain[poe]
+          pip install pyinstaller
+
+        
+      - name: Run PyInstaller
+        run: |
+          pyinstaller app.spec
+          mv dist/GPT_Computer_Agent GPT_Computer_Agent_macos
+        
+
+      - uses: AButler/upload-release-assets@v3.0
+        with:
+          files: "GPT_Computer_Agent_macos"
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          release-tag: ${{ needs.tagext.outputs.tag }}
