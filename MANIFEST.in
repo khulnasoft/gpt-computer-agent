@@ -1,1 +1,2 @@
-recursive-include . *
+include gpt_computer_agent/utils/media/*
+include requirements.txt
