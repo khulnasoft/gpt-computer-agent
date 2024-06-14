@@ -23,10 +23,15 @@ setup(
         "gpt_computer_agent.utils",
         "gpt_computer_agent.audio",
     ],
-    install_requires=install_requires,
+    include_package_data=True,
+    install_requires=[],
     entry_points={
         "console_scripts": ["computeragent=gpt_computer_agent.start:start"],
     },
     python_requires=">= 3.9",
     zip_safe=False,
+    extras_require={
+        "default": install_requires,
+        "assistantc": ["crewai==0.30.11"],
+    },
 )
