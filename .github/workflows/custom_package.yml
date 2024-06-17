@@ -48,7 +48,7 @@ jobs:
           7z a GPT_Computer_Agent_windows.zip build/exe.win-amd64-3.11/*
 
       - name: Artifact the build
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v4
         with:
           name: GPT_Computer_Agent_windows
           path: GPT_Computer_Agent_windows.zip
