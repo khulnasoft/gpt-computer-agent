@@ -3,7 +3,7 @@ pyqt5==5.15.10
 scipy==1.13.1
 pygame==2.5.2
 soundcard==0.4.3
-openai==1.30.3
+openai==1.34.0
 langchain-google-genai==1.0.4
 python-dotenv==1.0.0
 upsonic==0.28.4
