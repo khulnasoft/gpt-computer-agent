@@ -374,7 +374,7 @@ pyautogui==0.9.54
     # via -r requirements.in
 pycparser==2.22
     # via cffi
-pydantic==2.7.2
+pydantic==2.7.4
     # via
     #   -r requirements.in
     #   google-generativeai
@@ -384,7 +384,7 @@ pydantic==2.7.2
     #   langsmith
     #   open-interpreter
     #   openai
-pydantic-core==2.18.3
+pydantic-core==2.18.4
     # via pydantic
 pydub==0.25.1
     # via -r requirements.in
