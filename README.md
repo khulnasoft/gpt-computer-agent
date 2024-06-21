@@ -1,7 +1,5 @@
-# GPT Computer Assistant
+# GPT Computer Agent
 Hi, this is an alternative work for providing ChatGPT MacOS app to Windows and Linux. In this way this is a fresh and stable work. You can easily install as Python library for this time but we will prepare a pipeline for providing native install scripts (.exe).
-
-Powered by <a href="https://github.com/Upsonic/Tiger"><strong>Upsonic Tiger 🐅</strong></a> A function hub for llm agents.
 
 
 
@@ -13,7 +11,7 @@ pip3 install 'gpt-computer-agent[base]'
 ```
 
 ```console
-computerassistant
+computeragent
 ```
 
 ### Wake Word | NEW
@@ -83,7 +81,7 @@ start()
 
 ### Adding Custom Tools
 
-Now you are able to add custom tools that run in the agentic infra and assistant processes. 
+Now you are able to add custom tools that run in the agentic infra and agent processes. 
 
 
 ```python
@@ -111,7 +109,7 @@ start()
 
 ### API | NEW
 
-Now you can use your GPT Computer Assistant remotely! GUI still active, for this there is few steps:
+Now you can use your GPT Computer Agent remotely! GUI still active, for this there is few steps:
 
 ```console
 pip3 install 'gpt-computer-agent[base]'
@@ -119,7 +117,7 @@ pip3 install 'gpt-computer-agent[api]'
 ```
 
 ```console
-computerassistant --api
+computeragent --api
 ```
 
 
@@ -180,7 +178,7 @@ remote.disable_online_tools()
 | Text Inputs               | Completed      | Q2 2024        |
 | Just Text Mode (Mute Speech)           | Completed  | Q2 2024        |
 | Added profiles (Different Chats)          | Completed    | Q2 2024        |
-| More Feedback About Assistant Status                  | Completed    | Q2 2024        |
+| More Feedback About Agent Status                  | Completed    | Q2 2024        |
 | Local Model Vision and Text (With Ollama, and vision models)  | Completed  | Q2 2024        |
 | **Our Customizable Agent Infrastructure**              | Completed      | Q2 2024        |
 | Supporting Groq Models  | Completed  | Q2 2024        |
@@ -226,7 +224,7 @@ At this time we have many infrastructure elements. We just aim to provide whole 
 | **[Add more tool](https://github.com/khulnasoft/gpt-computer-agent/blob/master/gpt_computer_agent/standard_tools.py)**           |            ?                    |
 
 ### Predefined Agents
-If you enable it your assistant will work with these teams:
+If you enable it your agent will work with these teams:
 
 | Team Name                         | Status                      |
 |------------------------------------|----------------------------------|
