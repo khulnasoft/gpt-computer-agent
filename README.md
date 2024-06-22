@@ -145,15 +145,6 @@ remote.disable_online_tools()
 
 
 
-
-
-### Use cases
-
-
-
-
-
-
 ## Roadmap
 | Feature                         | Status       | Target Release |
 |---------------------------------|--------------|----------------|
