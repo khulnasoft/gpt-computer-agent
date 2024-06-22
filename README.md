@@ -1,43 +1,3 @@
-<p align="center">
-  <a href="#">
-    <img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/deeeb463-c161-4fc6-8407-71c3d8b7defe" alt="Logo"  >
-  </a>
-  <br>
-  <a href="#">
-    <img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/36714716-6990-40b0-84d5-cd7432811bcb" alt="Logo"  >
-  </a>
-
-  <h3 align="center">GPT Computer Agent</h3>
-  <p align="center">
-    <a href="https://discord.gg/qApFmWMt8x"><img alt="Static Badge" src="https://img.shields.io/badge/Discord-Join?style=social&logo=discord" width=150></a>
-  </p>
-
-  <p align="center">
-    gpt-4o for windows, macos and ubuntu
-    <br />
-   <a href="https://github.com/khulnasoft/gpt-computer-agent/wiki"><strong>Documentation</strong></a>
-   .
-    <a href="https://github.com/khulnasoft/gpt-computer-agent/#Capabilities"><strong>Explore the capabilities »</strong></a>
-    <br />
-    </p>
-    <br>
-
-  <p align="center">
-  <a href="https://www.python.org/">
-  <img src="https://img.shields.io/badge/Made%20with-Python-1f425f.svg" alt="Made_with_python">
-  </a>
-  .
-  <img src="https://static.pepy.tech/personalized-badge/gpt-computer-agent?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads" alt="pypi_downloads">
-  </p>
-
-
-  <p align="center">
-   <a href="https://x.com/GPTCompAsst"><img alt="Static Badge" src="https://img.shields.io/twitter/follow/GPTCompAsst?style=social" width=160></a>
-</p>
-
-
-|ENGLISH|[简体中文](README.zh_CN.md)|[正體中文](README.zh_TW.md)
-
 # GPT Computer Agent
 Hi, this is an alternative work for providing ChatGPT MacOS app to Windows and Linux. In this way this is a fresh and stable work. You can easily install as Python library for this time but we will prepare a pipeline for providing native install scripts (.exe).
 
@@ -77,13 +37,6 @@ After that, please enter your [Pvporcupine](https://picovoice.ai/) API key and e
 </p>
 
 
-<p align="center">
-<a href="#">
-    <img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/5c6b7063-3d9b-4ea6-befa-ce15d69fcd43" alt="Logo"  >
-  </a>
-</p>
-
-
 ### Agent Infrastructure
 
 With this way you can create `crewai` agents and using it into gpt-computer-agent gui and tools.
@@ -115,12 +68,6 @@ start()
 
 
 
-<p align="center">
-<a href="#">
-    <img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/c78f3460-6660-4da6-8941-a8ac5cfc1191" alt="Logo"  >
-  </a>
-</p>
-
 ### Adding Custom Tools
 
 Now you are able to add custom tools that run in the agentic infra and agent processes. 
@@ -140,13 +87,6 @@ start()
 
 
 
-
-
-<p align="center">
-<a href="#">
-    <img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/65b5fe7c-c0e1-40e9-9447-f41cd4f369a3" alt="Logo"  >
-  </a>
-</p>
 
 
 ### API | NEW
@@ -204,8 +144,6 @@ remote.disable_online_tools()
 </p>
 
 
-https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/26ae3624-e619-44d6-9b04-f39cf1ac1f8f
-
 
 ## Usage
 ![options](https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/37d34745-ae4b-4b37-9bfa-aec070c97897)
@@ -213,18 +151,6 @@ https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/26ae3624-e619-4
 
 
 ### Use cases
-
-<table>
-  <tr>
-    <td><img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/b4a4f11e-5588-4656-b5d7-b612a9a2855b" alt="Take Meeting Notes" width="500"/></td>
-    <td><img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/49eeac70-b33a-4ec4-8125-64127621ed62" alt="Daily Agent" width="500"/></td>
-  </tr>
-  <tr>
-    <td><img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/10b69a18-033c-4d81-8ac9-f4e3c65b59c3" alt="Read Docs" width="500"/></td>
-    <td><img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/0f483bae-ffaf-4311-8653-c0dc64fb5ebe" alt="Coding Agent" width="500"/></td>   
-
-  </tr>
-</table>
 
 
 
@@ -295,9 +221,6 @@ If you enable it your agent will work with these teams:
 
 
 
-  <a href="#">
-    <img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/ba590bf8-6059-4cb6-8c4e-6d105ce4edd2" alt="Logo"  >
-  </a>
 
 
 
