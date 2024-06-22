@@ -145,9 +145,6 @@ remote.disable_online_tools()
 
 
 
-## Usage
-![options](https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/37d34745-ae4b-4b37-9bfa-aec070c97897)
-
 
 
 ### Use cases
