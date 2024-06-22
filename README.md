@@ -137,14 +137,6 @@ remote.disable_online_tools()
   <br>
 </p>
 
-<p align="center">
-<br>
-  <br>
-  <br>
-</p>
-
-
-
 ## Roadmap
 | Feature                         | Status       | Target Release |
 |---------------------------------|--------------|----------------|
@@ -206,11 +198,6 @@ If you enable it your agent will work with these teams:
 | **search_on_internet_and_report_team**                    |            OK                    |
 | **generate_code_with_aim_team_**                    |            OK                    |
 | **[Add your own one](https://github.com/khulnasoft/gpt-computer-agent/blob/master/gpt_computer_agent/teams.py)**                    |            ?                    |
-
-
-
-
-
 
 
 ## Contributors
