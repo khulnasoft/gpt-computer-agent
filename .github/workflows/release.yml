@@ -16,7 +16,7 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
-    if: contains('["khulnasoft"]', github.actor)
+    if: contains('["nxpkg"]', github.actor)
 
     steps:
       - name: Checkout Repository
