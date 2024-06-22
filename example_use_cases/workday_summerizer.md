@@ -2,7 +2,6 @@
 In this example we have an idea to summerize whole day of an employee via GPT Computer Agent. 
 
 
-
 # Code
 ```console
 computeragent --api
