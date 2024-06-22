@@ -208,6 +208,145 @@ def settings_popup(self):
 
 
 
+    auto_stop_recording_button = QPushButton("Enable Auto Stop Recording")
 
+    settings_dialog.layout().addWidget(auto_stop_recording_button)
+
+    if is_auto_stop_recording_setting_active():
+        auto_stop_recording_button.setText("Disable Auto Stop Recording")
+
+        def deactivate_auto_stop_recording_():
+            deactivate_auto_stop_recording_setting()
+            the_main_window.update_from_thread("Disabled Auto Stop Recording")
+            settings_dialog.close()
+
+        auto_stop_recording_button.clicked.connect(deactivate_auto_stop_recording_)
+    else:
+            
+            def activate_auto_stop_recording_():
+                activate_auto_stop_recording_setting()
+                the_main_window.update_from_thread("Enabled Auto Stop Recording")
+                settings_dialog.close()
+    
+            auto_stop_recording_button.clicked.connect(activate_auto_stop_recording_)
+
+
+
+
+
+    api_key_label = QLabel("Wakeword - Pvporcupine API Key")
+    settings_dialog.layout().addWidget(api_key_label)
+    api_key_input = QLineEdit()
+    api_key = load_pvporcupine_api_key()
+    api_key_input.setText(api_key)
+    settings_dialog.layout().addWidget(api_key_input)
+    save_button = QPushButton("Save")
+
+    def save_api_key_(api_key):
+        first_time = True
+        if api_key != "CHANGE_ME":
+            first_time = False
+        save_pvporcupine_api_key(api_key)
+
+        the_main_window.update_from_thread("Wake word activated, just say 'Her Computer' or jarvis to activate the agent")
+        if first_time:
+            the_main_window.wake_word_trigger()
+        settings_dialog.close()
+
+    save_button.clicked.connect(lambda: save_api_key_(api_key_input.text()))
+    settings_dialog.layout().addWidget(save_button)
+
+
+
+
+
+    wake_word_button = QPushButton("Enable Wake Word")
+
+    settings_dialog.layout().addWidget(wake_word_button)
+
+    missing_parts = False
+    try:
+         import pyaudio
+    except:
+        missing_parts = True
+
+
+    if api_key == "CHANGE_ME":
+        wake_word_button.setText("Please Set Pvporcupine API Key First")
+    elif missing_parts:
+        wake_word_button.setText("Please Install gpt-computer-agent[wakeword]")
+    else:
+
+        if is_wake_word_active():
+            wake_word_button.setText("Disable Wake Word")
+
+            def deactivate_wake_word_():
+                deactivate_wake_word()
+                the_main_window.update_from_thread("Disabled Wake Word")
+                the_main_window.wake_word_active = False
+                settings_dialog.close()
+
+            wake_word_button.clicked.connect(deactivate_wake_word_)
+        else:
+                
+                def activate_wake_word_():
+                    activate_wake_word()
+                    the_main_window.update_from_thread("Enabled Wake Word")
+                    the_main_window.wake_word_active = True
+                    the_main_window.wake_word_trigger()
+                    settings_dialog.close()
+        
+                wake_word_button.clicked.connect(activate_wake_word_)
+
+
+
+
+
+    wake_word_screen_button = QPushButton("Enable Screen Input for Wake Word Mode")
+
+    settings_dialog.layout().addWidget(wake_word_screen_button)
+
+    if is_wake_word_screen_setting_active():
+        wake_word_screen_button.setText("Disable Screen Input for Wake Word Mode")
+
+        def deactivate_auto_stop_recording_():
+            deactivate_wake_word_screen_setting()
+            the_main_window.update_from_thread("Disabled Screen Input for Wake Word Mode")
+            settings_dialog.close()
+
+        wake_word_screen_button.clicked.connect(deactivate_auto_stop_recording_)
+    else:
+            
+            def activate_auto_stop_recording_():
+                activate_wake_word_screen_setting()
+                the_main_window.update_from_thread("Enabled Screen Input for Wake Word Mode")
+                settings_dialog.close()
+    
+            wake_word_screen_button.clicked.connect(activate_auto_stop_recording_)
+
+
+
+
+    continuously_conversations_button = QPushButton("Enable Continuously Conversations")
+
+    settings_dialog.layout().addWidget(continuously_conversations_button)
+
+    if is_continuously_conversations_setting_active():
+        continuously_conversations_button.setText("Disable Continuously Conversations")
+
+        def deactivate_auto_stop_recording_():
+            deactivate_continuously_conversations_setting()
+            the_main_window.update_from_thread("Disabled Continuously Conversations")
+            settings_dialog.close()
+
+        continuously_conversations_button.clicked.connect(deactivate_auto_stop_recording_)
+    else:
+            
+            def activate_auto_stop_recording_():
+                activate_continuously_conversations_setting()
+                the_main_window.update_from_thread("Enabled Continuously Conversations")
+                settings_dialog.close()
+    
+            continuously_conversations_button.clicked.connect(activate_auto_stop_recording_)
 
     settings_dialog.exec_()

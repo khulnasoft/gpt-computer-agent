@@ -25,3 +25,4 @@ class SignalHandler(QObject):
     agent_response_stopped = pyqtSignal()
 
 signal_handler = SignalHandler()
+

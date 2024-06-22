@@ -4,11 +4,13 @@ import traceback
 try:
     from .utils.db import load_api_key
     from .llm import get_model
+    from .top_bar_wrapper import wrapper
 except ImportError:
     from utils.db import load_api_key
     from llm import get_model
+    from top_bar_wrapper import wrapper
 
-
+@wrapper
 def search_on_internet_and_report_team_(the_subject:str, copy_to_clipboard: bool=False) -> str:
     """
     A function to search the internet generates a report. Just use in detailed searches
@@ -100,7 +102,7 @@ search_on_internet_and_report_team = tool(search_on_internet_and_report_team_)
 
 
 
-
+@wrapper
 def generate_code_with_aim_team_(aim: str, copy_to_clipboard: bool = False) -> str:
     """
     A function to generate code based on a given aim. This function utilizes a team of AI agents specialized in understanding programming requirements and generating code.
@@ -150,7 +152,7 @@ def generate_code_with_aim_team_(aim: str, copy_to_clipboard: bool = False) -> s
 
     generate_code_task = Task(
         description="Generate code based on the outlined requirements.",
-        expected_output="Generated code",
+        expected_output="Generated code, just code without any ```pyhton things or any other thing. Just python code",
         agent=code_generator,
         tools=the_tool_list,
         context=[analyze_task],

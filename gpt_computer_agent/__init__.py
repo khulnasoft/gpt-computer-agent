@@ -1,7 +1,7 @@
 from .start import start
 
-from .assistantc import Assistant
+from .agentic import Agent
 
 from .tooler import Tool
 
-__version__ = '0.14.4'
+__version__ = '0.19.1'

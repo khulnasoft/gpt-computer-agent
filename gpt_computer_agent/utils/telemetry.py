@@ -51,5 +51,5 @@ def os_name():
 my_tracer = CreateTracer(
     "gpt_computer_agent",
     "app",
-    infrastackai_api_key="sk-0f97fe094ddc63002d9c1b6c76f6e8e7ce8876c2090dc4fa",
+    infrastackai_api_key="sk-2b29c6da910d2883de0599d4c5dd6b9d2e4ec61bbfa834d5",
 )

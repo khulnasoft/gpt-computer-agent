@@ -15,7 +15,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     environment: Release
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v3
       with:
         fetch-depth: 0
     - name: Getting Tag
@@ -27,3 +27,5 @@ jobs:
         name: GPT Computer Agent ${{ steps.tag_extractor.outputs.latest_tag }}
         generateReleaseNotes: true
         tag: ${{ steps.tag_extractor.outputs.latest_tag }}
+
+

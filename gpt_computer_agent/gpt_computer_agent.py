@@ -1,9 +1,9 @@
 try:
     from .agent.chat_history import *
-    from .assistant.agent import *
+    from .agent.agent import *
     from .llm import *
     from .llm_settings import llm_settings
-    from .assistant.assistant import *
+    from .agent.agent import *
     from .agent.background import *
 
     from .gui.signal import *
@@ -13,21 +13,24 @@ try:
     from .utils.db import *
     from .utils.telemetry import my_tracer, os_name
 
+    from .audio.wake_word import wake_word
+
 except ImportError:
     # This is for running the script directly
     # in order to test the GUI without rebuilding the package
     from agent.chat_history import *
-    from assistant.agent import *
+    from agent.agent import *
     from llm import *
     from llm_settings import llm_settings
     from agent.agent import *
-    from assistant.background import *
+    from agent.background import *
     from utils.db import *
     from gui.signal import *
     from gui.button import *
     from gui.settings import settings_popup
     from gui.llmsettings import llmsettings_popup
     from utils.telemetry import my_tracer, os_name
+    from audio.wake_word import wake_word
 
 
 import hashlib
@@ -119,7 +122,7 @@ class Worker(QThread):
                 if self.the_input_text != last_text:
                     self.commited_text.append(self.the_input_text)
 
-                    if len(self.the_input_text) > 90:
+                    if len(self.the_input_text) > 90 or MainWindow.api_enabled:
                         self.text_to_set.emit(self.the_input_text)
                     else:
                         for i in range(len(self.the_input_text)):
@@ -141,6 +144,42 @@ class CustomTextEdit(QTextEdit):
             return_key_event()
         super(CustomTextEdit, self).keyPressEvent(event)  # Process other key events normally
 
+
+
+
+class Worker_2(QThread):
+    text_to_set = pyqtSignal(str)
+    text_to_set_title_bar = pyqtSignal(str)
+
+
+    def __init__(self):
+        super().__init__()
+        self.the_input_text = None
+        self.title_bar_text = None
+        self.prev = None
+        self.commited_text = []
+
+    def run(self):
+        while True:
+            self.msleep(500)  # Simulate a time-consuming task
+
+            if self.the_input_text and (self.prev == None or self.prev != self.the_input_text):
+                self.prev = self.the_input_text
+                self.text_to_set.emit("True")
+                for i in range(len(self.title_bar_text)):
+                    self.text_to_set_title_bar.emit(self.title_bar_text[:i + 1])
+                    self.msleep(10)    
+            
+            if not self.the_input_text and self.prev != self.the_input_text:
+                self.prev = self.the_input_text
+                self.text_to_set.emit("False")
+
+                the_text = "  GPT Computer Agent"
+
+                for i in range(len(the_text)):
+                    self.text_to_set_title_bar.emit(the_text[:i + 1])
+                    self.msleep(10)                
+ 
 
 
 
@@ -380,9 +419,8 @@ class DrawingWidget(QWidget):
                     if self.main_.circle_rect.contains(event.pos()):
 
                         if self.main_.state == "aitalking":
-          
+                            self.main_.manuel_stop = True
                             self.main_.stop_talking = True
-                            print("Stop talking")
                                 
                         else:
                             if llm_settings[load_model_settings()]["vision"] == True:
@@ -394,20 +432,37 @@ class DrawingWidget(QWidget):
                     pass
 
                 try:
-                    if self.main_.small_circle_rect.contains(event.pos()):
-                        self.main_.button_handler.toggle_recording(no_screenshot=True)
+                            if self.main_.small_circle_rect.contains(event.pos()):
+                                if self.main_.state == "aitalking":
+                                    self.main_.manuel_stop = True
+                                    self.main_.stop_talking = True
+                                        
+                                else: 
+                                    self.main_.button_handler.toggle_recording(no_screenshot=True)
                 except:
                     pass
 
                 try:
-                    if self.main_.small_circle_left.contains(event.pos()):
-                        self.main_.button_handler.toggle_recording(take_system_audio=True)
+         
+                            if self.main_.small_circle_left.contains(event.pos()):
+                                if self.main_.state == "aitalking":
+                                    self.main_.manuel_stop = True
+                                    self.main_.stop_talking = True
+                                        
+                                else:                                 
+                                    self.main_.button_handler.toggle_recording(take_system_audio=True)
                 except:
                     pass
 
                 try:
-                    if self.main_.small_circle_left_top.contains(event.pos()):
-                        self.main_.button_handler.just_screenshot()
+                                         
+                            if self.main_.small_circle_left_top.contains(event.pos()):
+                                if self.main_.state == "aitalking":
+                                    self.main_.manuel_stop = True
+                                    self.main_.stop_talking = True
+                                        
+                                else:   
+                                    self.main_.button_handler.just_screenshot()
                 except:
                     pass
 
@@ -415,6 +470,7 @@ class DrawingWidget(QWidget):
                 if self.main_.small_circle_collapse.contains(event.pos()):
                     if self.main_.collapse:
                         self.main_.collapse = False
+                        print()
                         # hide all buttons and input box
                         the_input_box.show()
                         if llm_settings[load_model_settings()]["vision"]:
@@ -435,13 +491,20 @@ class DrawingWidget(QWidget):
                 pass
 
 
-
-
-
+from PyQt5.QtCore import QPropertyAnimation, QVariantAnimation
 
 class MainWindow(QMainWindow):
+    api_enabled = False
     def __init__(self):
         super().__init__()
+
+        print("API Enabled:", MainWindow.api_enabled)
+        if MainWindow.api_enabled:
+            try:
+                from .api import start_api
+                start_api()
+            except:
+                raise Exception("API could not be started, please install gpt-computer-agent[api]")
         self.stop_talking = False
         self.setWindowFlags(Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint)  # Remove the default title bar
 
@@ -489,12 +552,55 @@ class MainWindow(QMainWindow):
         else:
             self.light_mode()
 
-    def general_styling(self):
 
-        self.setAttribute(Qt.WA_TranslucentBackground)
+        self.wake_word_thread = None
+
+        self.wake_word_active = False
+
+        if load_pvporcupine_api_key() != "CHANGE_ME" and is_wake_word_active():
+            self.wake_word_active = True
+            self.wake_word_trigger()    
+
+
+        self.manuel_stop = False    
+
         
+        self.border_animation = None
+
+    def init_border_animation(self):
+        # Create a QVariantAnimation to handle color change
+        border_animation = QVariantAnimation(
+            self,
+            valueChanged=self.update_border_color,
+            startValue=QColor("#303030"),
+            endValue=QColor("#23538F"),
+            duration=2000  # Duration for one loop in milliseconds
+        )
+        border_animation.setLoopCount(-1)  # Loop indefinitely
+        return border_animation
+
+    def start_border_animation(self, status):
+        print("FUNCTION TRİGGERED")
+        if self.border_animation == None:
+            self.border_animation = self.init_border_animation()
+
+        status = status.lower() == "true"
+        if status:
+            self.border_animation.start()
+        else:
+            self.border_animation.stop()
+            self.title_bar.setStyleSheet(f"background-color: #2E2E2E; color: white; border-style: solid; border-radius: 15px; border-width: 0px; color: #fff;")
 
 
+
+    def update_border_color(self, color):
+        self.title_bar.setStyleSheet(f"background-color: #2E2E2E; color: white; border-style: solid; border-radius: 15px; border-width: 2px; border-color: {color.name()}; color: #fff;")
+        self.title_bar.setStyleSheet(f"background-color: #2E2E2E; color: white; border-style: solid; border-radius: 15px; border-width: 1px; border-color: {color.name()}; color: #fff;")
+
+    # Existing methods...
+
+    def general_styling(self):
+        self.setAttribute(Qt.WA_TranslucentBackground)
         self.setStyleSheet("border-radius: 20px; background-color: rgba(45, 45, 45, 250);")
         self.central_widget.setStyleSheet("border-style: solid; border-width: 1px; border-color: rgb(0,0,0,0);")
 
@@ -506,12 +612,43 @@ class MainWindow(QMainWindow):
         self.settingsButton_style = "border-radius: 5px; height: 25px; border-style: solid;"
         self.llmsettingsButton_style = "border-radius: 5px; height: 25px; border-style: solid;"
 
-
         self.btn_minimize.setStyleSheet("background-color: #2E2E2E; color: white; border-style: none;")
         self.btn_close.setStyleSheet("background-color: #2E2E2E; color: white; border-style: none;")
-        self.title_bar.setStyleSheet("background-color: #2E2E2E; color: white; border-style: solid; border-radius: 15px;")
 
-        
+
+    def wake_word_trigger(self):
+        self.wake_word_thread = threading.Thread(target=self.wake_word)
+        self.wake_word_thread.start()       
+
+    def wake_word(self):
+        from .agent.process import tts_if_you_can
+        while True and is_wake_word_active() and self.wake_word_active:
+            if wake_word(self):
+
+                def random_accept_words():
+                    return random.choice(["Yes", "Sir", "Boss", "Master"])
+
+
+                tts_if_you_can(random_accept_words(), not_threaded=True)
+                
+
+                def trigger_wake_word():
+                    if is_wake_word_screen_setting_active() and llm_settings[load_model_settings()]["vision"]:
+                        self.button_handler.toggle_recording(dont_save_image=True)
+                    else:
+                        self.button_handler.toggle_recording(no_screenshot=True)
+
+                if self.state == "aitalking":
+                    self.manuel_stop = True
+                    self.stop_talking = True
+                    time.sleep(1)
+                    trigger_wake_word()
+                    print("Stop talking")
+                else:
+                    trigger_wake_word()
+            
+
+
 
 
 
@@ -580,22 +717,32 @@ class MainWindow(QMainWindow):
         # Custom title bar
         self.title_bar = QWidget(self)
         self.title_bar.setFixedHeight(30)  # Set a fixed height for the title bar
-        self.title_bar.setStyleSheet("background-color: #2E2E2E;")
+        self.title_bar.setStyleSheet("background-color: #2E2E2E; color: #fff;")
 
         self.title_bar_layout = QHBoxLayout(self.title_bar)
-        self.title_bar_layout.setContentsMargins(0, 0, 0, 0)
+        self.title_bar_layout.setContentsMargins(5, 5, 0, 5)
         self.title_bar_layout.setSpacing(0)
 
         self.btn_minimize = QPushButton("_", self.title_bar)
         self.btn_minimize.setFixedSize(25, 20)
         self.btn_minimize.clicked.connect(self.showMinimized)
 
+        def stop_app():
+            self.stop_talking = True
+            self.wake_word_active = False
+            if MainWindow.api_enabled:
+                from .api import stop_api
+                stop_api()
+            self.close()
+
 
         self.btn_close = QPushButton("X", self.title_bar)
         self.btn_close.setFixedSize(30, 20)
-        self.btn_close.clicked.connect(self.close)
+        self.btn_close.clicked.connect(stop_app)
 
-        self.title_bar_layout.addWidget(QLabel("  GPT Computer Assistant", self.title_bar))
+        self.title_label = QLabel("  GPT Computer Agent", self.title_bar)
+        self.title_label.setStyleSheet("border: 0px solid blue;") 
+        self.title_bar_layout.addWidget(self.title_label)
         self.title_bar_layout.addWidget(self.btn_minimize)
 
 
@@ -722,6 +869,11 @@ class MainWindow(QMainWindow):
         self.worker.text_to_set.connect(self.set_text)
         self.worker.start()
 
+        self.worker_2 = Worker_2()
+        self.worker_2.text_to_set.connect(self.start_border_animation)
+        self.worker_2.text_to_set_title_bar.connect(self.set_title_bar_text)
+        self.worker_2.start()
+
         # print height and width
         print(self.height(), self.width())
 
@@ -735,9 +887,51 @@ class MainWindow(QMainWindow):
         global the_input_box
         the_input_box.setPlainText(text)
 
-    def update_from_thread(self, text):
+    def set_title_bar_text(self, text):
+        self.title_label.setText(text)
+
+    def update_from_thread(self, text, system=True):
+        if system:
+            text = "System: " + text
         print("Updating from thread", text)
         self.worker.the_input_text = text
+
+
+    def active_border_animation(self, title_bar_text = None):
+        if self.worker_2.title_bar_text != None:
+            if self.worker_2.title_bar_text != title_bar_text:
+                return
+
+        self.worker_2.the_input_text = True
+        if title_bar_text == None:
+            title_bar_text = "  GPT Computer Agent"
+        else:
+            title_bar_text = f"  {title_bar_text}"
+            if len(title_bar_text) > 33:
+                title_bar_text = title_bar_text[:30] + "..."
+        self.worker_2.title_bar_text = title_bar_text
+
+        self.btn_minimize.hide()
+        self.btn_close.hide()
+    def deactive_border_animation(self, title_bar_text=None):
+
+        if title_bar_text == None:
+            title_bar_text = "  GPT Computer Agent"
+        else:
+            title_bar_text = f"  {title_bar_text}"
+            if len(title_bar_text) > 33:
+                title_bar_text = title_bar_text[:30] + "..."
+        
+        if self.worker_2.title_bar_text != None:
+            if self.worker_2.title_bar_text != title_bar_text:
+                return
+
+        self.worker_2.the_input_text = False
+        self.worker_2.title_bar_text = None
+        time.sleep(1)
+        self.btn_minimize.show()
+        self.btn_close.show()
+
 
     def mouseMoveEvent(self, event: QMouseEvent):
         delta = QPoint(event.globalPos() - self.old_position)
@@ -767,6 +961,17 @@ class MainWindow(QMainWindow):
         self.screenshot_button.show()
 
     def update_state(self, new_state):
+
+        agent_stopped = False
+        if self.state == "aitalking" and new_state == "idle":
+            agent_stopped = True
+
+        if self.manuel_stop:
+            agent_stopped = False
+            self.manuel_stop = False
+        
+
+
         self.state = new_state
         print(f"State updated: {new_state}")
         if "talking" in new_state:
@@ -791,6 +996,12 @@ class MainWindow(QMainWindow):
             self.pulse_timer.stop()
             self.pulse_timer = None
         self.update()  # Trigger a repaint
+
+        if agent_stopped:
+            if llm_settings[load_model_settings()]["transcription"]:
+                global the_input_box
+                if the_input_box.toPlainText().endswith("?") and is_continuously_conversations_setting_active():
+                    self.button_handler.toggle_recording(no_screenshot=True, new_record=True)
 
     def pulse_circle(self):
         self.pulse_frame = (self.pulse_frame + 1) % 100

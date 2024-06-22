@@ -17,10 +17,10 @@ except ImportError:
 from langgraph.checkpoint.sqlite import SqliteSaver
 
 
-from langchain.assistants import AssistantExecutor, create_json_chat_assistant
+from langchain.agents import AgentExecutor, create_json_chat_agent
 
 
-from langgraph.prebuilt import chat_assistant_executor
+from langgraph.prebuilt import chat_agent_executor
 
 
 custom_tools = []
@@ -58,9 +58,20 @@ def get_prompt(name):
         return prompt
 
 
+cached_tiger_tools = None
+
+def get_tiger_tools():
+    global cached_tiger_tools
+    if cached_tiger_tools is None:
+        cached_tiger_tools = load_tiger_tools()
+    return cached_tiger_tools
+
+if is_online_tools_setting_active():
+    get_tiger_tools()
+
 def get_tools():
     if is_online_tools_setting_active():
-        tools = load_tiger_tools()
+        tools = get_tiger_tools()
         if not tools:
             tools = load_default_tools()
     else:
@@ -68,15 +79,15 @@ def get_tools():
     return tools
 
 
-def get_assistant_executor():
+def get_agent_executor():
     global custom_tools
     tools = get_tools()
     tools += custom_tools
 
-    if is_predefined_assistants_setting_active():
+    if is_predefined_agents_setting_active():
         try:
             import crewai
-            tools += [search_on_internet_and_report_team]
+            tools += [search_on_internet_and_report_team, generate_code_with_aim_team]
         except ImportError:
             pass
 
@@ -89,7 +100,7 @@ def get_assistant_executor():
 
 
     if llm_settings[model]["provider"] == "openai" or llm_settings[model]["provider"] == "groq":
-        return chat_assistant_executor.create_tool_calling_executor(get_model(), tools)
+        return chat_agent_executor.create_tool_calling_executor(get_model(), tools)
 
 
 
@@ -97,9 +108,9 @@ def get_assistant_executor():
         from langchain import hub
 
         prompt = get_prompt("hwchase17/react-chat-json")
-        the_assistant = create_json_chat_assistant(get_model(), tools, prompt)
-        return AssistantExecutor(
-            assistant=the_assistant, tools=tools, verbose=True, handle_parsing_errors=True
+        the_agent = create_json_chat_agent(get_model(), tools, prompt)
+        return AgentExecutor(
+            agent=the_agent, tools=tools, verbose=True, handle_parsing_errors=True
         )
 
 
@@ -107,17 +118,17 @@ def get_assistant_executor():
 
 
 """
-from langchain.assistants import Tool
+from langchain.agents import Tool
 from langchain_experimental.utilities import PythonREPL
 python_repl = PythonREPL()
-# You can create the tool to pass to an assistant
+# You can create the tool to pass to an agent
 repl_tool = Tool(
     name="python_repl",
     description="A Python shell. Use this to execute python commands. Input should be a valid python command. If you want to see the output of a value, you should print it out with `print(...)`.",
     func=python_repl.run,
 )
 
-from langgraph.prebuilt import chat_assistant_executor
-def get_assistant_executor():
-    return chat_assistant_executor.create_tool_calling_executor(get_model(), [repl_tool])
+from langgraph.prebuilt import chat_agent_executor
+def get_agent_executor():
+    return chat_agent_executor.create_tool_calling_executor(get_model(), [repl_tool])
 """
