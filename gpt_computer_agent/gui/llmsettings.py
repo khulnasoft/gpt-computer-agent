@@ -9,7 +9,7 @@ except ImportError:
 
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt5.QtCore import Qt, QTimer, QRect, pyqtSignal, QObject
-from PyQt5.QtWidgets import QComboBox, QLabel
+from PyQt5.QtWidgets import QComboBox, 
 
 from gpt_computer_agent.utils.db import save_openai_url, save_groq_api_key
 
