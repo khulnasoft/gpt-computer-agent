@@ -1,5 +1,6 @@
 import os
 
+
 def start(api=False):
     """
     Starts the computer agent application.
@@ -35,10 +36,8 @@ def start(api=False):
 
     if profile is not None:
         from .utils.db import set_profile
+
         set_profile(profile)
-
-
-        
 
     try:
         from .gpt_computer_agent import QApplication, MainWindow, sys
@@ -49,7 +48,7 @@ def start(api=False):
     if api or api_arg:
         print("API Enabled")
         MainWindow.api_enabled = True
-    
+
     app = QApplication(sys.argv)
     ex = MainWindow()
     sys.exit(app.exec_())

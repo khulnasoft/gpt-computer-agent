@@ -5,9 +5,22 @@ from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
 
 try:
-    from .utils.db import load_api_key, load_openai_url, load_model_settings, load_groq_api_key, load_google_api_key
+    from .utils.db import (
+        load_api_key,
+        load_openai_url,
+        load_model_settings,
+        load_groq_api_key,
+        load_google_api_key,
+    )
 except ImportError:
-    from utils.db import load_api_key, load_openai_url, load_model_settings, load_groq_api_key, load_google_api_key
+    from utils.db import (
+        load_api_key,
+        load_openai_url,
+        load_model_settings,
+        load_groq_api_key,
+        load_google_api_key,
+    )
+
 
 def get_model(high_context=False):
     the_model = load_model_settings()
@@ -15,21 +28,33 @@ def get_model(high_context=False):
     the_groq_api_key = load_groq_api_key()
     the_google_api_key = load_google_api_key()
     the_openai_url = load_openai_url()
-    
+
     def open_ai_base(high_context):
         if the_openai_url == "default":
             true_model = the_model
             if high_context:
                 true_model = "gpt-4-turbo"
-            return {"model": true_model, "api_key": the_api_key, "max_retries":15}
+            return {"model": true_model, "api_key": the_api_key, "max_retries": 15}
         else:
-            return {"model": the_model, "api_key": the_api_key, "max_retries":15, "base_url": the_openai_url}
-    
+            return {
+                "model": the_model,
+                "api_key": the_api_key,
+                "max_retries": 15,
+                "base_url": the_openai_url,
+            }
+
     args_mapping = {
         ChatOpenAI: open_ai_base(high_context=high_context),
         ChatOllama: {"model": the_model},
-        ChatGroq: {"temperature": 0, "model_name": the_model.replace("-groq", ""), "groq_api_key": the_openai_url},
-        ChatGoogleGenerativeAI:{"model": the_model, "google_api_key": the_google_api_key}
+        ChatGroq: {
+            "temperature": 0,
+            "model_name": the_model.replace("-groq", ""),
+            "groq_api_key": the_openai_url,
+        },
+        ChatGoogleGenerativeAI: {
+            "model": the_model,
+            "google_api_key": the_google_api_key,
+        },
     }
     model_mapping = {
         # OpenAI
@@ -37,19 +62,16 @@ def get_model(high_context=False):
         "gpt-4-turbo": (ChatOpenAI, args_mapping[ChatOpenAI]),
         "gpt-3.5": (ChatOpenAI, args_mapping[ChatOpenAI]),
         "gpt-3.5-turbo": (ChatOpenAI, args_mapping[ChatOpenAI]),
-        
         # Google Generative AI - Llama
         "llava": (ChatOllama, args_mapping[ChatOllama]),
         "llama3": (ChatOllama, args_mapping[ChatOllama]),
         "bakllava": (ChatOllama, args_mapping[ChatOllama]),
-
         # Google Generative AI - Gemini
         "gemini-pro": (ChatGoogleGenerativeAI, args_mapping[ChatGoogleGenerativeAI]),
-        
         # Groq
-        "mixtral-8x7b-groq": (ChatGroq, args_mapping[ChatGroq])
+        "mixtral-8x7b-groq": (ChatGroq, args_mapping[ChatGroq]),
     }
-    
+
     model_class, args = model_mapping[the_model]
     return model_class(**args) if model_class else None
 

@@ -1,7 +1,8 @@
 try:
-    from ..gui.signal import *
-    from ..utils.db import *
-    from ..utils.telemetry import my_tracer, os_name
+import queue
+from ..gui.signal import *
+from ..utils.db import *
+from ..utils.telemetry import my_tracer, os_name
 except ImportError:
     from gui.signal import *
     from utils.db import *
@@ -26,11 +27,9 @@ os_name_ = os_name()
 the_input_box_pre = ""
 
 
-
-import queue
-
 # Initialize a queue to keep the last N audio levels (rolling window)
 audio_levels = queue.Queue(maxsize=10)  # Adjust size as needed
+
 
 def calculate_dynamic_threshold():
     """Calculate a dynamic threshold based on recent audio levels."""
@@ -38,7 +37,8 @@ def calculate_dynamic_threshold():
         return 0.01  # Default threshold if no data is available
     else:
         # Calculate the average of the last N audio levels
-        return np.mean(list(audio_levels.queue)) * 2  # Adjust multiplier as needed
+        # Adjust multiplier as needed
+        return np.mean(list(audio_levels.queue)) * 2
 
 
 silence_start_time = None
@@ -59,7 +59,8 @@ def start_recording(take_system_audio, buttonhandler):
         from ..gpt_computer_agent import the_input_box, the_main_window
         the_input_box_pre = the_input_box.toPlainText()
 
-        the_main_window.update_from_thread("Click again when recording is done")
+        the_main_window.update_from_thread(
+            "Click again when recording is done")
         global recording, audio_data, silence_start_time, auto_stop_recording
         recording = True
         audio_data = np.array([], dtype="float32")
@@ -72,20 +73,17 @@ def start_recording(take_system_audio, buttonhandler):
 
         auto_stop_recording = is_auto_stop_recording_setting_active()
 
-
         def callback(indata, frames, time_info, status):
             global audio_data, recording, silence_start_time, auto_stop_recording
             current_level = np.max(np.abs(indata))
 
-            
             # Add the current level to the queue
             if audio_levels.full():
                 audio_levels.get()  # Remove the oldest level if the queue is full
             audio_levels.put(current_level)
-            
+
             # Calculate dynamic threshold based on recent audio levels
             dynamic_threshold = calculate_dynamic_threshold()
-
 
             if recording:
                 audio_data = np.append(audio_data, indata)
@@ -101,7 +99,6 @@ def start_recording(take_system_audio, buttonhandler):
 
                 else:
                     silence_start_time = None
-
 
     def record_audio():
         with my_tracer.start_span("record_audio") as span:
@@ -132,6 +129,7 @@ def start_recording(take_system_audio, buttonhandler):
         sf.write(mic_record_location, audio_data, samplerate)
         print("Audio saved as voice_input.wav")
         signal_handler.recording_stopped.emit()
+
 
 def stop_recording():
     """Stop recording audio."""

@@ -10,6 +10,7 @@ from werkzeug.serving import make_server
 
 app = Flask(__name__)
 
+
 @app.route("/input", methods=["POST"])
 def input():
     """
@@ -33,7 +34,6 @@ def input():
     else:
         the_main_window.button_handler.input_text_screenshot(text)
 
-    
     while the_input_box.toPlainText() == firsst_text:
         time.sleep(0.3)
 
@@ -41,8 +41,6 @@ def input():
         time.sleep(0.3)
 
     response = the_input_box.toPlainText()
-
-
 
     if talk == "true":
         the_main_window.api_enabled = True
@@ -56,6 +54,7 @@ def screenshot():
     This function receives a screenshot from the user and returns the response.
     """
     from .gpt_computer_agent import the_main_window, the_input_box
+
     firsst_text = the_input_box.toPlainText()
     the_main_window.button_handler.just_screenshot()
 
@@ -70,22 +69,24 @@ def screenshot():
     return jsonify({"response": response})
 
 
-
 @app.route("/tts", methods=["POST"])
 def tts():
     """
     This function receives a text to speech request from the user and returns the response.
     """
     from .gpt_computer_agent import the_main_window, the_input_box
+
     the_main_window.api_enabled = False
     the_main_window.manuel_stop = True
     data = request.json
     text = data["text"]
     print("TTS:", text)
     from .agent.process import tts_if_you_can
+
     tts_if_you_can(text, not_threaded=True, status_edit=True)
     the_main_window.api_enabled = True
     return jsonify({"response": "TTS request received"})
+
 
 @app.route("/profile", methods=["POST"])
 def profile():
@@ -96,10 +97,12 @@ def profile():
     profile = data["profile"]
     print("Profile:", profile)
     from .utils.db import set_profile
+
     set_profile(profile)
     from .gpt_computer_agent import the_main_window
-    the_main_window.update_from_thread("Profile set to "+profile)
-    return jsonify({"response": "Profile set to "+profile})
+
+    the_main_window.update_from_thread("Profile set to " + profile)
+    return jsonify({"response": "Profile set to " + profile})
 
 
 @app.route("/reset_memory", methods=["POST"])
@@ -108,11 +111,12 @@ def reset_memory():
     This function resets the memory of the application.
     """
     from .agent.chat_history import clear_chat_history
+
     clear_chat_history()
     from .gpt_computer_agent import the_main_window
+
     the_main_window.update_from_thread("Memory reset")
     return jsonify({"response": "Memory reset"})
-
 
 
 @app.route("/activate_predefined_agents", methods=["POST"])
@@ -121,10 +125,13 @@ def enable_predefined_agents():
     This function enables predefined agents for the application.
     """
     from .utils.db import activate_predefined_agents_setting
+
     activate_predefined_agents_setting()
     from .gpt_computer_agent import the_main_window
+
     the_main_window.update_from_thread("Predefined agents enabled")
     return jsonify({"response": "Predefined agents enabled"})
+
 
 @app.route("/deactivate_predefined_agents", methods=["POST"])
 def disable_predefined_agents():
@@ -132,8 +139,10 @@ def disable_predefined_agents():
     This function disables predefined agents for the application.
     """
     from .utils.db import deactivate_predefined_agents_setting
+
     deactivate_predefined_agents_setting()
     from .gpt_computer_agent import the_main_window
+
     the_main_window.update_from_thread("Predefined agents disabled")
     return jsonify({"response": "Predefined agents disabled"})
 
@@ -144,11 +153,12 @@ def enable_online_tools():
     This function enables online tools for the application.
     """
     from .utils.db import activate_online_tools_setting
+
     activate_online_tools_setting()
     from .gpt_computer_agent import the_main_window
+
     the_main_window.update_from_thread("Online tools enabled")
     return jsonify({"response": "Online tools enabled"})
-
 
 
 @app.route("/deactivate_online_tools", methods=["POST"])
@@ -157,8 +167,10 @@ def disable_online_tools():
     This function disables online tools for the application.
     """
     from .utils.db import deactivate_online_tools_setting
+
     deactivate_online_tools_setting()
     from .gpt_computer_agent import the_main_window
+
     the_main_window.update_from_thread("Online tools disabled")
     return jsonify({"response": "Online tools disabled"})
 
@@ -178,7 +190,9 @@ class ServerThread(threading.Thread):
         print("Stopping server")
         self.srv.shutdown()
 
+
 server_thread = None
+
 
 def start_api():
     global server_thread
@@ -188,6 +202,7 @@ def start_api():
         print("API started")
     else:
         print("API is already running")
+
 
 def stop_api():
     global server_thread
