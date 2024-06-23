@@ -11,5 +11,5 @@ llm_history_oiginal = [
                 "text": first_message,
             }
         ]
-    ),    
+    ),
 ]

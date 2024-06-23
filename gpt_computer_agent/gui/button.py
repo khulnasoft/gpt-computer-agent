@@ -50,15 +50,15 @@ class ButtonHandler:
         signal_handler.recording_started.connect(self.on_recording_started)
         signal_handler.recording_stopped.connect(self.on_recording_stopped)
         signal_handler.agent_thinking.connect(self.on_agent_thinking)
-        signal_handler.agent_response_ready.connect(
-            self.on_agent_response_ready
-        )
-        signal_handler.agent_response_stopped.connect(
-            self.on_agent_response_stopped
-        )
+        signal_handler.agent_response_ready.connect(self.on_agent_response_ready)
+        signal_handler.agent_response_stopped.connect(self.on_agent_response_stopped)
 
     def toggle_recording(
-        self, no_screenshot=False, take_system_audio=False, dont_save_image=False, new_record=False
+        self,
+        no_screenshot=False,
+        take_system_audio=False,
+        dont_save_image=False,
+        new_record=False,
     ):
         """Toggle audio recording."""
 
@@ -75,9 +75,17 @@ class ButtonHandler:
             self.dont_save_image = dont_save_image
 
             global recording_thread
-            if recording_thread is None or not recording_thread.is_alive() or new_record:
+            if (
+                recording_thread is None
+                or not recording_thread.is_alive()
+                or new_record
+            ):
                 recording_thread = threading.Thread(
-                    target=start_recording, args=(take_system_audio,self,)
+                    target=start_recording,
+                    args=(
+                        take_system_audio,
+                        self,
+                    ),
                 )
                 recording_thread.start()
             signal_handler.recording_started.emit()

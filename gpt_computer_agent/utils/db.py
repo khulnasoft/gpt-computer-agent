@@ -198,7 +198,6 @@ def is_collapse_setting_active():
 font_dir = os.path.join(media_dir, "SF-Pro-Text-Bold.otf")
 
 
-
 style_setting = os.path.join(artifacts_dir, "style_setting.db")
 
 
@@ -222,8 +221,6 @@ def is_dark_mode_active():
         return f.read() == "1"
 
 
-
-
 googlekey = os.path.join(artifacts_dir, "googlekey.db")
 
 
@@ -244,9 +241,6 @@ def load_google_api_key():
             return "CHANGE_ME"
     with open(googlekey, "r") as f:
         return f.read()
-    
-
-
 
 
 predefined_agents_setting = os.path.join(artifacts_dir, "predefined_agents_setting.db")
@@ -272,10 +266,6 @@ def is_predefined_agents_setting_active():
         return f.read() == "1"
 
 
-
-
-
-
 online_tools_setting = os.path.join(artifacts_dir, "online_tools.db")
 
 
@@ -297,10 +287,6 @@ def is_online_tools_setting_active():
         return False
     with open(online_tools_setting, "r") as f:
         return f.read() == "1"
-
-
-
-
 
 
 auto_stop_recording_setting = os.path.join(artifacts_dir, "auto_stop_recording.db")
@@ -326,7 +312,6 @@ def is_auto_stop_recording_setting_active():
         return f.read() == "1"
 
 
-
 pvporcupine_api_key = os.path.join(artifacts_dir, "pvporcupine_api_key.db")
 
 
@@ -342,8 +327,6 @@ def load_pvporcupine_api_key():
         return "CHANGE_ME"
     with open(pvporcupine_api_key, "r") as f:
         return f.read()
-
-
 
 
 wake_word_setting = os.path.join(artifacts_dir, "wake_word_setting.db")
@@ -373,11 +356,6 @@ def is_wake_word_active():
         return f.read() == "1"
 
 
-
-
-
-
-
 wake_word_screen_setting = os.path.join(artifacts_dir, "wake_word_screen_setting.db")
 
 
@@ -399,13 +377,11 @@ def is_wake_word_screen_setting_active():
         return True
     with open(wake_word_screen_setting, "r") as f:
         return f.read() == "1"
-    
 
 
-
-
-
-continuously_conversations_setting = os.path.join(artifacts_dir, "continuously_conversations_setting.db")
+continuously_conversations_setting = os.path.join(
+    artifacts_dir, "continuously_conversations_setting.db"
+)
 
 
 def activate_continuously_conversations_setting():
