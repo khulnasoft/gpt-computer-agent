@@ -37,6 +37,8 @@ setup(
         "default": install_requires,
         "agentic": ["crewai==0.30.11"],
         "wakeword": ["pvporcupine", "pyaudio"],
-        "api": ["flask==3.0.3",],
+        "api": [
+            "flask==3.0.3",
+        ],
     },
 )

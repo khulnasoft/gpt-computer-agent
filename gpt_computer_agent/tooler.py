@@ -20,7 +20,7 @@ def Tool(func):
     - callable: The input function `func` unchanged.
     """
     from .agent.agent import custom_tools
+
     global custom_tools
     custom_tools.append(tool(func))
     return func
-

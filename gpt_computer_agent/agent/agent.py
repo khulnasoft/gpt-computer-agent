@@ -26,10 +26,10 @@ from langgraph.prebuilt import chat_agent_executor
 custom_tools = []
 
 
-
 def load_tiger_tools():
     try:
         from upsonic import Tiger
+
         tools = Tiger()
         tools.enable_auto_requirements = True
         tools = tools.langchain()
@@ -40,6 +40,7 @@ def load_tiger_tools():
 
 def load_default_tools():
     from ..standard_tools import get_standard_tools
+
     return get_standard_tools()
 
 
@@ -60,14 +61,17 @@ def get_prompt(name):
 
 cached_tiger_tools = None
 
+
 def get_tiger_tools():
     global cached_tiger_tools
     if cached_tiger_tools is None:
         cached_tiger_tools = load_tiger_tools()
     return cached_tiger_tools
 
+
 if is_online_tools_setting_active():
     get_tiger_tools()
+
 
 def get_tools():
     if is_online_tools_setting_active():
@@ -87,22 +91,27 @@ def get_agent_executor():
     if is_predefined_agents_setting_active():
         try:
             import crewai
+
             tools += [search_on_internet_and_report_team, generate_code_with_aim_team]
         except ImportError:
             pass
 
-
     model = load_model_settings()
 
-
     if llm_settings[model]["provider"] == "openai":
-        tools += [click_on_a_text_on_the_screen, click_on_a_icon_on_the_screen, move_on_a_text_on_the_screen, move_on_a_icon_on_the_screen, mouse_scroll]
+        tools += [
+            click_on_a_text_on_the_screen,
+            click_on_a_icon_on_the_screen,
+            move_on_a_text_on_the_screen,
+            move_on_a_icon_on_the_screen,
+            mouse_scroll,
+        ]
 
-
-    if llm_settings[model]["provider"] == "openai" or llm_settings[model]["provider"] == "groq":
+    if (
+        llm_settings[model]["provider"] == "openai"
+        or llm_settings[model]["provider"] == "groq"
+    ):
         return chat_agent_executor.create_tool_calling_executor(get_model(), tools)
-
-
 
     if llm_settings[model]["provider"] == "ollama":
         from langchain import hub
@@ -112,9 +121,6 @@ def get_agent_executor():
         return AgentExecutor(
             agent=the_agent, tools=tools, verbose=True, handle_parsing_errors=True
         )
-
-
-
 
 
 """
