@@ -112,7 +112,7 @@ def currently_codes():
     return lastly_generated_codes
 
 
-def get_code(name:str):
+def get_code(name: str):
     """
     returns the code
     """
@@ -129,7 +129,6 @@ def required_old_code(aim):
     try:
         from crewai import Task, Crew, Agent
 
-
         requirement_analyzer = Agent(
             role="requirement_analyzer",
             goal="To understand and analyze the given aim to ensure the generated code meets the specified requirements.",
@@ -143,7 +142,6 @@ def required_old_code(aim):
             expected_output="Require old code names in a list",
             agent=requirement_analyzer,
         )
-
 
         the_crew = Crew(
             agents=[requirement_analyzer],
@@ -164,8 +162,7 @@ def required_old_code(aim):
         return the_string
 
     except:
-        return "An exception occurred" 
-
+        return "An exception occurred"
 
 
 @wrapper
@@ -189,10 +186,10 @@ def generate_code_with_aim_team_(aim: str, copy_to_clipboard: bool = False) -> s
         except:
             pass
 
-
         from crewai import Task, Crew, Agent
 
         from .agent.agent import get_tools
+
         tools = get_tools()
 
         the_tool_list = []
@@ -225,10 +222,8 @@ def generate_code_with_aim_team_(aim: str, copy_to_clipboard: bool = False) -> s
             tools=the_tool_list,
         )
 
-
         old_code_requirements = required_old_code(aim)
         print("Old_code_requirements", old_code_requirements)
-
 
         generate_code_task = Task(
             description=f"Generate code based on the outlined requirements. The other codes in the repo are: {old_code_requirements}",
@@ -243,7 +238,6 @@ def generate_code_with_aim_team_(aim: str, copy_to_clipboard: bool = False) -> s
             agent=code_generator,
             context=[generate_code_task],
         )
-
 
         # Create the crew and assign tasks
         the_crew = Crew(
@@ -261,6 +255,7 @@ def generate_code_with_aim_team_(aim: str, copy_to_clipboard: bool = False) -> s
         # Optionally copy the result to the clipboard
         if copy_to_clipboard:
             from .standard_tools import copy
+
             copy(result)
 
         print("name", name_of_work.output.raw_output)
@@ -268,7 +263,7 @@ def generate_code_with_aim_team_(aim: str, copy_to_clipboard: bool = False) -> s
 
         return result
     except:
-        return "An exception occurred" 
+        return "An exception occurred"
 
 
 generate_code_with_aim_team = tool(generate_code_with_aim_team_)

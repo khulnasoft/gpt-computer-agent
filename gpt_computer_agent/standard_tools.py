@@ -1,3 +1,4 @@
+from langchain_experimental.utilities import PythonREPL
 from bs4 import BeautifulSoup
 import requests
 import re
@@ -142,21 +143,19 @@ def keyboard_press(key: str):
     Press the key using the keyboard.
     """
     import pyautogui
+
     pyautogui.press(key)
 
 
-
-from langchain_experimental.utilities import PythonREPL
-
 the_py_client = PythonREPL()
 
+
 @wrapper
-def python_repl(code:str) -> str:
+def python_repl(code: str) -> str:
     """
     Run and return the given python code in python repl
     """
     return the_py_client.run(code)
-    
 
     pyautogui.press(key)
 
