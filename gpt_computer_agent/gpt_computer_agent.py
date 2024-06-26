@@ -1,6 +1,9 @@
 try:
     from .agent.chat_history import *
-    # Removed duplicate import
+    from .agent.agent import *
+    from .llm import *
+    from .llm_settings import llm_settings
+    from .agent.agent import *
     from .agent.background import *
 
     from .gui.signal import *
@@ -176,7 +179,7 @@ class DrawingWidget(QWidget):
 
 
 
-        if llm_settings[load_model_settings()]["vision"] == True:
+        if llm_settings[load_model_settings()]["vision"] is True:
             self.main_.screen_available = True
         else:
             self.main_.screen_available = False

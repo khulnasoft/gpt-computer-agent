@@ -44,8 +44,8 @@ def tts_if_you_can(text:str, not_threaded=False, status_edit=False):
                 signal_handler.agent_response_ready.emit()
 
             def play_audio():
-                    mixer.init()
                     for each_r in response_path:
+                        mixer.init()
                         mixer.music.load(each_r)
                         mixer.music.play()
                         while mixer.music.get_busy():
@@ -268,7 +268,7 @@ def process_screenshot():
             print("Error in process_screenshot", e)
             traceback.print_exc()
             from ..gpt_computer_agent import the_input_box, the_main_window
-            the_main_window.update_from_thread(f"EXCEPTION: {e}")
+            the_main_window.update_from_thread("EXCEPTION: " + str(e))
             tts_if_you_can("Exception occurred. Please check the logs.")
             signal_handler.agent_response_stopped.emit()
 

@@ -4,7 +4,12 @@ with contextlib.suppress(ImportError):
     from .utils.db import load_api_key
     from .llm import get_model
     from .top_bar_wrapper import wrapper
-    from .agent.agent_tools get_tools
+    from .agent.agent_tools import get_tools
+except ImportError:
+    from utils.db import load_api_key
+    from llm import get_model
+    from top_bar_wrapper import wrapper
+    from agent.agent_tools import get_tools
 
 
 
@@ -23,8 +28,6 @@ def search_on_internet_and_report_team_(the_subject:str, copy_to_clipboard: bool
 
 
 
-    # Place this at the top of the file
-    # Place this at the top of the file
     from crewai import Task, Crew, Agent
 
     
@@ -161,8 +164,7 @@ def required_old_code(aim):
         return the_string
 
     except:
-        except Exception as e:
-            return f"An exception occurred: {str(e)}"
+        return "An exception occurred" 
 
 
 

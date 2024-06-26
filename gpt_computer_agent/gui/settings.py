@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt5.QtCore import Qt
-from ..utils.db import specific_function1, specific_function2  # Replace with actual functions used
+from ..utils.db import *
 from ..agent.chat_history import clear_chat_history
 
 def settings_popup(self):
@@ -142,12 +142,10 @@ def settings_popup(self):
                 Returns:
                 - None
                 """
-                if activate_dark_mode():
-                    the_main_window.update_from_thread("Enabled Dark Mode")
-                    the_main_window.dark_mode()
-                    settings_dialog.close()
-                else:
-                    handle_activation_failure()  # Implement this function to handle failures
+                activate_dark_mode()
+                the_main_window.update_from_thread("Enabled Dark Mode")
+                the_main_window.dark_mode()
+                settings_dialog.close()
 
             dark_mode_button.clicked.connect(activate_dark_mode_)
 
@@ -161,12 +159,7 @@ def settings_popup(self):
     try:
         import crewai
         if is_predefined_agents_setting_active():
-            def update_predefined_agents_button_text(is_active):
-                if is_active:
-                    predefined_agents_button.setText("Disable Predefined Agents (Bad Results, Short Response Time)")
-                else:
-                    predefined_agents_button.setText("Enable Predefined Agents (Good Results, Long Response Time)")
-            update_predefined_agents_button_text(is_predefined_agents_setting_active())
+            predefined_agents_button.setText("Disable Predefined Agents (Bad Results, Short Response Time)")
 
             def deactivate_predefined_agents_():
                 deactivate_predefined_agents_setting()
