@@ -27,5 +27,3 @@ jobs:
         name: GPT Computer Agent ${{ steps.tag_extractor.outputs.latest_tag }}
         generateReleaseNotes: true
         tag: ${{ steps.tag_extractor.outputs.latest_tag }}
-
-
