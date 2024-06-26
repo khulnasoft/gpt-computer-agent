@@ -36,5 +36,3 @@ jobs:
 
       - name: Run Version Bump Script
         run: python bump.py ${{ github.event.inputs.release_type }}
-
-
