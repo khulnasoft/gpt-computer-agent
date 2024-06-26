@@ -74,7 +74,6 @@ def start_recording(take_system_audio, buttonhandler):
 
 
         def callback(indata, frames, time_info, status):
-            global audio_data, recording, silence_start_time, auto_stop_recording
             current_level = np.max(np.abs(indata))
 
 
@@ -107,7 +106,6 @@ def start_recording(take_system_audio, buttonhandler):
         with my_tracer.start_span("record_audio") as span:
             span.set_attribute("user_id", user_id)
             span.set_attribute("os_name", os_name_)
-            global recording
             mics = sc.all_microphones(include_loopback=True)
             default_mic = mics[0]
             data = []

@@ -114,8 +114,6 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
 
                 def play_text():
                     from ..gpt_computer_agent import the_input_box, the_main_window
-
-                    global last_ai_response
                     if (
                         the_input_box.toPlainText() == ""
                         or the_input_box.toPlainText().startswith("System:")
@@ -215,8 +213,6 @@ def process_screenshot():
 
                 def play_text():
                     from ..gpt_computer_agent import the_input_box, the_main_window
-
-                    global last_ai_response
                     if (
                         the_input_box.toPlainText() == ""
                         or the_input_box.toPlainText().startswith("System:")
@@ -299,7 +295,6 @@ def process_text(text, screenshot_path=None):
 
                 def play_text():
                     from ..gpt_computer_agent import the_input_box, the_main_window
-                    global last_ai_response
 
                     if (
                         the_input_box.toPlainText() == ""
