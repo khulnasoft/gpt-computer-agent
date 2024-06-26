@@ -164,7 +164,8 @@ def required_old_code(aim):
         return the_string
 
     except:
-        return "An exception occurred" 
+        except Exception as e:
+            return f"An exception occurred: {str(e)}"
 
 
 
