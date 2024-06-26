@@ -1,8 +1,7 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
-from PyQt5.QtCore import Qt, pyqtSignal, QObject
-from ..utils.db import *
+from PyQt5.QtCore import Qt
+from ..utils.db import specific_function1, specific_function2  # Replace with actual functions used
 from ..agent.chat_history import clear_chat_history
-
 
 def settings_popup(self):
     """
@@ -17,7 +16,7 @@ def settings_popup(self):
     Returns:
     - None
     """
-    from ..gpt_computer_agent import the_input_box, the_main_window
+    from ..gpt_computer_agent import the_main_window
 
     settings_dialog = QDialog()
     settings_dialog.setWindowTitle("Settings")
@@ -104,8 +103,11 @@ def settings_popup(self):
         the_main_window.update_from_thread("Saved Profile")
         settings_dialog.close()
 
-    profile_save_button.clicked.connect(lambda: set_profile_(profile_input.text()))
+    def save_profile():
+        set_profile_(profile_input.text())
+    profile_save_button.clicked.connect(save_profile)
     settings_dialog.layout().addWidget(profile_save_button)
+
 
     dark_mode_button = QPushButton("Enable Dark Mode")
 
@@ -131,87 +133,89 @@ def settings_popup(self):
         dark_mode_button.clicked.connect(deactivate_dark_mode_)
     else:
 
-        def activate_dark_mode_():
-            """
-            Activate dark mode and update the main window.
+            def activate_dark_mode_():
+                """
+                Activate dark mode and update the main window.
 
-            This function activates dark mode and updates the main window with a notification.
+                This function activates dark mode and updates the main window with a notification.
 
-            Returns:
-            - None
-            """
-            activate_dark_mode()
-            the_main_window.update_from_thread("Enabled Dark Mode")
-            the_main_window.dark_mode()
-            settings_dialog.close()
+                Returns:
+                - None
+                """
+                if activate_dark_mode():
+                    the_main_window.update_from_thread("Enabled Dark Mode")
+                    the_main_window.dark_mode()
+                    settings_dialog.close()
+                else:
+                    handle_activation_failure()  # Implement this function to handle failures
 
-        dark_mode_button.clicked.connect(activate_dark_mode_)
+            dark_mode_button.clicked.connect(activate_dark_mode_)
 
-    predefined_agents_button = QPushButton(
-        "Enable Predefined Agents (Good Results, Long Response Time)"
-    )
+
+
+
+    predefined_agents_button = QPushButton("Enable Predefined Agents (Good Results, Long Response Time)")
 
     settings_dialog.layout().addWidget(predefined_agents_button)
 
     try:
         import crewai
-
         if is_predefined_agents_setting_active():
-            predefined_agents_button.setText(
-                "Disable Predefined Agents (Bad Results, Short Response Time)"
-            )
+            def update_predefined_agents_button_text(is_active):
+                if is_active:
+                    predefined_agents_button.setText("Disable Predefined Agents (Bad Results, Short Response Time)")
+                else:
+                    predefined_agents_button.setText("Enable Predefined Agents (Good Results, Long Response Time)")
+            update_predefined_agents_button_text(is_predefined_agents_setting_active())
 
             def deactivate_predefined_agents_():
                 deactivate_predefined_agents_setting()
-                the_main_window.update_from_thread(
-                    "Disabled Predefined Agents (Bad Results, Short Response Time)"
-                )
+                the_main_window.update_from_thread("Disabled Predefined Agents (Bad Results, Short Response Time)")
                 settings_dialog.close()
 
             predefined_agents_button.clicked.connect(deactivate_predefined_agents_)
         else:
 
-            def activate_predefined_agents_():
-                activate_predefined_agents_setting()
-                the_main_window.update_from_thread(
-                    "Enabled Predefined Agents (Good Results, Long Response Time)"
-                )
-                settings_dialog.close()
+                def activate_predefined_agents_():
+                    activate_predefined_agents_setting()
+                    the_main_window.update_from_thread("Enabled Predefined Agents (Good Results, Long Response Time)")
+                    settings_dialog.close()
 
-            predefined_agents_button.clicked.connect(activate_predefined_agents_)
+                predefined_agents_button.clicked.connect(activate_predefined_agents_)
 
     except:
-        predefined_agents_button.setText("Install gpt-computer-agent[agentic]")
+         predefined_agents_button.setText("Install gpt-computer-agent[agentic]")
 
-    online_tools_button = QPushButton(
-        "Enable Upsonic Tiger Tools - More Capability (Recommended)"
-    )
+
+
+
+
+
+    online_tools_button = QPushButton("Enable Upsonic Tiger Tools - More Capability (Recommended)")
 
     settings_dialog.layout().addWidget(online_tools_button)
 
     if is_online_tools_setting_active():
-        online_tools_button.setText(
-            "Disable Upsonic Tiger Tools - Low Capability (Not Recommended)"
-        )
+        online_tools_button.setText("Disable Upsonic Tiger Tools - Low Capability (Not Recommended)")
 
         def deactivate_online_tools_():
             deactivate_online_tools_setting()
-            the_main_window.update_from_thread(
-                "Disabled Upsonic Tiger Tools - Low Capability (Not Recommended)"
-            )
+            the_main_window.update_from_thread("Disabled Upsonic Tiger Tools - Low Capability (Not Recommended)")
             settings_dialog.close()
 
         online_tools_button.clicked.connect(deactivate_online_tools_)
     else:
 
-        def activate_online_tools_():
-            activate_online_tools_setting()
-            the_main_window.update_from_thread(
-                "Enabled Upsonic Tiger Tools - More Capability (Recommended)"
-            )
-            settings_dialog.close()
+            def activate_online_tools_():
+                activate_online_tools_setting()
+                the_main_window.update_from_thread("Enabled Upsonic Tiger Tools - More Capability (Recommended)")
+                settings_dialog.close()
 
-        online_tools_button.clicked.connect(activate_online_tools_)
+            online_tools_button.clicked.connect(activate_online_tools_)
+
+
+
+
 
     auto_stop_recording_button = QPushButton("Enable Auto Stop Recording")
 
@@ -228,12 +232,16 @@ def settings_popup(self):
         auto_stop_recording_button.clicked.connect(deactivate_auto_stop_recording_)
     else:
 
-        def activate_auto_stop_recording_():
-            activate_auto_stop_recording_setting()
-            the_main_window.update_from_thread("Enabled Auto Stop Recording")
-            settings_dialog.close()
+            def activate_auto_stop_recording_():
+                activate_auto_stop_recording_setting()
+                the_main_window.update_from_thread("Enabled Auto Stop Recording")
+                settings_dialog.close()
 
-        auto_stop_recording_button.clicked.connect(activate_auto_stop_recording_)
+            auto_stop_recording_button.clicked.connect(activate_auto_stop_recording_)
+
+
+
+
 
     api_key_label = QLabel("Wakeword - Pvporcupine API Key")
     settings_dialog.layout().addWidget(api_key_label)
@@ -249,9 +257,7 @@ def settings_popup(self):
             first_time = False
         save_pvporcupine_api_key(api_key)
 
-        the_main_window.update_from_thread(
-            "Wake word activated, just say 'Her Computer' or jarvis to activate the agent"
-        )
+        the_main_window.update_from_thread("Wake word activated, just say 'Her Computer' or jarvis to activate the agent")
         if first_time:
             the_main_window.wake_word_trigger()
         settings_dialog.close()
@@ -259,15 +265,20 @@ def settings_popup(self):
     save_button.clicked.connect(lambda: save_api_key_(api_key_input.text()))
     settings_dialog.layout().addWidget(save_button)
 
+
+
+
+
     wake_word_button = QPushButton("Enable Wake Word")
 
     settings_dialog.layout().addWidget(wake_word_button)
 
     missing_parts = False
     try:
-        import pyaudio
+         import pyaudio
     except:
         missing_parts = True
+
 
     if api_key == "CHANGE_ME":
         wake_word_button.setText("Please Set Pvporcupine API Key First")
@@ -287,14 +298,18 @@ def settings_popup(self):
             wake_word_button.clicked.connect(deactivate_wake_word_)
         else:
 
-            def activate_wake_word_():
-                activate_wake_word()
-                the_main_window.update_from_thread("Enabled Wake Word")
-                the_main_window.wake_word_active = True
-                the_main_window.wake_word_trigger()
-                settings_dialog.close()
+                def activate_wake_word_():
+                    activate_wake_word()
+                    the_main_window.update_from_thread("Enabled Wake Word")
+                    the_main_window.wake_word_active = True
+                    the_main_window.wake_word_trigger()
+                    settings_dialog.close()
 
-            wake_word_button.clicked.connect(activate_wake_word_)
+                wake_word_button.clicked.connect(activate_wake_word_)
+
+
+
+
 
     wake_word_screen_button = QPushButton("Enable Screen Input for Wake Word Mode")
 
@@ -305,22 +320,21 @@ def settings_popup(self):
 
         def deactivate_auto_stop_recording_():
             deactivate_wake_word_screen_setting()
-            the_main_window.update_from_thread(
-                "Disabled Screen Input for Wake Word Mode"
-            )
+            the_main_window.update_from_thread("Disabled Screen Input for Wake Word Mode")
             settings_dialog.close()
 
         wake_word_screen_button.clicked.connect(deactivate_auto_stop_recording_)
     else:
 
-        def activate_auto_stop_recording_():
-            activate_wake_word_screen_setting()
-            the_main_window.update_from_thread(
-                "Enabled Screen Input for Wake Word Mode"
-            )
-            settings_dialog.close()
+            def activate_auto_stop_recording_():
+                activate_wake_word_screen_setting()
+                the_main_window.update_from_thread("Enabled Screen Input for Wake Word Mode")
+                settings_dialog.close()
 
-        wake_word_screen_button.clicked.connect(activate_auto_stop_recording_)
+            wake_word_screen_button.clicked.connect(activate_auto_stop_recording_)
+
+
+
 
     continuously_conversations_button = QPushButton("Enable Continuously Conversations")
 
@@ -334,16 +348,14 @@ def settings_popup(self):
             the_main_window.update_from_thread("Disabled Continuously Conversations")
             settings_dialog.close()
 
-        continuously_conversations_button.clicked.connect(
-            deactivate_auto_stop_recording_
-        )
+        continuously_conversations_button.clicked.connect(deactivate_auto_stop_recording_)
     else:
 
-        def activate_auto_stop_recording_():
-            activate_continuously_conversations_setting()
-            the_main_window.update_from_thread("Enabled Continuously Conversations")
-            settings_dialog.close()
+            def activate_auto_stop_recording_():
+                activate_continuously_conversations_setting()
+                the_main_window.update_from_thread("Enabled Continuously Conversations")
+                settings_dialog.close()
 
-        continuously_conversations_button.clicked.connect(activate_auto_stop_recording_)
+            continuously_conversations_button.clicked.connect(activate_auto_stop_recording_)
 
     settings_dialog.exec_()

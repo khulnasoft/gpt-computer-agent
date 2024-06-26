@@ -10,7 +10,7 @@ a = Analysis(
     ['run.py'],
     pathex=[],
     binaries=[],
-    datas=[('gpt_computer_assistant/utils/media/*', 'gpt_computer_assistant/utils/media')],
+    datas=[('gpt_computer_agent/utils/media/*', 'gpt_computer_agent/utils/media')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
@@ -34,7 +34,7 @@ exe = EXE(
     a.zipfiles,
     a.datas,
     [],
-    name='GPT_Computer_Assistant',
+    name='GPT_Computer_Agent',
     debug=False,
     bootloader_ignore_signals=False,
     strip=False,
@@ -47,5 +47,5 @@ exe = EXE(
     target_arch=None,
     codesign_identity=None,
     entitlements_file=None,
-    icon='gpt_computer_assistant/utils/media/icon.ico'
+    icon='gpt_computer_agent/utils/media/icon.ico'
 )
