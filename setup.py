@@ -7,15 +7,10 @@ from setuptools import setup
 with open("requirements.txt") as fp:
     install_requires = fp.read().splitlines()
 
-if platform.system() in ["Linux", "Windows"]:
-    install_requires.append("AppOpener==1.7")
-
-elif platform.system() == "Darwin": # Darwin is the system name for macOS
-    install_requires.append("MacAppOpener==0.0.5") # Replace with actual macOS specific package
 
 setup(
     name="gpt_computer_agent",
-    version="0.19.1",
+    version="0.19.3",
     description="""GPT""",
     long_description="".join(open("README.md", encoding="utf-8").readlines()),
     long_description_content_type="text/markdown",
