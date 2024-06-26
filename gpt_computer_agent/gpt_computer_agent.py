@@ -63,7 +63,7 @@ from PyQt5 import QtCore
 try:
     import ctypes
 
-    myappid = "onuratakan.gpt_computer_agent.gui.1"
+    myappid = "khulnasoft.gpt_computer_agent.gui.1"
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except:
     pass
