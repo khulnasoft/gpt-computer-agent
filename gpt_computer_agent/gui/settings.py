@@ -1,6 +1,6 @@
 from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
 from PyQt5.QtCore import Qt
-from ..utils.db import *
+from ..utils.db import specific_function1, specific_function2  # Replace with actual functions used
 from ..agent.chat_history import clear_chat_history
 
 def settings_popup(self):
