@@ -179,7 +179,7 @@ class DrawingWidget(QWidget):
 
 
 
-        if llm_settings[load_model_settings()]["vision"] is True:
+        if llm_settings[load_model_settings()]["vision"] == True:
             self.main_.screen_available = True
         else:
             self.main_.screen_available = False
