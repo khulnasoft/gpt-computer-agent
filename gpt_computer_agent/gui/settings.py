@@ -157,7 +157,12 @@ def settings_popup(self):
     try:
         import crewai
         if is_predefined_agents_setting_active():
-            predefined_agents_button.setText("Disable Predefined Agents (Bad Results, Short Response Time)")
+            def update_predefined_agents_button_text(is_active):
+                if is_active:
+                    predefined_agents_button.setText("Disable Predefined Agents (Bad Results, Short Response Time)")
+                else:
+                    predefined_agents_button.setText("Enable Predefined Agents (Good Results, Long Response Time)")
+            update_predefined_agents_button_text(is_predefined_agents_setting_active())
 
             def deactivate_predefined_agents_():
                 deactivate_predefined_agents_setting()
