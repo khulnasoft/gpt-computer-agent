@@ -103,7 +103,9 @@ def settings_popup(self):
         the_main_window.update_from_thread("Saved Profile")
         settings_dialog.close()
 
-    profile_save_button.clicked.connect(lambda: set_profile_(profile_input.text()))
+    def save_profile():
+        set_profile_(profile_input.text())
+    profile_save_button.clicked.connect(save_profile)
     settings_dialog.layout().addWidget(profile_save_button)
 
 
