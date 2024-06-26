@@ -5,9 +5,9 @@
 name: PR-Assistant
 
 on:
-# pull_request:
-# issue_comment:
-  workflow_dispatch:
+ pull_request:
+ issue_comment:
+ workflow_dispatch:
 
 permissions:
   issues: write
