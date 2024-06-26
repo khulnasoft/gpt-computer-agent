@@ -1,9 +1,9 @@
 import functools
 
 
+
 def wrapper(func):
     """A decorator that logs the start and end of the function call."""
-
     @functools.wraps(func)
     def wrapped_func(*args, **kwargs):
         from .gpt_computer_agent import the_main_window
@@ -16,5 +16,4 @@ def wrapper(func):
         print("GOOGLE SEARCHİNG COMPLEATES")
 
         return result
-
     return wrapped_func
