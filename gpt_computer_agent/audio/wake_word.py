@@ -1,4 +1,3 @@
-
 import struct
 
 from ..utils.db import load_pvporcupine_api_key
@@ -8,8 +7,9 @@ def wake_word(the_main_window):
     import pvporcupine
     import pyaudio
 
-    porcupine = pvporcupine.create(access_key=load_pvporcupine_api_key(),
-                                           keywords=pvporcupine.KEYWORDS)
+    porcupine = pvporcupine.create(
+        access_key=load_pvporcupine_api_key(), keywords=pvporcupine.KEYWORDS
+    )
     # Initialize PyAudio
     pa = pyaudio.PyAudio()
 
@@ -19,7 +19,7 @@ def wake_word(the_main_window):
         channels=1,
         format=pyaudio.paInt16,
         input=True,
-        frames_per_buffer=porcupine.frame_length
+        frames_per_buffer=porcupine.frame_length,
     )
 
     print("Listening for wake word...")
