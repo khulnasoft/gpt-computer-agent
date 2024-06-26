@@ -140,10 +140,12 @@ def settings_popup(self):
                 Returns:
                 - None
                 """
-                activate_dark_mode()
-                the_main_window.update_from_thread("Enabled Dark Mode")
-                the_main_window.dark_mode()
-                settings_dialog.close()
+                if activate_dark_mode():
+                    the_main_window.update_from_thread("Enabled Dark Mode")
+                    the_main_window.dark_mode()
+                    settings_dialog.close()
+                else:
+                    handle_activation_failure()  # Implement this function to handle failures
 
             dark_mode_button.clicked.connect(activate_dark_mode_)
 
