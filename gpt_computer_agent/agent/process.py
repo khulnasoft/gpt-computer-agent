@@ -44,8 +44,8 @@ def tts_if_you_can(text:str, not_threaded=False, status_edit=False):
                 signal_handler.agent_response_ready.emit()
 
             def play_audio():
+                    mixer.init()
                     for each_r in response_path:
-                        mixer.init()
                         mixer.music.load(each_r)
                         mixer.music.play()
                         while mixer.music.get_busy():
