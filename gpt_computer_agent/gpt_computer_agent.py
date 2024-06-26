@@ -471,7 +471,8 @@ class DrawingWidget(QWidget):
 
                     self.main_.update()
             except:
-                pass
+                except Exception as e:
+                    print(f"An error occurred: {e}")
 
 
 from PyQt5.QtCore import QVariantAnimation
