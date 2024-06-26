@@ -1,15 +1,10 @@
 from langchain.tools import tool
 
-try:
+with contextlib.suppress(ImportError):
     from .utils.db import load_api_key
     from .llm import get_model
     from .top_bar_wrapper import wrapper
-    from .agent.agent_tools import get_tools
-except ImportError:
-    from utils.db import load_api_key
-    from llm import get_model
-    from top_bar_wrapper import wrapper
-    from agent.agent_tools import get_tools
+    from .agent.agent_tools get_tools
 
 
 
