@@ -1,4 +1,4 @@
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+from langchain_core.messages import SystemMessage
 from .chat_history import *
 from ..llm_settings import first_message
 
@@ -11,5 +11,5 @@ llm_history_oiginal = [
                 "text": first_message,
             }
         ]
-    ),
+    ),    
 ]

@@ -1,4 +1,3 @@
-import base64
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 from .chat_history import *
@@ -45,7 +44,7 @@ def agentic(
 
     def image_explaination():
         the_message = [
-            {"type": "text", "text": f"Explain the image"},
+            {"type": "text", "text": "Explain the image"},
         ]
 
         if screenshot_path:
@@ -63,12 +62,12 @@ def agentic(
 
         the_model = load_model_settings()
 
-        if llm_settings[the_model]["provider"] == "openai":
+        if  llm_settings[the_model]["provider"] == "openai":
             msg = get_agent_executor().invoke(
                 {"messages": llm_history + [the_message]}, config=config
             )
 
-        if llm_settings[the_model]["provider"] == "google":
+        if  llm_settings[the_model]["provider"] == "google":
             msg = get_agent_executor().invoke(
                 {"messages": llm_history + [the_message]}, config=config
             )
@@ -90,13 +89,13 @@ def agentic(
         image_explain = image_explaination()
         llm_input += "User Sent Image and image content is: " + image_explain
 
+
+
     llm_input = llm_input + each_message_extension
 
+
     task = Task(
-        description=llm_input,
-        expected_output="Answer",
-        agent=agents[0],
-        tools=get_tools(),
+        description=llm_input, expected_output="Answer", agent=agents[0], tools=get_tools()
     )
 
     the_crew = Crew(
@@ -108,15 +107,15 @@ def agentic(
 
     result = the_crew.kickoff()["final_output"]
 
-    get_chat_message_history().add_message(
-        HumanMessage(content=[llm_input.replace(each_message_extension, "")])
-    )
+    get_chat_message_history().add_message(HumanMessage(content=[llm_input.replace(each_message_extension, "")]))
     get_chat_message_history().add_message(AIMessage(content=[result]))
 
     return result
 
 
-def agent(llm_input, llm_history, client, screenshot_path=None, dont_save_image=False):
+def assistant(
+    llm_input, llm_history, client, screenshot_path=None, dont_save_image=False
+):
 
     if len(agents) != 0:
         print("Moving to Agentic")
@@ -139,6 +138,8 @@ def agent(llm_input, llm_history, client, screenshot_path=None, dont_save_image=
             },
         )
         print("LEN OF IMAGE", len(base64_image))
+
+
 
     the_message = HumanMessage(content=the_message)
     get_chat_message_history().add_message(the_message)
@@ -211,18 +212,23 @@ def agent(llm_input, llm_history, client, screenshot_path=None, dont_save_image=
 
     the_last_messages = msg["messages"]
 
-    if dont_save_image and screenshot_path != None:
-        currently_messages = get_chat_message_history().messages
-        if take_screenshot:
-            last_message = currently_messages[-1].content[0]
-            currently_messages.remove(currently_messages[-1])
 
-            get_chat_message_history().clear()
-            for message in currently_messages:
-                get_chat_message_history().add_message(message)
-            get_chat_message_history().add_message(HumanMessage(content=[last_message]))
+
+    if dont_save_image and screenshot_path is not None:
+        currently_messages = get_chat_message_history().messages
+
+        last_message = currently_messages[-1].content[0]
+        currently_messages.remove(currently_messages[-1])
+
+        get_chat_message_history().clear()
+        for message in currently_messages:
+            get_chat_message_history().add_message(message)
+        get_chat_message_history().add_message(HumanMessage(content=[last_message]))
 
     get_chat_message_history().add_message(the_last_messages[-1])
+
+
+
 
     # Replace each_message_extension with empty string
     list_of_messages = get_chat_message_history().messages
@@ -231,11 +237,11 @@ def agent(llm_input, llm_history, client, screenshot_path=None, dont_save_image=
 
     for message in list_of_messages:
         try:
-            message.content[0]["text"] = message.content[0]["text"].replace(
-                each_message_extension, ""
-            )
+            message.content[0]["text"] = message.content[0]["text"].replace(each_message_extension, "")
             get_chat_message_history().add_message(message)
         except:
             get_chat_message_history().add_message(message)
+
+
 
     return the_last_messages[-1].content

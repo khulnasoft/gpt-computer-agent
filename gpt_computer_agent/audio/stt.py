@@ -56,8 +56,7 @@ def speech_to_text(location):
                 model="whisper-1", file=audio_file
             )
             transcriptions.append(transcription)
-        # Clean up the temporary file immediately after processing
-        os.remove(part_path)
+        os.remove(part_path)  # Clean up the temporary file immediately after processing
 
     # Merge transcriptions (assuming it's a list of text segments)
     full_transcription = " ".join(

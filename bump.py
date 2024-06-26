@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import logging
+import shlex
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -17,7 +18,7 @@ def read_version():
     Returns:
         str or None: The version number of the package if found, otherwise None.
     """
-    with open("gpt_computer_agent/__init__.py", "r") as file:
+    with open('gpt_computer_agent/__init__.py', 'r') as file:
         for line in file:
             match = re.search(r"__version__ = '(.*)'", line)
             if match:
@@ -41,17 +42,17 @@ def increment_version(part, version):
     Returns:
         str: String containing new changes made to the version.
     """
-    major, minor, patch = map(int, version.split("."))
-    if part == "major":
+    major, minor, patch = map(int, version.split('.'))
+    if part == 'major':
         major += 1
         minor = 0
         patch = 0
-    elif part == "minor":
+    elif part == 'minor':
         minor += 1
         patch = 0
-    elif part == "patch":
+    elif part == 'patch':
         patch += 1
-    return f"{major}.{minor}.{patch}"
+    return f'{major}.{minor}.{patch}'
 
 
 def write_version(version):
@@ -62,7 +63,7 @@ def write_version(version):
     Args:
         version (str): The new version number to replace the existing one.
     """
-    with open("gpt_computer_agent/__init__.py", "r+") as file:
+    with open('gpt_computer_agent/__init__.py', 'r+') as file:
         content = file.read()
         content = re.sub(r"__version__ = '.*'", f"__version__ = '{version}'", content)
         file.seek(0)
@@ -76,9 +77,9 @@ def update_version(version):
     Args:
         version (str): The new version number to replace the existing one.
     """
-    files = ["setup.py"]
+    files = ['setup.py']
     for file in files:
-        with open(file, "r+") as f:
+        with open(file, 'r+') as f:
             content = f.read()
             content = re.sub(r'    version=".*"', f'    version="{version}"', content)
             f.seek(0)
@@ -92,7 +93,7 @@ def create_tag(version):
     Args:
         version (str): The version number for the git tag.
     """
-    os.system(f"git tag v{version}")
+    os.system(f"git tag v{shlex.quote(version)}")
 
 
 def create_commit(version):
@@ -104,7 +105,7 @@ def create_commit(version):
         version (str): Version number included in the commit message.
     """
     os.system("git add .")
-    os.system(f"git commit -m 'Changed version number with v{version}'")
+    os.system(f"git commit -m 'Changed version number with v{shlex.quote(version)}'")
 
 
 def push():
@@ -115,7 +116,7 @@ def push():
 
 def main():
     """The main function for managing version updates."""
-    valid_parts = ["major", "minor", "patch"]
+    valid_parts = ['major', 'minor', 'patch']
     if len(sys.argv) != 2 or sys.argv[1] not in valid_parts:
         logger.error(f"Usage: python version.py <{'|'.join(valid_parts)}>")
         sys.exit(1)
@@ -130,5 +131,5 @@ def main():
     push()
 
 
-if __name__ == "__main__":
+if __name__ == '__main__':
     main()

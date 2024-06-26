@@ -1,4 +1,5 @@
-from PyQt5.QtCore import Qt, QTimer, QRect, pyqtSignal, QObject
+from PyQt5.QtCore import pyqtSignal, QObject
+
 
 
 class SignalHandler(QObject):
@@ -22,6 +23,5 @@ class SignalHandler(QObject):
     agent_thinking = pyqtSignal()
     agent_response_ready = pyqtSignal()
     agent_response_stopped = pyqtSignal()
-
 
 signal_handler = SignalHandler()

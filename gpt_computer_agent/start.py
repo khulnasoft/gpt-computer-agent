@@ -1,5 +1,6 @@
 import os
-
+import sys
+from PyQt5.QtWidgets import QApplication
 
 def start(api=False):
     """
@@ -36,13 +37,15 @@ def start(api=False):
 
     if profile is not None:
         from .utils.db import set_profile
-
         set_profile(profile)
 
+
+
+
     try:
-        from .gpt_computer_agent import QApplication, MainWindow, sys
+        from .gpt_computer_agent import MainWindow
     except ImportError:
-        from gpt_computer_agent import QApplication, MainWindow, sys
+        from gpt_computer_agent import MainWindow
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 
     if api or api_arg:

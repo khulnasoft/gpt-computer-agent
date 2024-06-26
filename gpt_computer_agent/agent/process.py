@@ -28,32 +28,30 @@ from pygame import mixer
 
 
 import time
-import random
 
 last_ai_response = None
 user_id = load_user_id()
 os_name_ = os_name()
 
 
-def tts_if_you_can(text: str, not_threaded=False, status_edit=False):
+
+def tts_if_you_can(text:str, not_threaded=False, status_edit=False):
     try:
         from ..gpt_computer_agent import the_main_window
-
         if not is_just_text_model_active() and not the_main_window.api_enabled:
             response_path = text_to_speech(text)
             if status_edit:
                 signal_handler.agent_response_ready.emit()
 
             def play_audio():
-                for each_r in response_path:
-                    mixer.init()
-                    mixer.music.load(each_r)
-                    mixer.music.play()
-                    while mixer.music.get_busy():
-                        time.sleep(0.1)
-                if status_edit:
-                    signal_handler.agent_response_stopped.emit()
-
+                    for each_r in response_path:
+                        mixer.init()
+                        mixer.music.load(each_r)
+                        mixer.music.play()
+                        while mixer.music.get_busy():
+                            time.sleep(0.1)
+                    if status_edit:
+                        signal_handler.agent_response_stopped.emit()
             if not not_threaded:
                 playback_thread = threading.Thread(target=play_audio)
                 playback_thread.start()
@@ -61,6 +59,8 @@ def tts_if_you_can(text: str, not_threaded=False, status_edit=False):
                 play_audio()
     except Exception as e:
         pass
+
+
 
 
 def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image=False):
@@ -72,6 +72,7 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
             from ..gpt_computer_agent import the_input_box, the_main_window
             from ..audio.record import audio_data, the_input_box_pre
 
+
             transcription = speech_to_text(mic_record_location)
 
             if take_system_audio:
@@ -82,19 +83,18 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
 
             print("LLM INPUT (screenshot)", the_input_box_pre)
             if (
-                the_input_box_pre != ""
-                and not the_input_box_pre.startswith("System:")
-                and the_input_box_pre != last_ai_response
-            ):
+                        the_input_box_pre != ""
+                        and not the_input_box_pre.startswith("System:")
+                        and the_input_box_pre != last_ai_response
+                    ):
                 llm_input += the_input_box_pre
 
             if take_system_audio:
                 llm_input += " \n Other of USER: " + transcription2
 
             if the_input_box.toPlainText().startswith("System:"):
-                the_main_window.update_from_thread(
-                    "Transciption Completed. Running AI..."
-                )
+                the_main_window.update_from_thread("Transciption Completed. Running AI...")
+
 
             llm_output = agent(
                 llm_input,
@@ -104,13 +104,10 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
                 dont_save_image=dont_save_image,
             )
             if the_input_box.toPlainText().startswith("System:"):
-                the_main_window.update_from_thread(
-                    "AI Response Completed. Generating Audio..."
-                )
+                the_main_window.update_from_thread("AI Response Completed. Generating Audio...")
             last_ai_response = llm_output
 
             from ..gpt_computer_agent import the_main_window
-
             if not is_just_text_model_active() and not the_main_window.api_enabled:
                 response_path = text_to_speech(llm_output)
                 signal_handler.agent_response_ready.emit()
@@ -126,9 +123,9 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
                     ):
                         the_main_window.update_from_thread(llm_output, system=False)
 
+
                 def play_audio():
                     from ..gpt_computer_agent import the_input_box, the_main_window
-
                     with my_tracer.start_span("play_audio") as span:
                         span.set_attribute("user_id", user_id)
                         span.set_attribute("os_name", os_name_)
@@ -165,7 +162,6 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
             print("Error in process_audio", e)
             traceback.print_exc()
             from ..gpt_computer_agent import the_input_box, the_main_window
-
             the_main_window.update_from_thread("EXCEPTION: " + str(e))
             tts_if_you_can("Exception occurred. Please check the logs.")
             signal_handler.agent_response_stopped.emit()
@@ -177,25 +173,27 @@ def process_screenshot():
         span.set_attribute("os_name", os_name_)
         try:
 
+
             global last_ai_response
             from ..gpt_computer_agent import the_input_box, the_main_window
             from ..audio.record import audio_data, the_input_box_pre
 
-            llm_input = "I just take a screenshot. for you to remember. Just say ok."
+            llm_input =  "I just take a screenshot. for you to remember. Just say ok."
+
 
             if (
-                the_input_box_pre != ""
-                and not the_input_box_pre.startswith("System:")
-                and the_input_box_pre != last_ai_response
-            ):
+                        the_input_box_pre != ""
+                        and not the_input_box_pre.startswith("System:")
+                        and the_input_box_pre != last_ai_response
+                    ):
                 llm_input += the_input_box_pre
 
             print("LLM INPUT (just screenshot)", llm_input)
 
             if the_input_box.toPlainText().startswith("System:"):
-                the_main_window.update_from_thread(
-                    "Transciption Completed. Running AI..."
-                )
+                the_main_window.update_from_thread("Transciption Completed. Running AI...")
+
+
 
             llm_output = agent(
                 llm_input,
@@ -206,14 +204,11 @@ def process_screenshot():
             )
 
             if the_input_box.toPlainText().startswith("System:"):
-                the_main_window.update_from_thread(
-                    "AI Response Completed. Generating Audio..."
-                )
+                the_main_window.update_from_thread("AI Response Completed. Generating Audio...")
 
             last_ai_response = llm_output
 
             from ..gpt_computer_agent import the_main_window
-
             if not is_just_text_model_active() and not the_main_window.api_enabled:
                 response_path = text_to_speech(llm_output)
                 signal_handler.agent_response_ready.emit()
@@ -229,9 +224,9 @@ def process_screenshot():
                     ):
                         the_main_window.update_from_thread(llm_output, system=False)
 
+
                 def play_audio():
                     from ..gpt_computer_agent import the_input_box, the_main_window
-
                     with my_tracer.start_span("play_audio") as span:
                         span.set_attribute("user_id", user_id)
                         span.set_attribute("os_name", os_name_)
@@ -261,20 +256,22 @@ def process_screenshot():
                 def play_text():
                     from ..gpt_computer_agent import the_input_box, the_main_window
 
+
                     the_main_window.update_from_thread(llm_output, system=False)
                     signal_handler.agent_response_stopped.emit()
 
                 playback_thread = threading.Thread(target=play_text)
                 playback_thread.start()
 
+
         except Exception as e:
             print("Error in process_screenshot", e)
             traceback.print_exc()
             from ..gpt_computer_agent import the_input_box, the_main_window
-
             the_main_window.update_from_thread("EXCEPTION: " + str(e))
             tts_if_you_can("Exception occurred. Please check the logs.")
             signal_handler.agent_response_stopped.emit()
+
 
 
 def process_text(text, screenshot_path=None):
@@ -287,6 +284,7 @@ def process_text(text, screenshot_path=None):
 
             llm_input = text
 
+
             llm_output = agent(
                 llm_input,
                 get_chat_message_history().messages,
@@ -297,12 +295,10 @@ def process_text(text, screenshot_path=None):
             last_ai_response = llm_output
 
             from ..gpt_computer_agent import the_main_window
-
             if not is_just_text_model_active() and not the_main_window.api_enabled:
 
                 def play_text():
                     from ..gpt_computer_agent import the_input_box, the_main_window
-
                     global last_ai_response
 
                     if (
@@ -314,13 +310,13 @@ def process_text(text, screenshot_path=None):
                         the_main_window.update_from_thread(llm_output, system=False)
                         the_main_window.manuel_stop = True
 
+
                 if load_api_key() != "CHANGE_ME":
                     response_path = text_to_speech(llm_output)
                     signal_handler.agent_response_ready.emit()
 
                     def play_audio():
                         from ..gpt_computer_agent import the_input_box, the_main_window
-
                         with my_tracer.start_span("play_audio") as span:
                             span.set_attribute("user_id", user_id)
                             span.set_attribute("os_name", os_name_)
@@ -355,6 +351,7 @@ def process_text(text, screenshot_path=None):
                 def play_text():
                     from ..gpt_computer_agent import the_input_box, the_main_window
 
+
                     the_main_window.update_from_thread(llm_output, system=False)
                     the_main_window.manuel_stop = True
                     signal_handler.agent_response_stopped.emit()
@@ -362,11 +359,11 @@ def process_text(text, screenshot_path=None):
                 playback_thread = threading.Thread(target=play_text)
                 playback_thread.start()
 
+
         except Exception as e:
             print("Error in process_text", e)
             traceback.print_exc()
             from ..gpt_computer_agent import the_input_box, the_main_window
-
             the_main_window.update_from_thread("EXCEPTION: " + str(e))
             tts_if_you_can("Exception occurred. Please check the logs.")
             signal_handler.agent_response_stopped.emit()
