@@ -30,5 +30,4 @@ class Agent:
         Returns:
         None
         """
-        global agents
         agents.append({"role": role, "goal": goal, "backstory": backstory})

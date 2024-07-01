@@ -117,6 +117,40 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
             last_ai_response = llm_output
 
             from ..gpt_computer_agent import the_main_window
+            if not is_just_text_model_active() and not the_main_window.api_enabled:
+                response_path = text_to_speech(llm_output)
+                signal_handler.agent_response_ready.emit()
+
+                def play_text():
+                    from ..gpt_computer_agent import the_input_box, the_main_window
+                    if (
+                        the_input_box.toPlainText() == ""
+                        or the_input_box.toPlainText().startswith("System:")
+                        or the_input_box.toPlainText() == last_ai_response
+                    ):
+                        the_main_window.update_from_thread(llm_output, system=False)
+   
+
+                def play_audio():
+                    from ..gpt_computer_agent import the_input_box, the_main_window
+                    with my_tracer.start_span("play_audio") as span:
+                        span.set_attribute("user_id", user_id)
+                        span.set_attribute("os_name", os_name_)
+                        play_text()
+                        stop_talking = False
+                        for each_r in response_path:
+                            if not stop_talking:
+                                mixer.init()
+                                mixer.music.load(each_r)
+                                mixer.music.play()
+                                while mixer.music.get_busy():
+                                    if the_main_window.stop_talking:
+                                        mixer.music.stop()
+                                        the_main_window.stop_talking = False
+                                        stop_talking = True
+                                        break
+                                    time.sleep(0.1)
+                        signal_handler.agent_response_stopped.emit()
 
             signal_handler.assistant_response_ready.emit()
 
@@ -185,6 +219,42 @@ def process_screenshot():
             last_ai_response = llm_output
 
             from ..gpt_computer_agent import the_main_window
+            if not is_just_text_model_active() and not the_main_window.api_enabled:
+                response_path = text_to_speech(llm_output)
+                signal_handler.agent_response_ready.emit()
+
+                def play_text():
+                    from ..gpt_computer_agent import the_input_box, the_main_window
+                    if (
+                        the_input_box.toPlainText() == ""
+                        or the_input_box.toPlainText().startswith("System:")
+                        or the_input_box.toPlainText() == last_ai_response
+                    ):
+                        the_main_window.update_from_thread(llm_output, system=False)
+                        
+
+                def play_audio():
+                    from ..gpt_computer_agent import the_input_box, the_main_window
+                    with my_tracer.start_span("play_audio") as span:
+                        span.set_attribute("user_id", user_id)
+                        span.set_attribute("os_name", os_name_)
+                        play_text()
+
+                        stop_talking = False
+                        for each_r in response_path:
+                            if not stop_talking:
+                                mixer.init()
+                                mixer.music.load(each_r)
+                                mixer.music.play()
+                                while mixer.music.get_busy():
+                                    if the_main_window.stop_talking:
+                                        mixer.music.stop()
+                                        the_main_window.stop_talking = False
+                                        stop_talking = True
+                                        break
+                                    time.sleep(0.1)
+
+                        signal_handler.agent_response_stopped.emit()
 
             signal_handler.assistant_response_ready.emit()
 
@@ -236,7 +306,16 @@ def process_text(text, screenshot_path=None):
             last_ai_response = llm_output
 
             from ..gpt_computer_agent import the_main_window
-            signal_handler.assistant_response_ready.emit()
+            if not is_just_text_model_active() and not the_main_window.api_enabled:
+
+                def play_text():
+                    from ..gpt_computer_agent import the_input_box, the_main_window
+                    
+                    if (
+                        the_input_box.toPlainText() == ""
+                        or the_input_box.toPlainText().startswith("System:")
+                        or the_input_box.toPlainText() == last_ai_response
+                    ):
 
             def play_text():
                 from ..gpt_computer_agent import the_input_box, the_main_window

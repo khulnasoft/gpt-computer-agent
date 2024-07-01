@@ -28,13 +28,11 @@ def set_profile(profile):
 
 def get_profile():
     """Get the active profile."""
-    global the_profile
     return the_profile
 
 
 def get_history_db():
     """Get the history database path based on the active profile."""
-    global the_profile
     return os.path.join(artifacts_dir, f"history_{the_profile}.db")
 
 

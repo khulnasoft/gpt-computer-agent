@@ -55,20 +55,15 @@ import scipy.io.wavfile as wavfile
 from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
 
 from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QVBoxLayout,
-    QWidget,
     QPushButton,
     QLabel,
     QHBoxLayout,
 )
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import QPoint
 
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QTextEdit
+from PyQt5.QtWidgets import QDialog, QTextEdit
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import QThread
 
 
 print("Imported all libraries")
@@ -140,7 +135,6 @@ class CustomTextEdit(QTextEdit):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            global return_key_event
             return_key_event()
         super(CustomTextEdit, self).keyPressEvent(event)  # Process other key events normally
 
@@ -883,8 +877,8 @@ class MainWindow(QMainWindow):
 
 
 
-    def set_text(self, text):
-        global the_input_box
+    @staticmethod
+    def set_text(text):
         the_input_box.setPlainText(text)
 
     def set_title_bar_text(self, text):
@@ -999,7 +993,6 @@ class MainWindow(QMainWindow):
 
         if agent_stopped:
             if llm_settings[load_model_settings()]["transcription"]:
-                global the_input_box
                 if the_input_box.toPlainText().endswith("?") and is_continuously_conversations_setting_active():
                     self.button_handler.toggle_recording(no_screenshot=True, new_record=True)
 

@@ -49,8 +49,9 @@ class Remote_Client:
     def disable_online_tools(self) -> str:
         response = self.send_request("/deactivate_online_tools", {})
         return response["response"]
-
-    def wait(self, second):
+    
+    @staticmethod
+    def wait(second):
         time.sleep(second)
 
 
