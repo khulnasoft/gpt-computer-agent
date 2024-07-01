@@ -2,14 +2,18 @@ from bs4 import BeautifulSoup
 import requests
 import re
 from urllib.parse import urljoin
+from urllib.parse import urljoin
 
 from .tooler import tool
-
-
-
 from .top_bar_wrapper import wrapper
 
+_standard_tools_ = {}
 
+def register_tool(func):
+    if func.__name__ not in _standard_tools_:
+        _standard_tools_[func.__name__] = tool(func)
+    return func
+@register_tool
 @wrapper
 def read_website(url: str, max_content_length: int = 5000) -> dict:
     """
@@ -60,11 +64,11 @@ def read_website(url: str, max_content_length: int = 5000) -> dict:
         content = content[:max_content_length].rsplit(' ', 1)[0] + '...'
 
     return {"meta": meta, "title": title, "content": content, "sub_links": links}
-      
-    
 
+
+@register_tool
 @wrapper
-def google(query:str, max_number:int=20) -> list:
+def google(query: str, max_number: int = 20) -> list:
     """
     Search the query on Google and return the results.
     """
@@ -75,8 +79,9 @@ def google(query:str, max_number:int=20) -> list:
         return "An exception occurred"    
 
 
+@register_tool
 @wrapper
-def duckduckgo(query:str, max_number:int=20) -> list:
+def duckduckgo(query: str, max_number: int = 20) -> list:
     """
     Search the query on DuckDuckGo and return the results.
     """
@@ -85,26 +90,27 @@ def duckduckgo(query:str, max_number:int=20) -> list:
         return [result["href"] for result in DDGS().text(query, max_results=max_number)]
     except:
         return "An exception occurred"
-    
 
 
+
+@register_tool
 @wrapper
-def copy(text:str):
+def copy(text: str):
     """
     Copy the text to the clipboard.
     """
     import pyperclip
     pyperclip.copy(text)
+    pyperclip.copy(text)
 
 
-
+@register_tool
 @wrapper
 def open_url(url) -> bool:
     """
     Open the URL in the default web browser.
 
     :param url: str:
-
     """
     import webbrowser
 
@@ -113,7 +119,9 @@ def open_url(url) -> bool:
         return True
     except:
         return False
+        return False
 
+@register_tool
 @wrapper
 def sleep(seconds: int):
     """
@@ -124,46 +132,76 @@ def sleep(seconds: int):
 
 
 
-
+@register_tool
 @wrapper
-def keyboard_write(text:str):
+def keyboard_write(text: str):
     """
     Write the text using the keyboard.
     """
     import pyautogui
     pyautogui.write(text)
 
-
-
+@register_tool
 @wrapper
-def keyboard_press(key:str):
+def keyboard_press(key: str):
     """
     Press the key using the keyboard.
     """
     import pyautogui
     pyautogui.press(key)
+    pyautogui.press(key)
 
 
 
+from langchain_experimental.utilities import PythonREPL
 
+the_py_client = PythonREPL()
+
+@register_tool
+@wrapper
+def python_repl(code: str) -> str:
+    """
+    Run and return the given python code in python repl
+    """
+    return the_py_client.run(code)
+
+@register_tool
+@wrapper
+def app_open(app_name: str) -> bool:
+    """
+    Opens the native apps.
+    """
+    try:
+        from AppOpener import open
+        open(app_name, throw_error=True)
+        return True
+    except:
+        try:
+            from MacAppOpener import open
+            open(app_name)
+        except:
+            return False
+
+@register_tool
+@wrapper
+def app_close(app_name: str) -> bool:
+    """
+    Closes the native apps.
+    """
+    try:
+        from AppOpener import close
+        close(app_name, throw_error=True)
+        return True
+    except:
+        try:
+            from MacAppOpener import open
+            close(app_name)
+        except:
+            return False
 
 
 
 def get_standard_tools():
-
-    the_standard_tools_ = []
-
-
-    the_standard_tools_.append(tool(read_website))
-    the_standard_tools_.append(tool(google))
-    the_standard_tools_.append(tool(duckduckgo))
-    the_standard_tools_.append(tool(copy))
-    the_standard_tools_.append(tool(open_url))
-    the_standard_tools_.append(tool(sleep))
-    the_standard_tools_.append(tool(keyboard_write))
-    the_standard_tools_.append(tool(keyboard_press))
-
-
-    the_standard_tools = the_standard_tools_
-
-    return the_standard_tools
+    print("Tool len", len(_standard_tools_))
+    last_list = [_standard_tools_[each] for each in _standard_tools_]
+    return last_list

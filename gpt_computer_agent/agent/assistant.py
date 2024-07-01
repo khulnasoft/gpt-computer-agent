@@ -1,4 +1,3 @@
-import base64
 from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 from .chat_history import *
@@ -45,7 +44,7 @@ def agentic(
 
     def image_explaination():
         the_message = [
-            {"type": "text", "text": f"Explain the image"},
+            {"type": "text", "text": "Explain the image"},
         ]
 
         if screenshot_path:
@@ -114,7 +113,7 @@ def agentic(
     return result
 
 
-def agent(
+def assistant(
     llm_input, llm_history, client, screenshot_path=None, dont_save_image=False
 ):
 
@@ -215,7 +214,7 @@ def agent(
 
 
 
-    if dont_save_image and screenshot_path != None:
+    if dont_save_image and screenshot_path is not None:
         currently_messages = get_chat_message_history().messages
         if take_screenshot():
             if currently_messages:
