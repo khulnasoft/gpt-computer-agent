@@ -883,7 +883,8 @@ class MainWindow(QMainWindow):
 
 
 
-    def set_text(self, text):
+    @staticmethod
+    def set_text(text):
         global the_input_box
         the_input_box.setPlainText(text)
 
