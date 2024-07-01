@@ -63,7 +63,7 @@ from PyQt5.QtCore import QPoint
 
 from PyQt5.QtWidgets import QDialog, QTextEdit
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtCore import QThread, 
+from PyQt5.QtCore import QThread
 
 
 print("Imported all libraries")
