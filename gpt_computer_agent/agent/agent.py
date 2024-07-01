@@ -47,7 +47,6 @@ prompt_cache = {}
 
 
 def get_prompt(name):
-    global prompt_cache
     if name in prompt_cache:
         return prompt_cache[name]
     else:
@@ -80,7 +79,6 @@ def get_tools():
 
 
 def get_agent_executor():
-    global custom_tools
     tools = get_tools()
     tools += custom_tools
 
