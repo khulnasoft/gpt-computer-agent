@@ -55,20 +55,15 @@ import scipy.io.wavfile as wavfile
 from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
 
 from PyQt5.QtWidgets import (
-    QApplication,
-    QMainWindow,
-    QVBoxLayout,
-    QWidget,
     QPushButton,
     QLabel,
     QHBoxLayout,
 )
-from PyQt5.QtCore import Qt, QPoint
+from PyQt5.QtCore import QPoint
 
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QPushButton, QTextEdit
+from PyQt5.QtWidgets import QDialog, QTextEdit
 from PyQt5 import QtWidgets, QtGui
-from PyQt5.QtGui import QIcon
-from PyQt5.QtCore import QThread, pyqtSignal, Qt
+from PyQt5.QtCore import QThread, 
 
 
 print("Imported all libraries")
