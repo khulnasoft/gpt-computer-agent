@@ -217,7 +217,7 @@ def agent(
 
     if dont_save_image and screenshot_path != None:
         currently_messages = get_chat_message_history().messages
-        if take_screenshot:
+        if take_screenshot():
             last_message = currently_messages[-1].content[0]
             currently_messages.remove(currently_messages[-1])
 
