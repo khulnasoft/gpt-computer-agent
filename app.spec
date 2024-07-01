@@ -10,7 +10,7 @@ a = Analysis(
     ['run.py'],
     pathex=[],
     binaries=[],
-    datas=[('gpt_computer_assistant/utils/media/*', 'gpt_computer_assistant/utils/media')],
+    datas=[('gpt_computer_agent/utils/media/*', 'gpt_computer_agent/utils/media')],
     hiddenimports=[],
     hookspath=[],
     hooksconfig={},
