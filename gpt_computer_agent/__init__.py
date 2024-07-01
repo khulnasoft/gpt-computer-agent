@@ -4,4 +4,5 @@ from .agentic import Agent
 
 from .tooler import Tool
 
-__version__ = '0.19.3'
+__version__ = '1.0.0'
+
