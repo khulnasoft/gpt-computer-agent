@@ -140,7 +140,6 @@ class CustomTextEdit(QTextEdit):
 
     def keyPressEvent(self, event):
         if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
-            global return_key_event
             return_key_event()
         super(CustomTextEdit, self).keyPressEvent(event)  # Process other key events normally
 
@@ -885,7 +884,6 @@ class MainWindow(QMainWindow):
 
     @staticmethod
     def set_text(text):
-        global the_input_box
         the_input_box.setPlainText(text)
 
     def set_title_bar_text(self, text):
@@ -1000,7 +998,6 @@ class MainWindow(QMainWindow):
 
         if agent_stopped:
             if llm_settings[load_model_settings()]["transcription"]:
-                global the_input_box
                 if the_input_box.toPlainText().endswith("?") and is_continuously_conversations_setting_active():
                     self.button_handler.toggle_recording(no_screenshot=True, new_record=True)
 
