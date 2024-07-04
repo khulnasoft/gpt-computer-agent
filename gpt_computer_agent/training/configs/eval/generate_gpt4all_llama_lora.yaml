@@ -1,0 +1,5 @@
+# model/tokenizer
+model_name: "zpn/llama-7b"
+tokenizer_name: "zpn/llama-7b"
+lora: true
+lora_path: "nomic-ai/gpt4all-lora"
