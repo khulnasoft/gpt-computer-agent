@@ -36,14 +36,16 @@ blessed==1.20.0
     # via inquirer
 cachetools==5.3.3
     # via google-auth
-certifi==2024.6.2
+certifi==2024.7.4
     # via
+    #   curl-cffi
     #   httpcore
     #   httpx
     #   requests
 cffi==1.16.0
     # via
     #   cryptography
+    #   curl-cffi
     #   soundcard
     #   sounddevice
     #   soundfile
@@ -62,6 +64,8 @@ contourpy==1.2.1
     # via matplotlib
 cryptography==41.0.3
     # via upsonic
+curl-cffi==0.7.0
+    # via duckduckgo-search
 cycler==0.12.1
     # via matplotlib
 dataclasses-json==0.6.7
@@ -83,7 +87,7 @@ distro==1.9.0
     # via
     #   groq
     #   openai
-duckduckgo-search==6.1.9
+duckduckgo-search==5.3.0
     # via -r requirements.in
 editor==1.6.6
     # via inquirer
@@ -317,7 +321,9 @@ opentelemetry-sdk==1.24.0
 opentelemetry-semantic-conventions==0.45b0
     # via opentelemetry-sdk
 orjson==3.10.6
-    # via langsmith
+    # via
+    #   duckduckgo-search
+    #   langsmith
 packaging==23.2
     # via
     #   huggingface-hub
@@ -330,7 +336,7 @@ parso==0.8.4
     # via jedi
 pexpect==4.9.0
     # via ipython
-pillow==10.4.0
+pillow==10.3.0
     # via
     #   -r requirements.in
     #   matplotlib
@@ -563,7 +569,7 @@ upsonic==0.28.4
     # via -r requirements.in
 uritemplate==4.1.1
     # via google-api-python-client
-urllib3==2.2.1
+urllib3==2.2.2
     # via
     #   requests
     #   types-requests
