@@ -1,14 +1,41 @@
 try:
     from ..llm import *
-    from ..utils.db import artifacts_dir
+    from ..utils.db import *
+    from .tts_providers.openai import tts_openai
+    from .tts_providers.microsoft_local import tts_microsoft_local
 except ImportError:
     from llm import *
-    from utils.db import artifacts_dir
+    from utils.db import *
+    from tts_providers.openai import tts_openai
+    from tts_providers.microsoft_local import tts_microsoft_local
 
 import os
 import hashlib
 import random
 import threading
+
+
+def is_local_tts_available():
+    try:
+        from transformers import pipeline
+        from datasets import load_dataset
+        import soundfile as sf
+
+        import torch
+        return True
+    except:
+        return False
+
+
+def is_openai_tts_available():
+
+    the_model = load_model_settings()
+    if llm_settings[the_model]["provider"] == "openai":
+        if load_api_key() != "CHANGE_ME":
+            return True
+    return False
+
+
 
 supported_openai_speakers = ["fable"]
 
@@ -24,12 +51,19 @@ def generate_speech_chunk(text_chunk, index, voice, results):
     if os.path.exists(location):
         results[index] = location
     else:
-        response = get_client().audio.speech.create(
-            model="tts-1",
-            voice=voice,
-            input=text_chunk,
-        )
-        response.stream_to_file(location)
+        the_model = load_model_settings()
+        tts_setting = load_tts_model_settings()
+        if tts_setting == "openai" : 
+            tts_openai(voice, text_chunk, location)
+        
+        if tts_setting == "microsoft_local":
+            if not is_local_tts_available():
+                print("Please install gpt-computer-agent[local_tts] to use local TTS")
+            else:
+                tts_microsoft_local(text_chunk, location)
+                
+            
+                
         results[index] = location
 
 def split_text_to_sentences(text, max_chunk_size=300):
