@@ -1,8 +1,6 @@
 # Create a python api and start_api function via flask
 
 from flask import Flask, request, jsonify
-import os
-import sys
 import threading
 import time
 
@@ -33,7 +31,7 @@ def input():
     else:
         the_main_window.button_handler.input_text_screenshot(text)
 
-    
+
     while the_input_box.toPlainText() == firsst_text:
         time.sleep(0.3)
 
@@ -166,6 +164,37 @@ def disable_online_tools():
     return jsonify({"response": "Online tools disabled"})
 
 
+
+
+@app.route("/change_name", methods=["POST"])
+def change_name():
+    """
+    This function changes the name of the application.
+    """
+    data = request.json
+    new_name = data["new_name"]
+    print("Name:", new_name)
+    from .character import change_name
+    change_name(new_name)
+    return jsonify({"response": "Name changed to "+new_name})
+
+
+@app.route("/change_developer", methods=["POST"])
+def change_developer():
+    """
+    This function changes the developer of the application.
+    """
+    data = request.json
+    new_developer = data["new_developer"]
+    print("Developer:", new_developer)
+    from .character import change_developer
+    change_developer(new_developer)
+    return jsonify({"response": "Developer changed to "+new_developer})
+
+
+
+
+
 class ServerThread(threading.Thread):
     def __init__(self, app, host, port):
         threading.Thread.__init__(self)
@@ -186,7 +215,7 @@ server_thread = None
 def start_api():
     global server_thread
     if server_thread is None:
-        server_thread = ServerThread(app, "0.0.0.0", 7541)
+        server_thread = ServerThread(app, "localhost", 7541)
         server_thread.start()
         print("API started")
     else:
