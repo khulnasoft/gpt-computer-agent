@@ -38,14 +38,12 @@ cachetools==5.3.3
     # via google-auth
 certifi==2024.7.4
     # via
-    #   curl-cffi
     #   httpcore
     #   httpx
     #   requests
 cffi==1.16.0
     # via
     #   cryptography
-    #   curl-cffi
     #   soundcard
     #   sounddevice
     #   soundfile
@@ -64,8 +62,6 @@ contourpy==1.2.1
     # via matplotlib
 cryptography==41.0.3
     # via upsonic
-curl-cffi==0.7.0
-    # via duckduckgo-search
 cycler==0.12.1
     # via matplotlib
 dataclasses-json==0.6.7
@@ -87,7 +83,7 @@ distro==1.9.0
     # via
     #   groq
     #   openai
-duckduckgo-search==5.3.0
+duckduckgo-search==6.2.5
     # via -r requirements.in
 editor==1.6.6
     # via inquirer
@@ -288,7 +284,7 @@ numpy==1.26.4
     #   soundcard
 open-interpreter==0.3.4
     # via -r requirements.in
-openai==1.35.10
+openai==1.37.1
     # via
     #   -r requirements.in
     #   langchain-openai
@@ -321,9 +317,7 @@ opentelemetry-sdk==1.24.0
 opentelemetry-semantic-conventions==0.45b0
     # via opentelemetry-sdk
 orjson==3.10.6
-    # via
-    #   duckduckgo-search
-    #   langsmith
+    # via langsmith
 packaging==23.2
     # via
     #   huggingface-hub
@@ -336,7 +330,7 @@ parso==0.8.4
     # via jedi
 pexpect==4.9.0
     # via ipython
-pillow==10.3.0
+pillow==10.4.0
     # via
     #   -r requirements.in
     #   matplotlib
@@ -345,6 +339,8 @@ platformdirs==4.2.2
     # via
     #   jupyter-core
     #   open-interpreter
+primp==0.5.5
+    # via duckduckgo-search
 prompt-toolkit==3.0.47
     # via ipython
 proto-plus==1.23.0
@@ -411,16 +407,14 @@ pyperclip==1.9.0
     # via
     #   -r requirements.in
     #   mouseinfo
-pyqt5==5.15.10
+pyqt5==5.15.11
     # via -r requirements.in
 pyqt5-qt5==5.15.14
     # via pyqt5
-pyqt5-sip==12.13.0
+pyqt5-sip==12.15.0
     # via pyqt5
 pyrect==0.2.0
     # via pygetwindow
-pyreqwest-impersonate==0.4.9
-    # via duckduckgo-search
 pyscreeze==0.1.30
     # via
     #   -r requirements.in
