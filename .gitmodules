@@ -1,6 +1,0 @@
-[submodule "gpt_computer_agent/chat/usearch"]
-	path = gpt_computer_agent/chat/usearch
-	url = https://github.com/deepcode-ai/usearch.git
-[submodule "gpt_computer_agent/backend/llama.cpp--mainline"]
-	path = gpt_computer_agent/backend/llama.cpp--mainline
-	url = https://github.com/deepcode-ai/llama.cpp.git
