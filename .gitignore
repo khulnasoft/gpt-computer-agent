@@ -1,12 +1,15 @@
+.DS_Store
+
 *.mp3
 *.wav
 *.wav*
-*.png
+gpt_computer_agent/utils/artifacts/*.png
 *.db
 *.db-shm
 *.db-wal
 test.py
-
+test_backup.py
+test_logo.png
 
 output/
 dist/

@@ -1,5 +1,4 @@
-from PyQt5.QtCore import Qt, QTimer, QRect, pyqtSignal, QObject
-
+from PyQt5.QtCore import pyqtSignal, QObject
 
 
 class SignalHandler(QObject):
@@ -12,17 +11,17 @@ class SignalHandler(QObject):
     Signals:
     - recording_started: Signal emitted when recording is started.
     - recording_stopped: Signal emitted when recording is stopped.
-    - agent_thinking: Signal emitted when the agent is processing a request.
-    - agent_response_ready: Signal emitted when the agent response is ready to be displayed.
-    - agent_response_stopped: Signal emitted when the agent response display is stopped.
+    - assistant_thinking: Signal emitted when the assistant is processing a request.
+    - assistant_response_ready: Signal emitted when the assistant response is ready to be displayed.
+    - assistant_response_stopped: Signal emitted when the assistant response display is stopped.
 
     """
-    
+
     recording_started = pyqtSignal()
     recording_stopped = pyqtSignal()
-    agent_thinking = pyqtSignal()
-    agent_response_ready = pyqtSignal()
-    agent_response_stopped = pyqtSignal()
+    assistant_thinking = pyqtSignal()
+    assistant_response_ready = pyqtSignal()
+    assistant_response_stopped = pyqtSignal()
+
 
 signal_handler = SignalHandler()
-

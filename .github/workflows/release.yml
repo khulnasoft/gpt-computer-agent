@@ -16,14 +16,14 @@ permissions:
 jobs:
   run:
     runs-on: ubuntu-latest
-    if: contains('["nxpkg"]', github.actor)
+    if: contains('["khulnasoft"]', github.actor)
 
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v2
 
       - name: Set Up Python
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v2
         with:
           python-version: 3.8
 

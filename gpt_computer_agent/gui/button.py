@@ -22,19 +22,10 @@ except ImportError:
     from audio.record import *
     from screen.shot import *
     from agent.process import *
-    from agent.chat_history import clear_chat_history
     from utils.db import (
         screenshot_path,
-        save_api_key,
-        load_api_key,
-        activate_just_text_model,
-        deactivate_just_text_model,
-        is_just_text_model_active,
-        set_profile,
-        get_profile,
     )
     from screen.shot import take_screenshot
-from PyQt5.QtWidgets import QDialog, QVBoxLayout, QLabel, QLineEdit, QPushButton
 
 recording_thread = None
 
@@ -50,16 +41,20 @@ class ButtonHandler:
 
         signal_handler.recording_started.connect(self.on_recording_started)
         signal_handler.recording_stopped.connect(self.on_recording_stopped)
-        signal_handler.agent_thinking.connect(self.on_agent_thinking)
-        signal_handler.agent_response_ready.connect(
-            self.on_agent_response_ready
+        signal_handler.assistant_thinking.connect(self.on_assistant_thinking)
+        signal_handler.assistant_response_ready.connect(
+            self.on_assistant_response_ready
         )
-        signal_handler.agent_response_stopped.connect(
-            self.on_agent_response_stopped
+        signal_handler.assistant_response_stopped.connect(
+            self.on_assistant_response_stopped
         )
 
     def toggle_recording(
-        self, no_screenshot=False, take_system_audio=False, dont_save_image=False, new_record=False
+        self,
+        no_screenshot=False,
+        take_system_audio=False,
+        dont_save_image=False,
+        new_record=False,
     ):
         """Toggle audio recording."""
 
@@ -76,9 +71,17 @@ class ButtonHandler:
             self.dont_save_image = dont_save_image
 
             global recording_thread
-            if recording_thread is None or not recording_thread.is_alive() or new_record:
+            if (
+                recording_thread is None
+                or not recording_thread.is_alive()
+                or new_record
+            ):
                 recording_thread = threading.Thread(
-                    target=start_recording, args=(take_system_audio,self,)
+                    target=start_recording,
+                    args=(
+                        take_system_audio,
+                        self,
+                    ),
                 )
                 recording_thread.start()
             signal_handler.recording_started.emit()
@@ -99,7 +102,7 @@ class ButtonHandler:
             self.process_audio_thread is None
             or not self.process_audio_thread.is_alive()
         ):
-            signal_handler.agent_thinking.emit()
+            signal_handler.assistant_thinking.emit()
             self.process_audio_thread = threading.Thread(
                 target=process_audio,
                 args=(
@@ -117,18 +120,18 @@ class ButtonHandler:
         self.process_audio_thread = threading.Thread(target=process_screenshot)
         self.process_audio_thread.start()
 
-    def on_agent_response_stopped(self):
-        """Handle event when agent's response stops."""
+    def on_assistant_response_stopped(self):
+        """Handle event when assistant's response stops."""
 
         self.main_window.update_state("idle")
 
-    def on_agent_thinking(self):
-        """Handle event when agent is thinking."""
+    def on_assistant_thinking(self):
+        """Handle event when assistant is thinking."""
 
         self.main_window.update_state("thinking")
 
-    def on_agent_response_ready(self):
-        """Handle event when agent's response is ready."""
+    def on_assistant_response_ready(self):
+        """Handle event when assistant's response is ready."""
 
         self.main_window.update_state("aitalking")
 
@@ -140,7 +143,7 @@ class ButtonHandler:
             self.process_audio_thread is None
             or not self.process_audio_thread.is_alive()
         ):
-            signal_handler.agent_thinking.emit()
+            signal_handler.assistant_thinking.emit()
             self.process_audio_thread = threading.Thread(
                 target=process_text, args=(text,)
             )
@@ -157,7 +160,7 @@ class ButtonHandler:
             self.process_audio_thread is None
             or not self.process_audio_thread.is_alive()
         ):
-            signal_handler.agent_thinking.emit()
+            signal_handler.assistant_thinking.emit()
             self.process_audio_thread = threading.Thread(
                 target=process_text,
                 args=(text,),
