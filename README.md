@@ -1,4 +1,4 @@
-# GPT Computer Assistant
+# GPT Computer Agent
 
 <p align="center">
 
