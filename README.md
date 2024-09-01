@@ -1,4 +1,4 @@
-# GPT Computer Agent
+<h1 align="center">GPT Computer Agent</h1>
 
 <p align="center">
 
