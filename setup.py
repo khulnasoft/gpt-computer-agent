@@ -20,13 +20,13 @@ elif platform.system() == "Darwin":  # Darwin is the system name for macOS
 
 setup(
     name="gpt_computer_agent",
-    version="0.22.3",
+    version="0.22.4",
     description="""GPT""",
     long_description="".join(open("README.md", encoding="utf-8").readlines()),
     long_description_content_type="text/markdown",
     url="https://github.com/khulnasoft/gpt-computer-agent",
-    author="Onur Atakan ULUSOY",
-    author_email="atadogan06@gmail.com",
+    author="KhulnaSoft DevOps",
+    author_email="info@khulnasoft.com",
     license="MIT",
     packages=[
         "gpt_computer_agent",

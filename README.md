@@ -1,9 +1,5 @@
-<p align="center">
-  <a href="#">
-    <img src="https://github.com/user-attachments/assets/df1a3ec1-8c03-43c8-9432-c71358c35b9e" >
-  </a>
-  <br>
-
+<h1 align="center">GPT Computer Agent</h1>
+<br>
 <p align="center">
 
   <a href="https://docs.gca.dev">
@@ -49,7 +45,6 @@
 
 |ENGLISH|[简体中文](README.zh_CN.md)|[正體中文](README.zh_TW.md)|[TÜRKÇE](README.TR.md)
 
-# GPT Computer Assistant
 Hi, this is an alternative work for providing ChatGPT MacOS app to Windows and Linux. In this way this is a fresh and stable work. You can easily install as Python library for this time but we will prepare a pipeline for providing native install scripts (.exe).
 
 Powered by <a href="https://github.com/KhulnaSoft/Tiger"><strong>KhulnaSoft Tiger 🐅</strong></a> A function hub for llm agents.
