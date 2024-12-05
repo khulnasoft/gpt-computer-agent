@@ -31,7 +31,7 @@ jobs:
         chmod +x build_scripts/openai/macos_build.sh
         ./build_scripts/openai/macos_build.sh
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: gpt-computer-agent-openai-dmg
         path: dist/*.dmg
@@ -56,7 +56,7 @@ jobs:
       run: |
         sh build_scripts/openai/windows_build.sh
     - name: Upload artifact
-      uses: actions/upload-artifact@v2
+      uses: actions/upload-artifact@v4
       with:
         name: gpt-computer-agent-openai-exe
         path: dist/*.exe
