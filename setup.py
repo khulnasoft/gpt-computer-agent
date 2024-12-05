@@ -17,7 +17,7 @@ elif platform.system() == "Darwin":  # Darwin is the system name for macOS
 
 # Optional dependencies
 extras_require = {
-    "agentic": ["crewai==0.30.11"],
+    "agentic": ["crewai==0.86.0"],
     "wakeword": ["pvporcupine", "pyaudio"],
     "api": ["flask==3.0.3"],
     "local_tts": [
