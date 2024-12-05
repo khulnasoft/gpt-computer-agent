@@ -21,11 +21,11 @@ permissions:
 jobs:
   issue-manager:
     if: github.repository_owner == 'khulnasoft'
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-22.04
     steps:
       - name: Dump GitHub context
         env:
-          GITHUB_CONTEXT: ${{ toJson(github) }}
+          GITHUB_CONTEXT: ${{ toJson(pick(github, ['event_name', 'repository', 'issue.number'])) }}
         run: echo "$GITHUB_CONTEXT"
       - uses: khulnasoft/issue-manager@0.5.1
         with:
