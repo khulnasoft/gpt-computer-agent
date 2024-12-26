@@ -21,7 +21,7 @@ extras_require = {
     "wakeword": ["pvporcupine", "pyaudio"],
     "api": ["flask==3.0.3"],
     "local_tts": [
-        "tensorflow==2.17.0",
+        "tensorflow==2.18.0",
         "datasets[audio]==2.20.0",
         "sentencepiece==0.2.0",
         "torch==2.4.0",
