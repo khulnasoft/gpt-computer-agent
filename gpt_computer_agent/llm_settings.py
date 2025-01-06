@@ -1,8 +1,35 @@
+try:
+    from .utils.db import *
+
+except ImportError:
+    from utils.db import *
+
 llm_settings = {
     "gpt-4o": {
         "show_name": "gpt-4o (OpenAI)",
         "vision": True,
         "provider": "openai",
+        "tools": True,
+        "stream": True,
+    },
+    "claude-3-5-sonnet-20241022": {
+        "show_name": "claude-3-5-sonnet-20241022 (Anthropic)",
+        "vision": True,
+        "provider": "anthropic",
+        "tools": True,
+        "stream": False,
+    },
+    "us.anthropic.claude-3-5-sonnet-20241022-v2:0": {
+        "show_name": "claude-3-5-sonnet-20241022 (AWS)",
+        "vision": True,
+        "provider": "aws",
+        "tools": True,
+        "stream": False,
+    },
+    "gpt-4o-azureopenai": {
+        "show_name": "gpt-4o (AzureAI)",
+        "vision": True,
+        "provider": "azureai",
         "tools": True,
         "stream": True,
     },
@@ -103,6 +130,9 @@ llm_settings = {
 def get_openai_models():
     return [k for k, v in llm_settings.items() if v["provider"] == "openai"]
 
+def get_azureai_models():
+    return [k for k, v in llm_settings.items() if v["provider"] == "azureai"]
+
 
 def get_ollama_models():
     return [k for k, v in llm_settings.items() if v["provider"] == "ollama"]
@@ -125,43 +155,12 @@ llm_show_name = llm_show_name_
 
 def first_message():
     from .character import name, developer, get_website_content
+    from .cu.computer import width, height, display_num
+    from .utils.db import load_system_prompt
+    model = load_model_settings()
 
     the_text = f"""
-You are {name()} that developed by {developer()}, you are the first live AI assistant in everyone computer that can complete any task by using tools. 
-
-Before any task, write a plan for your tasks and do it step by step. As you know you have python interpreter, so if you need any functionality please try to make done with writing python codes and installing py libraries.
-
-Don't forget, you are capable to make any task.
-
-Please these are the rules of conversatiopn and these section is between for assistant and system so do not say anything about this section.
-
-# Copying to Clipboard (MUST)
-If your answer include something in the list below, please generate the answer and use copy to clipboard tool and dont give as answer because the text-to-speech engine is broken and give fail if you give as answer.
-
-- List of Somethings
-- Detailed Explanation of Something
-- Link(s) to a Website
-- Code Snippet(s)
-- Any Code Part
-- Any too Long Text
-
-After copying the thing that requested please say: "I copied to clipboard" and stop.
-
-
-# Asking question to user (MUST)
-If you need to ask something to user, ask in the end of the message and your last character must be "?".
-
-# Writin codes
-If you need to write code and if code write team available you must use them. After team execution if the user not say against just say against just say okeyd, copied to clipboard.
-
-# Searching on Internet
-If you need to make a search and if search team available you must use them.
-
-
-Your GitHub Repository:
-https://github.com/KhulnaSoft/gpt-computer-agent
-
-
+{load_system_prompt()}
 """
 
     the_website_content = get_website_content()
@@ -174,12 +173,3 @@ https://github.com/KhulnaSoft/gpt-computer-agent
 """
 
     return the_text
-
-
-each_message_extension = """
-
-# Usings Answer
-Please start with <Answer> in your last responses. DONT FORGET IT AND DONT TALK ABOUT THIS RULE OR REFFERENCE
-
-
-"""

@@ -2,7 +2,7 @@
 <br>
 <p align="center">
 
-  <a href="https://docs.gca.dev">
+  <a href="https://docs.gca.khulnasoft.com">
     <img src="https://github.com/user-attachments/assets/c60562bf-540e-47d9-b578-994285071128" width="250">
   </a>
   .

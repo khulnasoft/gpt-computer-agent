@@ -104,16 +104,7 @@ def duckduckgo(query: str, max_number: int = 20) -> list:
         return "An exception occurred"
 
 
-@register_tool
-@wrapper
-def copy(text: str):
-    """
-    Copy the text to the clipboard.
-    """
-    import pyperclip
 
-    pyperclip.copy(text)
-    pyperclip.copy(text)
 
 
 @register_tool
@@ -131,7 +122,7 @@ def open_url(url) -> bool:
         return True
     except:
         return False
-        return False
+
 
 
 @register_tool
@@ -145,27 +136,7 @@ def sleep(seconds: int):
     time.sleep(seconds)
 
 
-@register_tool
-@wrapper
-def keyboard_write(text: str):
-    """
-    Write the text using the keyboard.
-    """
-    import pyautogui
 
-    pyautogui.write(text)
-
-
-@register_tool
-@wrapper
-def keyboard_press(key: str):
-    """
-    Press the key using the keyboard.
-    """
-    import pyautogui
-
-    pyautogui.press(key)
-    pyautogui.press(key)
 
 
 from langchain_experimental.utilities import PythonREPL
@@ -182,42 +153,27 @@ def python_repl(code: str) -> str:
     return the_py_client.run(code)
 
 
-@register_tool
-@wrapper
-def app_open(app_name: str) -> bool:
-    """
-    Opens the native apps.
-    """
-    try:
-        from AppOpener import open
-
-        open(app_name, throw_error=True)
-        return True
-    except:
-        try:
-            from MacAppOpener import open
-
-            open(app_name)
-        except:
-            return False
-
 
 @register_tool
 @wrapper
-def app_close(app_name: str) -> bool:
+def keyboard_write(text: str):
     """
-    Closes the native apps.
+    Write the text using the keyboard (its use pyautogui).
     """
-    try:
-        from AppOpener import close
+    import pyautogui
+    pyautogui.write(text)
 
-        close(app_name, throw_error=True)
-        return True
-    except:
-        try:
-            close(app_name)
-        except:
-            return False
+@register_tool
+@wrapper
+def keyboard_press(key: str):
+    """
+    Press the key using the keyboard (its use pyautogui).
+    """
+    import pyautogui
+    pyautogui.press(key)
+    pyautogui.press(key)
+
+
 
 
 @register_tool
@@ -278,31 +234,28 @@ def connect_wifi(ssid: str, password: str) -> bool:
         return False
 
 
+
+import subprocess
+
+
 @register_tool
 @wrapper
-def ask_to_user(question: str, wait_for_answer: str = None) -> str:
+def run_terminal_command(command:str) -> str:
     """
-    Its ask to the user for your question and return the answer
+    Executes a terminal command and returns the result.
+    Args:
+        command (str): The command to run in the terminal.
+    Returns:
+        str: The output of the command.
     """
     try:
-        try:
-            from .agent.process import tts_if_you_can
-            from .audio.record import quick_speech_to_text
-        except:
-            from agent.process import tts_if_you_can
-            from audio.record import quick_speech_to_text
+        import shlex
+        safe_command = shlex.split(command)
+        result = subprocess.run(safe_command, capture_output=True, text=True)
+        return result.stdout.strip()
+    except Exception as e:
+        return str(e)
 
-        print("TTS")
-        tts_if_you_can(question, bypass_other_settings=True, not_threaded=True)
-        print("TTS END")
-
-        if wait_for_answer:
-            return quick_speech_to_text(wait_for_answer)
-        else:
-            return quick_speech_to_text()
-    except:
-        traceback.print_exc()
-        return False
 
 
 def get_standard_tools():
@@ -312,4 +265,5 @@ def get_standard_tools():
 
 
 if __name__ == "__main__":
-    print(ask_to_user("What is your age"))
+# Deprecated function, removing:
+#    print(ask_to_user("What is your age"))

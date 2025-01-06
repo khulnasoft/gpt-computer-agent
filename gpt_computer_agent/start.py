@@ -3,18 +3,35 @@ import platform
 import sys
 import webbrowser
 
-from PyQt5.QtWidgets import QApplication
-from PyQt5.QtGui import *
-from PyQt5.QtWidgets import *
-from PyQt5.QtCore import Qt
-from pynput import keyboard
+
+
+
+def start_api():
+    try:
+        from .api import start_api
+
+        start_api(api=True)
+    except:
+        raise Exception(
+            "API could not be started, please install gpt-computer-agent[api]"
+        )
+
+
+
 
 
 def start(api=False):
+    if api:
+        return start_api()
+    from PyQt5.QtWidgets import QApplication
+    from PyQt5.QtGui import QIcon
+    from PyQt5.QtWidgets import QSystemTrayIcon, QMenu, QAction
+    from PyQt5.QtCore import Qt
+    from pynput import keyboard
     """
-    Starts the computer assistant application.
+    Starts the computer agent application.
 
-    This function starts the computer assistant application, which includes parsing command-line arguments
+    This function starts the computer agent application, which includes parsing command-line arguments
     to set the profile, initializing the graphical user interface, and starting the application event loop.
 
     Command-line Arguments:
