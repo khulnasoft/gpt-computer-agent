@@ -36,7 +36,7 @@ extras_require["base"] = base_requirements
 
 setup(
     name="gpt_computer_agent",
-    version="0.22.4",
+    version="0.23.0",
     description="GPT Computer Agent - A multi-purpose agent system",
     long_description=open("README.md", encoding="utf-8").read(),
     long_description_content_type="text/markdown",
