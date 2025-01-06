@@ -134,12 +134,12 @@ class cloud_instance(instance):
     def request(self, the_request, the_response, screen=False):
         screen = "false" if not screen else "true"
 
-        response = requests.post(self.url+"request", data={"request": the_request, "response": the_response, "screen":screen, "instance":self.instance_id}, verify=False)
+        response = requests.post(self.url+"request", data={"request": the_request, "response": the_response, "screen":screen, "instance":self.instance_id}, verify=True)
         json_response = response.json()
         request_id = json_response["request_id"]
         try:
             while True:
-                response = requests.post(self.url+"request_result", data={"request_id": request_id}, verify=False)
+                response = requests.post(self.url+"request_result", data={"request_id": request_id}, verify=True)
                 the_json = response.json()
                 if the_json["status"] == True:
                     return the_json["result"]
@@ -150,33 +150,33 @@ class cloud_instance(instance):
 
 
     def change_profile(self, profile):
-        response = requests.post(self.url+"change_profile", data={"profile": profile, "instance":self.instance_id}, verify=False)
+        response = requests.post(self.url+"change_profile", data={"profile": profile, "instance":self.instance_id}, verify=True)
         the_json = response.json()
         return the_json["result"]
     
     def add_system_message(self, system_message):
-        response = requests.post(self.url+"add_system_message", data={"system_message": system_message, "instance":self.instance_id}, verify=False)
+        response = requests.post(self.url+"add_system_message", data={"system_message": system_message, "instance":self.instance_id}, verify=True)
         the_json = response.json()
         return the_json["result"]
 
 
     def add_user_id(self, user_id):
-        response = requests.post(self.url+"add_user_id", data={"user_id": user_id, "instance":self.instance_id}, verify=False)
+        response = requests.post(self.url+"add_user_id", data={"user_id": user_id, "instance":self.instance_id}, verify=True)
         the_json = response.json()
         return the_json["result"]
 
     def get_logs(self):
-        response = requests.post(self.url+"get_logs", data={"instance":self.instance_id}, verify=False)
+        response = requests.post(self.url+"get_logs", data={"instance":self.instance_id}, verify=True)
         the_json = response.json()
         return the_json["result"]
 
     def reset_memory(self):
-        response = requests.post(self.url+"reset_memory", data={"instance":self.instance_id}, verify=False)
+        response = requests.post(self.url+"reset_memory", data={"instance":self.instance_id}, verify=True)
         the_json = response.json()
         return the_json["result"]
 
     def screenshot(self):
-        response = requests.post(self.url+"screenshot_instance", data={"instance":self.instance_id}, verify=False)
+        response = requests.post(self.url+"screenshot_instance", data={"instance":self.instance_id}, verify=True)
 
         its_an_error = False
 
@@ -204,7 +204,7 @@ class cloud_instance(instance):
 
 
     def start(self):
-        req = requests.get(self.url+"start_instance", verify=False)
+        req = requests.get(self.url+"start_instance", verify=True)
         the_json = req.json()
 
         self.instance_id = the_json["result"]
@@ -213,7 +213,7 @@ class cloud_instance(instance):
 
 
     def close(self):
-        req = requests.post(self.url+"stop_instance", data={"instance": self.instance_id}, verify=False)
+        req = requests.post(self.url+"stop_instance", data={"instance": self.instance_id}, verify=True)
         the_json = req.json()
         return the_json["result"]
 
