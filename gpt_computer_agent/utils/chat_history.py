@@ -18,10 +18,10 @@ from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
 
 
 try:
-    from .db import *
-
-except:
-    from db import *
+try:
+    from .db import get_profile, load_system_prompt
+except ImportError:
+    from db import get_profile, load_system_prompt
 
 
 import time
