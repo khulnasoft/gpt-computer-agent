@@ -68,7 +68,7 @@ def load_anthropic_api_key():
     else:
         env_variable = os.getenv("ANTHROPIC_API_KEY")
         if env_variable:
-            save_api_key(env_variable)
+            save_anthropic_api_key(env_variable)
             return env_variable
         return "CHANGE_ME"
 

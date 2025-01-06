@@ -4,8 +4,7 @@ import os
 
 try:
     from .folder import currently_dir, artifacts_dir, media_dir
-
-except:
+except ImportError:
     from folder import currently_dir, artifacts_dir, media_dir
 
 

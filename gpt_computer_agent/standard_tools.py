@@ -243,15 +243,15 @@ import subprocess
 def run_terminal_command(command:str) -> str:
     """
     Executes a terminal command and returns the result.
-
     Args:
         command (str): The command to run in the terminal.
-
     Returns:
         str: The output of the command.
     """
     try:
-        result = subprocess.run(command, shell=True, capture_output=True, text=True)
+        import shlex
+        safe_command = shlex.split(command)
+        result = subprocess.run(safe_command, capture_output=True, text=True)
         return result.stdout.strip()
     except Exception as e:
         return str(e)
@@ -265,4 +265,5 @@ def get_standard_tools():
 
 
 if __name__ == "__main__":
-    print(ask_to_user("What is your age"))
+# Deprecated function, removing:
+#    print(ask_to_user("What is your age"))

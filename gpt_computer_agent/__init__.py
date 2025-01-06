@@ -27,7 +27,7 @@ requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class instance:
-    def __init__(self, url, tasks=[]):
+    def __init__(self, url, tasks=None):
         self.url = url
         self.task = []
         for t in tasks:
@@ -128,7 +128,7 @@ class local(interface):
 
 class cloud_instance(instance):
     def __init__(self, *args, **kwargs):
-        super().__init__("https://free_cloud_1.gca.dev/", *args, **kwargs)
+        super().__init__("https://free_cloud_1.gca.khulnasoft.com/", *args, **kwargs)
         
 
     def request(self, the_request, the_response, screen=False):
