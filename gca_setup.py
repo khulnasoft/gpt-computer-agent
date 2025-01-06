@@ -35,7 +35,7 @@ extras_require["default"] = base_requirements
 extras_require["base"] = base_requirements
 
 setup(
-    name="gpt_computer_agent",
+    name="gcadev",
     version="0.22.4",
     description="GPT Computer Agent - A multi-purpose agent system",
     long_description=open("README.md", encoding="utf-8").read(),
