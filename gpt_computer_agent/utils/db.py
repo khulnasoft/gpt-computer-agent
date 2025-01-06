@@ -2,14 +2,23 @@ import os
 import uuid
 from dotenv import load_dotenv
 
+try:
+    from .folder import currently_dir, artifacts_dir, media_dir
+    from .kot_db import kot_db_
+    from .user_id import *
+except:
+    from folder import currently_dir, artifacts_dir, media_dir
+    from kot_db import kot_db_
+    from user_id import *
+
+
+
+
 load_dotenv(".env")
 
-currently_dir = os.path.dirname(os.path.abspath(__file__))
-artifacts_dir = os.path.join(currently_dir, "artifacts")
-media_dir = os.path.join(currently_dir, "media")
 
-if not os.path.exists(artifacts_dir):
-    os.makedirs(artifacts_dir)
+
+
 
 mic_record_location = os.path.join(artifacts_dir, "mic_record.wav")
 system_sound_location = os.path.join(artifacts_dir, "system_sound.wav")
@@ -37,43 +46,63 @@ def get_history_db():
     return os.path.join(artifacts_dir, f"history_{the_profile}.db")
 
 
-openaikey = os.path.join(artifacts_dir, "openaikey.db")
 
-
+# API KEY SAVING AND LOADING
 def save_api_key(api_key):
-    """Save the OpenAI API key to a file."""
-    with open(openaikey, "w") as f:
-        f.write(api_key)
-
-
+    kot_db_.set("openai_api_key", api_key)
 def load_api_key():
-    """Load the OpenAI API key from a file or environment variables."""
-    if not os.path.exists(openaikey):
-        env = os.getenv("OPENAI_API_KEY")
-        if env:
-            save_api_key(env)
-            return env
-        else:
-            return "CHANGE_ME"
-    with open(openaikey, "r") as f:
-        return f.read()
+    if kot_db_.get("openai_api_key"):
+        return kot_db_.get("openai_api_key")
+    else:
+        env_variable = os.getenv("OPENAI_API_KEY")
+        if env_variable:
+            save_api_key(env_variable)
+            return env_variable
+        return "CHANGE_ME"
+
+def save_anthropic_api_key(api_key):
+    kot_db_.set("anthropic_api_key", api_key)
+def load_anthropic_api_key():
+    if kot_db_.get("anthropic_api_key"):
+        return kot_db_.get("anthropic_api_key")
+    else:
+        env_variable = os.getenv("ANTHROPIC_API_KEY")
+        if env_variable:
+            save_api_key(env_variable)
+            return env_variable
+        return "CHANGE_ME"
 
 
-openai_url_db = os.path.join(artifacts_dir, "openai_url.db")
-
-
+# OPENAI URL SAVING AND LOADING
 def save_openai_url(url):
-    """Save the custom OpenAI base URL to a file."""
-    with open(openai_url_db, "w") as f:
-        f.write(url)
-
-
+    kot_db_.set("openai_url", url)
 def load_openai_url():
-    """Load the custom OpenAI base URL from a file."""
-    if not os.path.exists(openai_url_db):
+    if kot_db_.get("openai_url"):
+        return kot_db_.get("openai_url")
+    else:
         return "default"
-    with open(openai_url_db, "r") as f:
-        return f.read()
+
+
+
+
+def save_system_prompt(prompt):
+    kot_db_.set("system_prompt", prompt)
+def load_system_prompt():
+    if kot_db_.get("system_prompt"):
+        return kot_db_.get("system_prompt")
+    else:
+        return "Hi, you are an platform for vertical AI. You need to understant the user aspect and then trying to do these things and give valuation."
+
+
+
+# API VERSION SAVING AND LOADING
+def save_api_version(url):
+    kot_db_.set("api_version", url)
+def load_api_version():
+    if kot_db_.get("api_version"):
+        return kot_db_.get("api_version")
+    else:
+        return "CHANGE_ME"
 
 
 model_settings_db = os.path.join(artifacts_dir, "model_settings.db")
@@ -158,23 +187,6 @@ def load_groq_api_key():
         return f.read()
 
 
-user_id_db = os.path.join(artifacts_dir, "user_id.db")
-
-
-def save_user_id():
-    """Save a unique user ID to a file."""
-    with open(user_id_db, "w") as f:
-        uuid4 = str(uuid.uuid4())
-        f.write(uuid4)
-        return uuid4
-
-
-def load_user_id():
-    """Load the unique user ID from a file."""
-    if not os.path.exists(user_id_db):
-        return save_user_id()
-    with open(user_id_db, "r") as f:
-        return f.read()
 
 
 collapse_setting = os.path.join(artifacts_dir, "collapse_setting.db")
@@ -525,3 +537,24 @@ def load_location_setting():
         return "right"
     with open(location_setting, "r") as f:
         return f.read()
+
+
+
+# OPENAI URL SAVING AND LOADING
+def save_aws_access_key_id(id):
+    kot_db_.set("aws_access_key_id", id)
+def load_aws_access_key_id():
+    if kot_db_.get("aws_access_key_id"):
+        return kot_db_.get("aws_access_key_id")
+    else:
+        return "default"
+
+
+# OPENAI URL SAVING AND LOADING
+def save_aws_secret_access_key(key):
+    kot_db_.set("aws_secret_access_key", key)
+def load_aws_secret_access_key():
+    if kot_db_.get("aws_secret_access_key"):
+        return kot_db_.get("aws_secret_access_key")
+    else:
+        return "default"

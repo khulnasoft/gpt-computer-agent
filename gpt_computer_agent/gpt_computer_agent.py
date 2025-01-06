@@ -1,10 +1,10 @@
 try:
-    from .agent.chat_history import *
-    from .agent.assistant import *
+    from .assistant.chat_history import *
+    from .assistant.agent import *
     from .llm import *
     from .llm_settings import llm_settings
-    from .agent.agent import *
-    from .agent.background import *
+    from .assistant.assistant import *
+    from .assistant.background import *
 
     from .gui.signal import *
     from .gui.button import *
@@ -20,12 +20,12 @@ try:
 except ImportError:
     # This is for running the script directly
     # in order to test the GUI without rebuilding the package
-    from agent.chat_history import *
-    from agent.assistant import *
+    from assistant.chat_history import *
+    from assistant.agent import *
     from llm import *
     from llm_settings import llm_settings
-    from agent.agent import *
-    from agent.background import *
+    from assistant.assistant import *
+    from assistant.background import *
     from utils.db import *
     from gui.signal import *
     from gui.button import *
@@ -71,7 +71,7 @@ from PyQt5 import QtCore
 try:
     import ctypes
 
-    myappid = "khulnasoft.gpt_computer_agent.gui.1"
+    myappid = "onuratakan.gpt_computer_agent.gui.1"
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except:
     pass
@@ -295,11 +295,14 @@ def split_with_multiple_delimiters(text, delimiters):
 
 
 def click_sound():
-    pygame.mixer.init()
+    try:
+        pygame.mixer.init()
 
-    retro = pygame.mixer.Sound(click_sound_path)
-    retro.set_volume(0.1)
-    retro.play()
+        retro = pygame.mixer.Sound(click_sound_path)
+        retro.set_volume(0.1)
+        retro.play()
+    except:
+        pass
 
 
 class Worker(QThread):
@@ -338,12 +341,19 @@ class CustomTextEdit(QTextEdit):
         super(CustomTextEdit, self).__init__(parent)
 
     def keyPressEvent(self, event):
-        if event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter:
+        if (event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter) and not (event.modifiers() & Qt.ShiftModifier):
             global return_key_event
             return_key_event()
         super(CustomTextEdit, self).keyPressEvent(
             event
         )  # Process other key events normally
+
+    def insertFromMimeData(self, source):
+        newData = QtCore.QMimeData()
+        for format in source.formats():
+            if format == 'text/plain':
+                newData.setData(format, source.data(format))
+        super().insertFromMimeData(newData)
 
 
 class Worker_2(QThread):
@@ -1005,7 +1015,7 @@ class MainWindow(QMainWindow):
         self.wake_word_thread.start()
 
     def wake_word(self):
-        from .agent.process import tts_if_you_can
+        from .assistant.process import tts_if_you_can
 
         while True and is_wake_word_active() and self.wake_word_active:
             if wake_word(self):
@@ -1174,8 +1184,9 @@ class MainWindow(QMainWindow):
 
         input_box.setFixedHeight(80)
 
-        # Set text wrapping. I dont wat to cut the text
-        input_box.setWordWrapMode(QtGui.QTextOption.NoWrap)
+
+        # If its used for a chat, you can use the following line to disable word wrap
+        #input_box.setWordWrapMode(QtGui.QTextOption.NoWrap)
 
         # Change the font size
         font = QtGui.QFont()
@@ -1192,7 +1203,7 @@ class MainWindow(QMainWindow):
                     input_box.setPlaceholderText("Type here \nsand ↵ ")
                 else:
                     input_box.setPlaceholderText(
-                        "Type here \nand ↵ \nor ⌘ + ↵ (+screenshot)"
+                        "Type here \nand ↵ \nor ⌘ + ↵ (+screenshot) \n\nNew line: shift + ↵"
                     )
             else:
                 if llm_settings[load_model_settings()]["vision"] is False:
@@ -1436,12 +1447,12 @@ class MainWindow(QMainWindow):
         self.update()
 
     def update_state(self, new_state):
-        assistant_stopped = False
+        agent_stopped = False
         if self.state == "aitalking" and new_state == "idle":
-            assistant_stopped = True
+            agent_stopped = True
 
         if self.manuel_stop:
-            assistant_stopped = False
+            agent_stopped = False
             self.manuel_stop = False
 
         self.state = new_state
@@ -1470,7 +1481,7 @@ class MainWindow(QMainWindow):
             self.pulse_timer = None
         self.update()  # Trigger a repaint
 
-        if assistant_stopped:
+        if agent_stopped:
             global the_input_box
             if (
                 the_input_box.toPlainText().endswith("?")
