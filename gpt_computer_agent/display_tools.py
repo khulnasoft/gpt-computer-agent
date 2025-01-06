@@ -1,190 +1,31 @@
+import json
+import re
 from langchain.tools import tool
 import traceback
 
+import pyautogui
+import time
+
 try:
-    from .utils.db import load_api_key
+    from .utils.db import *
     from .llm import get_model
     from .top_bar_wrapper import wrapper
+    from .llm_settings import llm_settings
+
 except ImportError:
-    from utils.db import load_api_key
+    from utils.db import *
     from top_bar_wrapper import wrapper
+    from llm_settings import llm_settings
 
 
-@wrapper
-def click_on_a_text_on_the_screen_(text: str, click_type: str = "singular") -> bool:
-    """
-    A function to click on a text on the screen.
-
-    Parameters:
-    - text (str): The text to be clicked on.
-    - click_type (str): The type of click to be performed. The default value is "singular". Possible values are "singular" and "double".
-
-    Returns:
-    - bool: True if the text was clicked on successfully, False otherwise.
-    """
-    try:
-        import pyautogui
-
-        pyautogui.FAILSAFE = False
-
-        from interpreter import OpenInterpreter
-
-        interpreter = OpenInterpreter()
-
-        interpreter.llm.api_key = load_api_key()
-
-        screenshot = pyautogui.screenshot()
-
-        text_locations = interpreter.computer.display.find_text(
-            text, screenshot=screenshot
-        )
-
-        print(text_locations)
-
-        x, y = text_locations[0]["coordinates"]
-        x *= interpreter.computer.display.width
-        y *= interpreter.computer.display.height
-        x = int(x)
-        y = int(y)
-
-        if click_type == "singular":
-            interpreter.computer.mouse.click(x=x, y=y, screenshot=screenshot)
-        elif click_type == "double":
-            interpreter.computer.mouse.double_click(x=x, y=y, screenshot=screenshot)
-        return True
-    except:
-        traceback.print_exc()
-        return False
 
 
-click_on_a_text_on_the_screen = tool(click_on_a_text_on_the_screen_)
 
 
-@wrapper
-def move_on_a_text_on_the_screen_(text: str) -> bool:
-    """
-    A function to move on a text on the screen.
-
-    Parameters:
-    - text (str): The text to be moved on.
-
-    Returns:
-    - bool: True if the text was moved on successfully, False otherwise.
-    """
-    try:
-        import pyautogui
-
-        pyautogui.FAILSAFE = False
-
-        from interpreter import OpenInterpreter
-
-        interpreter = OpenInterpreter()
-
-        interpreter.llm.api_key = load_api_key()
-
-        screenshot = pyautogui.screenshot()
-
-        text_locations = interpreter.computer.display.find_text(
-            text, screenshot=screenshot
-        )
-
-        print(text_locations)
-
-        x, y = text_locations[0]["coordinates"]
-        x *= interpreter.computer.display.width
-        y *= interpreter.computer.display.height
-        x = int(x)
-        y = int(y)
-
-        interpreter.computer.mouse.move(x=x, y=y, screenshot=screenshot)
-
-        return True
-    except:
-        traceback.print_exc()
-        return False
 
 
-move_on_a_text_on_the_screen = tool(move_on_a_text_on_the_screen_)
 
 
-@wrapper
-def click_on_a_icon_on_the_screen_(
-    icon_name: str, click_type: str = "singular"
-) -> bool:
-    """
-    A function to click on a icon name on the screen.
-
-    Parameters:
-    - icon_name (str): The icon name to be clicked on.
-    - click_type (str): The type of click to be performed. The default value is "singular". Possible values are "singular" and "double".
-
-    Returns:
-    - bool: True if the icon name was clicked on successfully, False otherwise.
-    """
-    try:
-        import pyautogui
-
-        pyautogui.FAILSAFE = False
-
-        from interpreter import OpenInterpreter
-
-        screenshot = pyautogui.screenshot()
-
-        interpreter = OpenInterpreter()
-
-        interpreter.llm.api_key = load_api_key()
-
-        if click_type == "singular":
-            interpreter.computer.mouse.click(icon=icon_name, screenshot=screenshot)
-        elif click_type == "double":
-            interpreter.computer.mouse.double_click(
-                icon=icon_name, screenshot=screenshot
-            )
-        return True
-
-    except:
-        traceback.print_exc()
-        return False
-
-
-click_on_a_icon_on_the_screen = tool(click_on_a_icon_on_the_screen_)
-
-
-@wrapper
-def move_on_a_icon_on_the_screen_(
-    icon_name: str,
-) -> bool:
-    """
-    A function to move on a icon name on the screen.
-
-    Parameters:
-    - icon_name (str): The icon name to be move on.
-
-    Returns:
-    - bool: True if the icon name was moved on successfully, False otherwise.
-    """
-    try:
-        import pyautogui
-
-        pyautogui.FAILSAFE = False
-
-        from interpreter import OpenInterpreter
-
-        screenshot = pyautogui.screenshot()
-
-        interpreter = OpenInterpreter()
-
-        interpreter.llm.api_key = load_api_key()
-
-        interpreter.computer.mouse.move(icon=icon_name, screenshot=screenshot)
-        return True
-
-    except:
-        traceback.print_exc()
-        return False
-
-
-move_on_a_icon_on_the_screen = tool(move_on_a_icon_on_the_screen_)
 
 
 def mouse_scroll_(direction: str, amount: int = 1) -> bool:
@@ -216,27 +57,211 @@ def mouse_scroll_(direction: str, amount: int = 1) -> bool:
 mouse_scroll = tool(mouse_scroll_)
 
 
-@wrapper
-def get_texts_on_the_screen_() -> str:
+
+def extract_code_from_result(llm_output):
     """
-    It returns the texts on the screen.
+    Extract the Python code from the LLM output.
+    """
+    code_match = re.search(r'```json\n(.*?)```', llm_output, re.DOTALL)
+    if code_match:
+        return code_match.group(1).strip()
+    return llm_output.strip()
+
+
+def click_to_text_(text:str, double_click=False) -> bool:
+    """
+    Click on the text
+   
     """
 
     try:
-        pass
+        from .cu.ask_anthropic import ask_anthropic
+        from .cu.computer import click_action, mouse_move_action
+    except ImportError:
+        from cu.ask_anthropic import ask_anthropic
+        from cu.computer import click_action, mouse_move_action
 
-    except:
-        pass
+    print("click_to_text")
+    print("text", text)
+    x_y = ask_anthropic(f"dont use tools, give me exactly location of '{text}' text as json x,y like"+ """{'x': 0, 'y': 0}"""+". Only return the json with ```json ```")
+    print("result", x_y)
 
-    import pyautogui
+    x_y = extract_code_from_result(x_y)
 
-    the_screenshot_path = "temp_screenshot.png"
-    the_screenshot = pyautogui.screenshot()
-    the_screenshot.save(the_screenshot_path)
-
-    from interpreter.core.computer.utils.computer_vision import pytesseract_get_text
-
-    return pytesseract_get_text(the_screenshot_path)
+    x_y = json.loads(x_y)
 
 
-get_texts_on_the_screen = tool(get_texts_on_the_screen_)
+    pyautogui.click(x_y['x'], x_y['y'], button='left')
+    if double_click:
+        time.sleep(0.1)
+        pyautogui.click(x_y['x'], x_y['y'], button='left')
+
+    return True
+
+
+click_to_text = tool(click_to_text_)
+
+
+
+def click_to_icon_(icon:str, double_click=False) -> bool:
+    """
+    Click on the icon
+   
+    """
+
+    try:
+        from .cu.ask_anthropic import ask_anthropic
+        from .cu.computer import click_action, mouse_move_action
+    except ImportError:
+        from cu.ask_anthropic import ask_anthropic
+        from cu.computer import click_action, mouse_move_action
+
+    print("click_to_icon")
+    print("icon", icon)
+    x_y = ask_anthropic(f"dont use tools, give me exactly location of '{icon}' icon as json x,y like"+ """{'x': 0, 'y': 0}"""+". Only return the json with ```json ```")
+    print("result", x_y)
+
+    x_y = extract_code_from_result(x_y)
+
+    x_y = json.loads(x_y)
+
+    pyautogui.click(x_y['x'], x_y['y'], button='left')
+    if double_click:
+        time.sleep(0.1)
+        pyautogui.click(x_y['x'], x_y['y'], button='left')
+
+
+    return True
+
+
+click_to_icon = tool(click_to_icon_)
+
+
+def click_to_area_(
+    area:str, double_click=False
+) -> bool:
+    """
+    Click on the area like search bar
+    """
+
+    try:
+        from .cu.ask_anthropic import ask_anthropic
+        from .cu.computer import click_action, mouse_move_action
+    except ImportError:
+        from cu.ask_anthropic import ask_anthropic
+        from cu.computer import click_action, mouse_move_action
+
+    print("click_to_area")
+    print("area", area)
+    x_y = ask_anthropic(f"dont use tools, give me exactly location of '{area}' area as json x,y like"+ """{'x': 0, 'y': 0}"""+". Only return the json with ```json ```")
+    print("result", x_y)
+
+    x_y = extract_code_from_result(x_y)
+
+    x_y = json.loads(x_y)
+
+    pyautogui.click(x_y['x'], x_y['y'], button='left')
+    if double_click:
+        time.sleep(0.1)
+        pyautogui.click(x_y['x'], x_y['y'], button='left')
+
+
+    return True
+
+
+
+
+click_to_area = tool(click_to_area_)
+
+
+
+
+def screenshot_(checking:str):
+    """
+    Returns the current screenshot. Explain what should we check on the screenshot.
+    """
+
+    from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+
+    try:
+        from .cu.computer import screenshot_action
+        from .agent.agent import get_agent_executor
+    except ImportError:
+        from cu.computer import screenshot_action
+        from agent.agent import get_agent_executor
+
+    the_base64 = screenshot_action(direct_base64=True)
+
+
+
+
+
+
+    human_first_message = {"type": "text", "text": f"Explain the image and check '{checking}' on the image."}
+
+
+
+    the_message = [
+        human_first_message
+    ]
+
+
+
+    human_second_message = {
+            "type": "image_url",
+            "image_url": {"url": f"data:image/png;base64,{the_base64}"},
+        }
+
+
+
+
+    the_message.append(human_second_message)
+
+
+
+
+
+    the_message = HumanMessage(content=the_message)
+
+
+
+
+
+
+
+    msg = get_agent_executor(no_tools=True).invoke(
+        {"messages": [the_message]}
+    )
+
+
+
+
+
+    the_last_messages = msg["messages"]
+
+
+
+
+
+
+
+
+
+    return_value = the_last_messages[-1].content
+    if isinstance(return_value, list):
+        the_text = ""
+        for each in return_value:
+            the_text += str(each)
+        return_value = the_text
+
+    if return_value == "":
+        return_value = "No response "
+
+
+
+
+    return return_value
+
+
+
+screenshot = tool(screenshot_)

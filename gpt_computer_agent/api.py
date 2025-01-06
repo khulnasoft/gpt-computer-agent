@@ -3,15 +3,43 @@
 from flask import Flask, request, jsonify
 import threading
 import time
-
+import pyautogui
 from werkzeug.serving import make_server
 
+from waitress import serve
 app = Flask(__name__)
 
 
 @app.route("/status", methods=["POST"])
 def status():
     return jsonify({"response": True})
+
+
+
+
+def the_input(text, screen, talk):
+    print("Input:", text)
+
+    from .agent.process import process_text_api
+    from .utils.db import (
+        screenshot_path,
+    )
+
+
+
+    if screen != "true":
+        result = process_text_api(text, None)
+    else:
+        screenshot = pyautogui.screenshot()
+        screenshot.save(screenshot_path)
+        result = process_text_api(text, screenshot_path)
+
+
+
+
+
+    return jsonify({"response": result})
+
 
 
 @app.route("/input", methods=["POST"])
@@ -23,36 +51,31 @@ def input():
     text = data["text"]
     screen = data["screen"]
     talk = data["talk"]
-    print("Input:", text)
-    from .gpt_computer_agent import the_main_window, the_input_box
 
-    firsst_text = the_input_box.toPlainText()
+    return the_input(text, screen, talk)
 
-    original_tts = the_main_window.tts_available
 
-    if talk == "true":
-        the_main_window.tts_available = True
-        the_main_window.manuel_stop = True
 
-    if screen != "true":
-        the_main_window.button_handler.input_text(text)
+
+
+@app.route("/request", methods=["POST"])
+def the_request():
+    """
+    This function receives input from the user and returns the response.
+    """
+    data = request.json
+    the_request = data["request"]
+    the_response = data["response"]
+    if "screen" in data:
+        screen = data["screen"]
     else:
-        the_main_window.button_handler.input_text_screenshot(text)
+        screen = "false"
 
-    while the_input_box.toPlainText() == firsst_text:
-        time.sleep(0.3)
+    combined = the_request + "\n" + the_response
 
-    while the_input_box.toPlainText().startswith("System:"):
-        time.sleep(0.3)
+    return the_input(combined, screen, "false")
 
-    while not the_main_window.state == "idle":
-        time.sleep(0.3)
 
-    response = the_input_box.toPlainText()
-
-    the_main_window.tts_available = original_tts
-
-    return jsonify({"response": response})
 
 
 @app.route("/screenshot", methods=["POST"])
@@ -113,9 +136,7 @@ def profile():
     from .utils.db import set_profile
 
     set_profile(profile)
-    from .gpt_computer_agent import the_main_window
 
-    the_main_window.update_from_thread("Profile set to " + profile)
     return jsonify({"response": "Profile set to " + profile})
 
 
@@ -127,9 +148,7 @@ def reset_memory():
     from .agent.chat_history import clear_chat_history
 
     clear_chat_history()
-    from .gpt_computer_agent import the_main_window
 
-    the_main_window.update_from_thread("Memory reset")
     return jsonify({"response": "Memory reset"})
 
 
@@ -141,9 +160,7 @@ def enable_predefined_agents():
     from .utils.db import activate_predefined_agents_setting
 
     activate_predefined_agents_setting()
-    from .gpt_computer_agent import the_main_window
 
-    the_main_window.update_from_thread("Predefined agents enabled")
     return jsonify({"response": "Predefined agents enabled"})
 
 
@@ -155,9 +172,7 @@ def disable_predefined_agents():
     from .utils.db import deactivate_predefined_agents_setting
 
     deactivate_predefined_agents_setting()
-    from .gpt_computer_agent import the_main_window
 
-    the_main_window.update_from_thread("Predefined agents disabled")
     return jsonify({"response": "Predefined agents disabled"})
 
 
@@ -169,9 +184,7 @@ def enable_online_tools():
     from .utils.db import activate_online_tools_setting
 
     activate_online_tools_setting()
-    from .gpt_computer_agent import the_main_window
 
-    the_main_window.update_from_thread("Online tools enabled")
     return jsonify({"response": "Online tools enabled"})
 
 
@@ -183,9 +196,7 @@ def disable_online_tools():
     from .utils.db import deactivate_online_tools_setting
 
     deactivate_online_tools_setting()
-    from .gpt_computer_agent import the_main_window
 
-    the_main_window.update_from_thread("Online tools disabled")
     return jsonify({"response": "Online tools disabled"})
 
 
@@ -409,6 +420,67 @@ def save_openai_api_key():
     return jsonify({"response": "OpenAI API key saved."})
 
 
+@app.route("/save_user_id", methods=["POST"])
+def save_user_id():
+    """
+    This api saves the user id
+    """
+    data = request.json
+    user_id = data["user_id"]
+    from .utils.db import change_user_id
+
+    change_user_id(user_id)
+    return jsonify({"response": "User id changed."})
+
+
+@app.route("/save_aws_access_key_id", methods=["POST"])
+def save_aws_access_key_id():
+
+    data = request.json
+    aws_access_key_id = data["aws_access_key_id"]
+    from .utils.db import save_aws_access_key_id
+
+    save_aws_access_key_id(aws_access_key_id)
+    return jsonify({"response": "aws_access_key_id key saved."})
+
+
+@app.route("/save_aws_secret_access_key", methods=["POST"])
+def save_aws_secret_access_key():
+
+    data = request.json
+    aws_secret_access_key = data["aws_secret_access_key"]
+    from .utils.db import save_aws_secret_access_key
+
+    save_aws_secret_access_key(aws_secret_access_key)
+    return jsonify({"response": "aws_secret_access_key key saved."})
+
+
+@app.route("/save_system_prompt", methods=["POST"])
+def save_system_prompt():
+    """
+    This api saves the prompt
+    """
+    data = request.json
+    prompt = data["prompt"]
+    from .utils.db import save_system_prompt
+
+    save_system_prompt(prompt)
+    return jsonify({"response": "prompt saved."})
+
+@app.route("/save_anthropic_api_key", methods=["POST"])
+def save_anthropic_api_key():
+    """
+    This api saves the 
+    """
+    data = request.json
+    anthropic_api_key = data["anthropic_api_key"]
+    from .utils.db import save_anthropic_api_key
+
+    save_anthropic_api_key(anthropic_api_key)
+    return jsonify({"response": "Anthropic API key saved."})
+
+
+
 @app.route("/save_openai_url", methods=["POST"])
 def save_openai_url():
     """
@@ -421,6 +493,20 @@ def save_openai_url():
     save_openai_url(openai_url)
     return jsonify({"response": "OpenAI base URL saved."})
 
+
+
+
+@app.route("/save_api_version", methods=["POST"])
+def save_api_version():
+    """
+    This api saves the OpenAI base URL
+    """
+    data = request.json
+    api_version = data["api_version"]
+    from .utils.db import save_api_version
+
+    save_api_version(api_version)
+    return jsonify({"response": "API version saved."})
 
 @app.route("/save_model_settings", methods=["POST"])
 def save_model_settings():
@@ -602,6 +688,15 @@ def get_openai_models():
 
     return jsonify({"response": get_openai_models()})
 
+@app.route("/get_azureai_models", methods=["POST"])
+def get_azureai_models():
+    """
+    This api returns the list of Azure AI models
+    """
+    from .llm_settings import get_azureai_models
+
+    return jsonify({"response": get_azureai_models()})
+
 
 @app.route("/get_ollama_models", methods=["POST"])
 def get_ollama_models():
@@ -633,6 +728,76 @@ def get_groq_models():
     return jsonify({"response": get_groq_models()})
 
 
+
+
+
+
+
+
+
+@app.route("/mouse_scroll_down", methods=["POST"])
+def mouse_scroll_down():
+
+    data = request.json
+    amount = data["amount"]
+
+    from .display_tools import mouse_scroll_
+    mouse_scroll_("down", amount)
+    return jsonify({"response": f"Mouse scrolled down by {amount}"})
+@app.route("/mouse_scroll_up", methods=["POST"])
+def mouse_scroll_up():
+
+    data = request.json
+    amount = data["amount"]
+
+    from .display_tools import mouse_scroll_
+    mouse_scroll_("up", amount)
+    return jsonify({"response": f"Mouse scrolled up by {amount}"})
+
+
+
+
+
+
+
+
+@app.route("/add_mcp", methods=["POST"])
+def add_mcp():
+
+    data = request.json
+    name = data["name"]
+    command = data["command"]
+    args = data["args"]
+    from .mcp.tool import add_custom_mcp_server
+
+    add_custom_mcp_server(name, command, args)
+    return jsonify({"response": "MCP added."})
+
+
+
+
+@app.route("/stop_server", methods=["POST"])
+def stop_server():
+
+
+    try:
+        try:
+            from .gpt_computer_agent import the_main_window
+            the_main_window.close()
+        except ImportError:
+            from gpt_computer_agent import the_main_window
+            the_main_window.close()
+    except:
+        pass
+
+    
+
+    stop_api()
+    exit(0)
+
+
+
+
 class ServerThread(threading.Thread):
     def __init__(self, app, host, port):
         threading.Thread.__init__(self)
@@ -652,15 +817,18 @@ class ServerThread(threading.Thread):
 server_thread = None
 
 
-def start_api():
-    global server_thread
-    if server_thread is None:
-        server_thread = ServerThread(app, "localhost", 7541)
-        server_thread.start()
-        print("API started")
-    else:
-        print("API is already running")
+def start_api(api=False):
+    if api == False:
+        global server_thread
+        if server_thread is None:
+            server_thread = ServerThread(app, "0.0.0.0", 7541)
+            server_thread.start()
+            print("API started")
+        else:
+            print("API is already running")
 
+    else:
+        serve(app, host="0.0.0.0", port=7541)
 
 def stop_api():
     global server_thread

@@ -2,7 +2,7 @@ import textwrap
 import requests
 
 import time
-from upsonic import Tiger
+
 
 
 the_upsonic_ = None
@@ -12,6 +12,7 @@ def the_upsonic():
     global the_upsonic_
 
     if not the_upsonic_:
+        from upsonic import Tiger
         the_upsonic_ = Tiger()
 
     return the_upsonic_
@@ -22,7 +23,7 @@ class Remote_Client:
         self.url = url
 
         if self.status != True:
-            raise Exception("The server is not running")
+            print("\n\nThe server is not running\n\n")
 
     def send_request(self, path, data, files=None, dont_error=False):
         try:
@@ -55,10 +56,20 @@ class Remote_Client:
         response = self.send_request("/input", data)
         return response["response"]
 
+    def request(self, request: str, response: str, screen: bool = False) -> str:
+        data = {"request": request, "response": response, "screen": str(screen).lower()}
+        response = self.send_request("/request", data)
+        return response["response"]
+
     def just_screenshot(self) -> str:
         data = {}
         response = self.send_request("/screenshot", data)
         return response["response"]
+
+    def stop_server(self) -> str:
+        data = {}
+        response = self.send_request("/stop_server", data)
+        return True
 
     def screenshot_to_memory(self) -> str:
         return self.just_screenshot()
@@ -194,13 +205,52 @@ class Remote_Client:
         response = self.send_request("/save_openai_api_key", data)
         return response["response"]
 
+    def save_user_id(self, user_id):
+        data = {"user_id": user_id}
+        response = self.send_request("/save_user_id", data)
+        return response["response"]
+
+    def save_aws_access_key_id(self, aws_access_key_id):
+        data = {"aws_access_key_id": aws_access_key_id}
+        response = self.send_request("/save_aws_access_key_id", data)
+        return response["response"]
+    def save_aws_secret_access_key(self, aws_secret_access_key):
+        data = {"aws_secret_access_key": aws_secret_access_key}
+        response = self.send_request("/save_aws_secret_access_key", data)
+        return response["response"]
+
+
+    def save_system_prompt(self, prompt):
+        data = {"prompt": prompt}
+        response = self.send_request("/save_system_prompt", data)
+        return response["response"]
+
+    def save_anthropic_api_key(self, anthropic_api_key):
+        data = {"anthropic_api_key": anthropic_api_key}
+        response = self.send_request("/save_anthropic_api_key", data)
+        return response["response"]
+
     def save_openai_url(self, openai_url):
         data = {"openai_url": openai_url}
         response = self.send_request("/save_openai_url", data)
         return response["response"]
+    
+
+
+
+    def add_mcp_server(self, name, command, args):
+        data = {"name": name, "command": command, "args": args}
+        response = self.send_request("/add_mcp", data)
+        return response["response"]
+
+
+    def save_api_version(self, api_version):
+        data = {"api_version": api_version}
+        response = self.send_request("/save_api_version", data)
+        return response["response"]
 
     def save_model_settings(self, model_name):
-        data = {"model_name": model_name}
+        data = {"model_settings": model_name}
         response = self.send_request("/save_model_settings", data)
         return response["response"]
 
@@ -230,6 +280,11 @@ class Remote_Client:
     def get_openai_models(self):
         data = {}
         response = self.send_request("/get_openai_models", data)
+        return response["response"]
+
+    def get_azureai_models(self):
+        data = {}
+        response = self.send_request("/get_azureai_models", data)
         return response["response"]
 
     def get_ollama_models(self):
@@ -284,8 +339,22 @@ class Remote_Client:
         response = self.send_request("/train", data)
         return response["response"]
 
+
+    def mouse_scroll_down(self, amount):
+        data = {"amount": amount}
+        response = self.send_request("/mouse_scroll_down", data)
+        return response["response"]
+
+
+    def mouse_scroll_up(self, amount):
+        data = {"amount": amount}
+        response = self.send_request("/mouse_scroll_up", data)
+        return response["response"]
+
     def wait(self, second):
         time.sleep(second)
 
 
-remote = Remote_Client("http://localhost:7541")
+
+
+#remote = Remote_Client("http://localhost:7541")

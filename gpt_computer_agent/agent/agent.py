@@ -4,19 +4,26 @@ try:
     from ..llm_settings import llm_settings
     from ..tooler import *
     from ..display_tools import *
+    from ..cu.computer import *
     from ..teams import *
     from .agent_tools import get_tools
+    from ..mcp.tool import mcp_tools
+    from ..standard_tools import get_standard_tools
+    
 except ImportError:
     from llm import get_model
     from utils.db import *
     from llm_settings import llm_settings
     from tooler import *
     from display_tools import *
+    from cu.computer import *
     from teams import *
     from agent.agent_tools import get_tools
+    from mcp.tool import mcp_tools
+    from standard_tools import get_standard_tools
 
 
-from langgraph.prebuilt import chat_agent_executor
+from langgraph.prebuilt import create_react_agent
 
 
 custom_tools_ = []
@@ -44,7 +51,7 @@ def get_prompt(name):
         return prompt
 
 
-def get_agent_executor():
+def get_agent_executor(the_anthropic_model=False, no_tools=False):
     tools = get_tools()
     tools += custom_tools()
 
@@ -58,23 +65,24 @@ def get_agent_executor():
         except ImportError:
             pass
 
-    if llm_settings[model]["provider"] == "openai":
-        tools += [
-            click_on_a_text_on_the_screen,
-            click_on_a_icon_on_the_screen,
-            move_on_a_text_on_the_screen,
-            move_on_a_icon_on_the_screen,
-            mouse_scroll,
-        ]
 
-    tools += [get_texts_on_the_screen]
+    if the_anthropic_model:
+        tools += []
+        if load_aws_access_key_id() == "default":
+            model_catch = get_model(the_model="claude-3-5-sonnet-20241022")
+        else:
+            model_catch = get_model(the_model="us.anthropic.claude-3-5-sonnet-20241022-v2:0")
 
-    if (
-        llm_settings[model]["provider"] == "openai"
-        or llm_settings[model]["provider"] == "groq"
-    ):
-        return chat_agent_executor.create_tool_calling_executor(get_model(), tools)
+        print("Anthropic model catch", model_catch)
+        print("Anthropic tools len", len(tools))
+        return create_react_agent(model_catch, tools)
+    else:
+        tools += [mouse_scroll, click_to_text, click_to_icon, click_to_area] + mcp_tools() + get_standard_tools()
 
-    if llm_settings[model]["provider"] == "ollama":
-        print("Ollama tool len", len(tools))
-        return chat_agent_executor.create_tool_calling_executor(get_model(), tools)
+
+
+    if no_tools:
+        tools = []
+
+
+    return create_react_agent(get_model(), tools)
