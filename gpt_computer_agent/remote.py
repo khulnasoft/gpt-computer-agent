@@ -4,7 +4,6 @@ import requests
 import time
 
 
-
 the_upsonic_ = None
 
 
@@ -13,6 +12,7 @@ def the_upsonic():
 
     if not the_upsonic_:
         from upsonic import Tiger
+
         the_upsonic_ = Tiger()
 
     return the_upsonic_
@@ -214,11 +214,11 @@ class Remote_Client:
         data = {"aws_access_key_id": aws_access_key_id}
         response = self.send_request("/save_aws_access_key_id", data)
         return response["response"]
+
     def save_aws_secret_access_key(self, aws_secret_access_key):
         data = {"aws_secret_access_key": aws_secret_access_key}
         response = self.send_request("/save_aws_secret_access_key", data)
         return response["response"]
-
 
     def save_system_prompt(self, prompt):
         data = {"prompt": prompt}
@@ -234,15 +234,11 @@ class Remote_Client:
         data = {"openai_url": openai_url}
         response = self.send_request("/save_openai_url", data)
         return response["response"]
-    
-
-
 
     def add_mcp_server(self, name, command, args):
         data = {"name": name, "command": command, "args": args}
         response = self.send_request("/add_mcp", data)
         return response["response"]
-
 
     def save_api_version(self, api_version):
         data = {"api_version": api_version}
@@ -339,12 +335,10 @@ class Remote_Client:
         response = self.send_request("/train", data)
         return response["response"]
 
-
     def mouse_scroll_down(self, amount):
         data = {"amount": amount}
         response = self.send_request("/mouse_scroll_down", data)
         return response["response"]
-
 
     def mouse_scroll_up(self, amount):
         data = {"amount": amount}
@@ -355,6 +349,4 @@ class Remote_Client:
         time.sleep(second)
 
 
-
-
-#remote = Remote_Client("http://localhost:7541")
+# remote = Remote_Client("http://localhost:7541")

@@ -75,7 +75,7 @@ jobs:
       - uses: ncipollo/release-action@v1
         id: create_release
         with:
-          name: GPT Computer Assistant ${{ steps.tag_extractor.outputs.latest_tag }}
+          name: GPT Computer Agent ${{ steps.tag_extractor.outputs.latest_tag }}
           generateReleaseNotes: true
           tag: ${{ steps.tag_extractor.outputs.latest_tag }}
 

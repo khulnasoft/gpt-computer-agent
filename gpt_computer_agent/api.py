@@ -7,14 +7,13 @@ import pyautogui
 from werkzeug.serving import make_server
 
 from waitress import serve
+
 app = Flask(__name__)
 
 
 @app.route("/status", methods=["POST"])
 def status():
     return jsonify({"response": True})
-
-
 
 
 def the_input(text, screen, talk):
@@ -25,8 +24,6 @@ def the_input(text, screen, talk):
         screenshot_path,
     )
 
-
-
     if screen != "true":
         result = process_text_api(text, None)
     else:
@@ -34,12 +31,7 @@ def the_input(text, screen, talk):
         screenshot.save(screenshot_path)
         result = process_text_api(text, screenshot_path)
 
-
-
-
-
     return jsonify({"response": result})
-
 
 
 @app.route("/input", methods=["POST"])
@@ -53,9 +45,6 @@ def input():
     talk = data["talk"]
 
     return the_input(text, screen, talk)
-
-
-
 
 
 @app.route("/request", methods=["POST"])
@@ -74,8 +63,6 @@ def the_request():
     combined = the_request + "\n" + the_response
 
     return the_input(combined, screen, "false")
-
-
 
 
 @app.route("/screenshot", methods=["POST"])
@@ -435,7 +422,6 @@ def save_user_id():
 
 @app.route("/save_aws_access_key_id", methods=["POST"])
 def save_aws_access_key_id():
-
     data = request.json
     aws_access_key_id = data["aws_access_key_id"]
     from .utils.db import save_aws_access_key_id
@@ -446,7 +432,6 @@ def save_aws_access_key_id():
 
 @app.route("/save_aws_secret_access_key", methods=["POST"])
 def save_aws_secret_access_key():
-
     data = request.json
     aws_secret_access_key = data["aws_secret_access_key"]
     from .utils.db import save_aws_secret_access_key
@@ -467,10 +452,11 @@ def save_system_prompt():
     save_system_prompt(prompt)
     return jsonify({"response": "prompt saved."})
 
+
 @app.route("/save_anthropic_api_key", methods=["POST"])
 def save_anthropic_api_key():
     """
-    This api saves the 
+    This api saves the
     """
     data = request.json
     anthropic_api_key = data["anthropic_api_key"]
@@ -478,7 +464,6 @@ def save_anthropic_api_key():
 
     save_anthropic_api_key(anthropic_api_key)
     return jsonify({"response": "Anthropic API key saved."})
-
 
 
 @app.route("/save_openai_url", methods=["POST"])
@@ -494,8 +479,6 @@ def save_openai_url():
     return jsonify({"response": "OpenAI base URL saved."})
 
 
-
-
 @app.route("/save_api_version", methods=["POST"])
 def save_api_version():
     """
@@ -507,6 +490,7 @@ def save_api_version():
 
     save_api_version(api_version)
     return jsonify({"response": "API version saved."})
+
 
 @app.route("/save_model_settings", methods=["POST"])
 def save_model_settings():
@@ -688,6 +672,7 @@ def get_openai_models():
 
     return jsonify({"response": get_openai_models()})
 
+
 @app.route("/get_azureai_models", methods=["POST"])
 def get_azureai_models():
     """
@@ -728,42 +713,30 @@ def get_groq_models():
     return jsonify({"response": get_groq_models()})
 
 
-
-
-
-
-
-
-
 @app.route("/mouse_scroll_down", methods=["POST"])
 def mouse_scroll_down():
-
     data = request.json
     amount = data["amount"]
 
     from .display_tools import mouse_scroll_
+
     mouse_scroll_("down", amount)
     return jsonify({"response": f"Mouse scrolled down by {amount}"})
+
+
 @app.route("/mouse_scroll_up", methods=["POST"])
 def mouse_scroll_up():
-
     data = request.json
     amount = data["amount"]
 
     from .display_tools import mouse_scroll_
+
     mouse_scroll_("up", amount)
     return jsonify({"response": f"Mouse scrolled up by {amount}"})
 
 
-
-
-
-
-
-
 @app.route("/add_mcp", methods=["POST"])
 def add_mcp():
-
     data = request.json
     name = data["name"]
     command = data["command"]
@@ -774,28 +747,22 @@ def add_mcp():
     return jsonify({"response": "MCP added."})
 
 
-
-
 @app.route("/stop_server", methods=["POST"])
 def stop_server():
-
-
     try:
         try:
             from .gpt_computer_agent import the_main_window
+
             the_main_window.close()
         except ImportError:
-            from gpt_computer_agent import the_main_window
+            from gpt_computer_agent.gpt_computer_agent import the_main_window
+
             the_main_window.close()
     except:
         pass
 
-    
-
     stop_api()
     exit(0)
-
-
 
 
 class ServerThread(threading.Thread):
@@ -829,6 +796,7 @@ def start_api(api=False):
 
     else:
         serve(app, host="0.0.0.0", port=7541)
+
 
 def stop_api():
     global server_thread

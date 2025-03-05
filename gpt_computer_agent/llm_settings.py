@@ -130,6 +130,7 @@ llm_settings = {
 def get_openai_models():
     return [k for k, v in llm_settings.items() if v["provider"] == "openai"]
 
+
 def get_azureai_models():
     return [k for k, v in llm_settings.items() if v["provider"] == "azureai"]
 
@@ -154,9 +155,9 @@ llm_show_name = llm_show_name_
 
 
 def first_message():
-    from .character import name, developer, get_website_content
-    from .cu.computer import width, height, display_num
+    from .character import get_website_content
     from .utils.db import load_system_prompt
+
     model = load_model_settings()
 
     the_text = f"""

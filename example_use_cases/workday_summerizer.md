@@ -1,5 +1,5 @@
 # Introduction
-In this example we have an idea to summerize whole day of an employee via GPT Computer Assistant. 
+In this example we have an idea to summerize whole day of an employee via GPT Computer Agent. 
 
 
 
@@ -53,3 +53,4 @@ for i in loop_results:
 print("Summery: ", summery_results)
     
 ```
+

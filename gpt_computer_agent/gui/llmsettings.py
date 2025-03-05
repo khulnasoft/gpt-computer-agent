@@ -65,9 +65,6 @@ def llmsettings_popup(self):
     openai_url_save_button.clicked.connect(save_openai_url_)
     settings_dialog.layout().addWidget(openai_url_save_button)
 
-
-
-
     api_version_label = QLabel("API Version")
     settings_dialog.layout().addWidget(api_version_label)
     api_version_input = QLineEdit()
@@ -85,9 +82,6 @@ def llmsettings_popup(self):
     api_version_save_button = QPushButton("Save URL")
     api_version_save_button.clicked.connect(save_api_version_)
     settings_dialog.layout().addWidget(api_version_save_button)
-
-
-    
 
     groq_api_key_label = QLabel("Groq API Key")
     settings_dialog.layout().addWidget(groq_api_key_label)
@@ -133,7 +127,6 @@ def llmsettings_popup(self):
 
         save_button.hide()
 
-
     def hide_azureai():
         api_key_label.hide()
         api_key_input.hide()
@@ -144,7 +137,6 @@ def llmsettings_popup(self):
         api_version_label.hide()
         api_version_input.hide()
         api_version_save_button.hide()
-        
 
     def hide_groq():
         groq_api_key_label.hide()
@@ -204,7 +196,6 @@ def llmsettings_popup(self):
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "azureai":
         show_azureai()
 
-    
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "groq":
         show_groq()
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "google":

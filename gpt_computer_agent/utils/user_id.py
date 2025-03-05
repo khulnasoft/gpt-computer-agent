@@ -3,10 +3,10 @@ import os
 
 
 try:
-    from .folder import currently_dir, artifacts_dir, media_dir
+    from .folder import artifacts_dir
 
 except:
-    from folder import currently_dir, artifacts_dir, media_dir
+    from folder import artifacts_dir
 
 
 user_id_db = os.path.join(artifacts_dir, "user_id.db")
@@ -33,4 +33,3 @@ def change_user_id(user_id):
     with open(user_id_db, "w") as f:
         f.write(user_id)
         return user_id
-    

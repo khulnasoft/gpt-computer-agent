@@ -4,8 +4,6 @@ import sys
 import webbrowser
 
 
-
-
 def start_api():
     try:
         from .api import start_api
@@ -17,21 +15,18 @@ def start_api():
         )
 
 
-
-
-
 def start(api=False):
     if api:
         return start_api()
     from PyQt5.QtWidgets import QApplication
-    from PyQt5.QtGui import QIcon
     from PyQt5.QtWidgets import QSystemTrayIcon, QMenu, QAction
     from PyQt5.QtCore import Qt
     from pynput import keyboard
-    """
-    Starts the computer agent application.
 
-    This function starts the computer agent application, which includes parsing command-line arguments
+    """
+    Starts the computer assistant application.
+
+    This function starts the computer assistant application, which includes parsing command-line arguments
     to set the profile, initializing the graphical user interface, and starting the application event loop.
 
     Command-line Arguments:
@@ -126,7 +121,7 @@ def start(api=False):
     try:
         from .gpt_computer_agent import MainWindow
     except ImportError:
-        from gpt_computer_agent import MainWindow
+        from gpt_computer_agent.gpt_computer_agent import MainWindow
     os.environ["QT_AUTO_SCREEN_SCALE_FACTOR"] = "1"
 
     if api or api_arg:

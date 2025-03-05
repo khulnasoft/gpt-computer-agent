@@ -63,7 +63,7 @@ def get_model(high_context=False, the_model=None):
             "model_id": the_model,
             "aws_access_key_id": load_aws_access_key_id(),
             "aws_secret_access_key": load_aws_secret_access_key(),
-            "region_name":"us-east-1",
+            "region_name": "us-east-1",
             "streaming": False,
             "callbacks": [the_callback],
         },
@@ -98,6 +98,7 @@ def get_model(high_context=False, the_model=None):
             the_tuple = (ChatBedrock, args_mapping[ChatBedrock])
         elif model_args["provider"] == "azureai":
             import os
+
             os.environ["AZURE_OPENAI_API_KEY"] = the_api_key
             os.environ["AZURE_OPENAI_ENDPOINT"] = the_openai_url
             the_tuple = (AzureChatOpenAI, args_mapping[AzureChatOpenAI])

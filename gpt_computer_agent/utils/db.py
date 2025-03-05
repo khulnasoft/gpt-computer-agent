@@ -1,23 +1,17 @@
 import os
-import uuid
 from dotenv import load_dotenv
 
 try:
-    from .folder import currently_dir, artifacts_dir, media_dir
+    from .folder import artifacts_dir, media_dir
     from .kot_db import kot_db_
     from .user_id import *
 except:
-    from folder import currently_dir, artifacts_dir, media_dir
+    from folder import artifacts_dir, media_dir
     from kot_db import kot_db_
     from user_id import *
 
 
-
-
 load_dotenv(".env")
-
-
-
 
 
 mic_record_location = os.path.join(artifacts_dir, "mic_record.wav")
@@ -46,10 +40,11 @@ def get_history_db():
     return os.path.join(artifacts_dir, f"history_{the_profile}.db")
 
 
-
 # API KEY SAVING AND LOADING
 def save_api_key(api_key):
     kot_db_.set("openai_api_key", api_key)
+
+
 def load_api_key():
     if kot_db_.get("openai_api_key"):
         return kot_db_.get("openai_api_key")
@@ -60,8 +55,11 @@ def load_api_key():
             return env_variable
         return "CHANGE_ME"
 
+
 def save_anthropic_api_key(api_key):
     kot_db_.set("anthropic_api_key", api_key)
+
+
 def load_anthropic_api_key():
     if kot_db_.get("anthropic_api_key"):
         return kot_db_.get("anthropic_api_key")
@@ -76,6 +74,8 @@ def load_anthropic_api_key():
 # OPENAI URL SAVING AND LOADING
 def save_openai_url(url):
     kot_db_.set("openai_url", url)
+
+
 def load_openai_url():
     if kot_db_.get("openai_url"):
         return kot_db_.get("openai_url")
@@ -83,10 +83,10 @@ def load_openai_url():
         return "default"
 
 
-
-
 def save_system_prompt(prompt):
     kot_db_.set("system_prompt", prompt)
+
+
 def load_system_prompt():
     if kot_db_.get("system_prompt"):
         return kot_db_.get("system_prompt")
@@ -94,10 +94,11 @@ def load_system_prompt():
         return "Hi, you are an platform for vertical AI. You need to understant the user aspect and then trying to do these things and give valuation."
 
 
-
 # API VERSION SAVING AND LOADING
 def save_api_version(url):
     kot_db_.set("api_version", url)
+
+
 def load_api_version():
     if kot_db_.get("api_version"):
         return kot_db_.get("api_version")
@@ -185,8 +186,6 @@ def load_groq_api_key():
             return "CHANGE_ME"
     with open(groqkey, "r") as f:
         return f.read()
-
-
 
 
 collapse_setting = os.path.join(artifacts_dir, "collapse_setting.db")
@@ -539,10 +538,11 @@ def load_location_setting():
         return f.read()
 
 
-
 # OPENAI URL SAVING AND LOADING
 def save_aws_access_key_id(id):
     kot_db_.set("aws_access_key_id", id)
+
+
 def load_aws_access_key_id():
     if kot_db_.get("aws_access_key_id"):
         return kot_db_.get("aws_access_key_id")
@@ -553,6 +553,8 @@ def load_aws_access_key_id():
 # OPENAI URL SAVING AND LOADING
 def save_aws_secret_access_key(key):
     kot_db_.set("aws_secret_access_key", key)
+
+
 def load_aws_secret_access_key():
     if kot_db_.get("aws_secret_access_key"):
         return kot_db_.get("aws_secret_access_key")

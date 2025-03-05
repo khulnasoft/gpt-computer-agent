@@ -10,7 +10,6 @@ except ImportError:
     from tooler import *
     from display_tools import *
     from teams import *
-    from llm_settings import llm_settings
 
 
 custom_tools = []

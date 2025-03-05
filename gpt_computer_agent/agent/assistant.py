@@ -1,4 +1,7 @@
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
+import random
+
+
+from langchain_core.messages import HumanMessage, AIMessage
 
 from .chat_history import *
 from .agent import *
@@ -8,14 +11,20 @@ try:
     from ..screen.shot import *
     from ..utils.db import load_model_settings, agents
     from ..llm import get_model
-    from ..llm_settings import each_message_extension, llm_settings
+    from ..llm_settings import llm_settings
+    from ..utils.chat_history import ChatHistory
 except ImportError:
     from screen.shot import *
     from utils.db import load_model_settings, agents
+    from utils.chat_history import ChatHistory
     from llm import get_model
-    from llm_settings import each_message_extension, llm_settings
+    from llm_settings import llm_settings
 
-config = {"configurable": {"thread_id": "abc123"}}
+config = {"configurable": {"thread_id": "abc123"}, "recursion_limit": 100}
+
+
+def random_charachter(length=10):
+    return "".join(random.choices("abcdefghijklmnopqrstuvwxyz0123456789", k=length))
 
 
 def agentic(
@@ -64,7 +73,10 @@ def agentic(
 
         if (
             llm_settings[the_model]["provider"] == "openai"
-            and llm_settings[the_model]["provider"] == "ollama"
+            or llm_settings[the_model]["provider"] == "ollama"
+            or llm_settings[the_model]["provider"] == "azureai"
+            or llm_settings[the_model]["provider"] == "anthropic"
+            or llm_settings[the_model]["provider"] == "aws"
         ):
             msg = get_agent_executor().invoke(
                 {"messages": llm_history + [the_message]}, config=config
@@ -83,7 +95,7 @@ def agentic(
         image_explain = image_explaination()
         llm_input += "User Sent Image and image content is: " + image_explain
 
-    llm_input = llm_input + each_message_extension
+    llm_input = llm_input
 
     task = Task(
         description=llm_input,
@@ -101,134 +113,91 @@ def agentic(
 
     result = the_crew.kickoff()["final_output"]
 
-    get_chat_message_history().add_message(
-        HumanMessage(content=[llm_input.replace(each_message_extension, "")])
-    )
+    get_chat_message_history().add_message(HumanMessage(content=[llm_input]))
     get_chat_message_history().add_message(AIMessage(content=[result]))
 
     return result
 
 
 def assistant(
-    llm_input, llm_history, client, screenshot_path=None, dont_save_image=False
+    llm_input,
+    client,
+    screenshot_path=None,
+    dont_save_image=False,
+    just_screenshot=False,
 ):
-    the_model = load_model_settings()
+    the_chat_history = ChatHistory()
 
-    if len(agents) != 0:
-        print("Moving to Agentic")
-        return agentic(llm_input, llm_history, client, screenshot_path, dont_save_image)
+    the_model = load_model_settings()
 
     print("LLM INPUT", llm_input)
 
     if llm_settings[the_model]["tools"]:
-        llm_input = llm_input + each_message_extension
+        llm_input = llm_input
 
-    the_message = [
-        {"type": "text", "text": f"{llm_input}"},
-    ]
+    human_first_message = {"type": "text", "text": f"{llm_input}"}
+    the_chat_history.add_message("human", human_first_message)
+
+    the_message = [human_first_message]
+
+    human_second_message = None
 
     if screenshot_path:
         base64_image = encode_image(screenshot_path)
         if llm_settings[the_model]["provider"] == "ollama":
-            the_message.append(
-                {
-                    "type": "image_url",
-                    "image_url": base64_image,
-                },
-            )
+            human_second_message = {
+                "type": "image_url",
+                "image_url": base64_image,
+            }
+            the_chat_history.add_message("human", human_second_message, auto_delete=10)
+
         else:
-            the_message.append(
-                {
-                    "type": "image_url",
-                    "image_url": {"url": f"data:image/jpeg;base64,{base64_image}"},
-                },
-            )
+            human_second_message = {
+                "type": "image_url",
+                "image_url": {"url": f"data:image/png;base64,{base64_image}"},
+            }
+            the_chat_history.add_message("human", human_second_message, auto_delete=10)
+
         print("LEN OF IMAGE", len(base64_image))
 
+    if human_second_message:
+        the_message.append(human_second_message)
+
     the_message = HumanMessage(content=the_message)
-    get_chat_message_history().add_message(the_message)
+
+    llm_history = the_chat_history.get_chat()
 
     if (
         llm_settings[the_model]["provider"] == "openai"
-        or llm_settings[the_model]["provider"] == "ollama"
+        or llm_settings[the_model]["provider"] == "azureai"
+        or llm_settings[the_model]["provider"] == "anthropic"
+        or llm_settings[the_model]["provider"] == "aws"
     ):
-        msg = get_agent_executor().invoke(
-            {"messages": llm_history + [the_message]}, config=config
-        )
-
-    if llm_settings[the_model]["provider"] == "google":
-        the_history = []
-        for message in llm_history:
-            try:
-                if isinstance(message, SystemMessage):
-                    the_mes = HumanMessage(content=message.content[0]["text"])
-                    the_history.append(the_mes)
-                elif isinstance(message, HumanMessage):
-                    the_mes = HumanMessage(content=message.content[0]["text"])
-                    the_history.append(the_mes)
-                else:
-                    the_mes = AIMessage(content=message.content[0]["text"])
-                    the_history.append(the_mes)
-            except:
-                the_mes = AIMessage(content=message.content)
-                the_history.append(the_mes)
-
-        the_last_message = HumanMessage(content=llm_input)
-        msg = get_agent_executor().invoke(
-            {"messages": the_history + [the_last_message]}, config=config
-        )
-
-    elif llm_settings[the_model]["provider"] == "groq":
-        the_history = []
-        for message in llm_history:
-            try:
-                if isinstance(message, SystemMessage):
-                    the_mes = SystemMessage(content=message.content[0]["text"])
-                    the_history.append(the_mes)
-                elif isinstance(message, HumanMessage):
-                    the_mes = HumanMessage(content=message.content[0]["text"])
-                    the_history.append(the_mes)
-                else:
-                    the_mes = AIMessage(content=message.content[0]["text"])
-                    the_history.append(the_mes)
-            except:
-                the_mes = AIMessage(content=message.content)
-                the_history.append(the_mes)
-
-        the_last_message = HumanMessage(content=llm_input)
-        msg = get_agent_executor().invoke(
-            {"messages": the_history + [the_last_message]}, config=config
-        )
+        if just_screenshot:
+            msg = {"messages": llm_history + [the_message]}
+            time.sleep(1)
+        else:
+            print("The model:", the_model)
+            msg = get_agent_executor().invoke(
+                {"messages": llm_history + [the_message]}, config=config
+            )
 
     the_last_messages = msg["messages"]
 
-    if dont_save_image and screenshot_path is not None:
-        currently_messages = get_chat_message_history().messages
+    the_chat_history.add_message("assistant", the_last_messages[-1].content)
 
-        last_message = currently_messages[-1].content[0]
-        currently_messages.remove(currently_messages[-1])
+    return_value = the_last_messages[-1].content
+    if isinstance(return_value, list):
+        the_text = ""
+        for each in return_value:
+            the_text += str(each)
+        return_value = the_text
 
-        get_chat_message_history().clear()
-        for message in currently_messages:
-            get_chat_message_history().add_message(message)
-        get_chat_message_history().add_message(HumanMessage(content=[last_message]))
+    if return_value == "":
+        return_value = "No response "
+        return_value += str(random_charachter())
 
-    get_chat_message_history().add_message(the_last_messages[-1])
+    if just_screenshot:
+        return "OK"
 
-    # Replace each_message_extension with empty string
-    list_of_messages = get_chat_message_history().messages
-
-    get_chat_message_history().clear()
-
-    for message in list_of_messages:
-        try:
-            message.content[0]["text"] = message.content[0]["text"].replace(
-                each_message_extension, ""
-            )
-            get_chat_message_history().add_message(message)
-        except:
-            get_chat_message_history().add_message(message)
-
-    print("The return", the_last_messages[-1].content)
-
-    return the_last_messages[-1].content
+    return return_value

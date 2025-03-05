@@ -3,7 +3,6 @@ import requests
 import re
 from urllib.parse import urljoin
 import datetime
-import traceback
 
 try:
     from .tooler import tool
@@ -104,9 +103,6 @@ def duckduckgo(query: str, max_number: int = 20) -> list:
         return "An exception occurred"
 
 
-
-
-
 @register_tool
 @wrapper
 def open_url(url) -> bool:
@@ -124,7 +120,6 @@ def open_url(url) -> bool:
         return False
 
 
-
 @register_tool
 @wrapper
 def sleep(seconds: int):
@@ -134,9 +129,6 @@ def sleep(seconds: int):
     import time
 
     time.sleep(seconds)
-
-
-
 
 
 from langchain_experimental.utilities import PythonREPL
@@ -153,7 +145,6 @@ def python_repl(code: str) -> str:
     return the_py_client.run(code)
 
 
-
 @register_tool
 @wrapper
 def keyboard_write(text: str):
@@ -161,7 +152,9 @@ def keyboard_write(text: str):
     Write the text using the keyboard (its use pyautogui).
     """
     import pyautogui
+
     pyautogui.write(text)
+
 
 @register_tool
 @wrapper
@@ -170,10 +163,9 @@ def keyboard_press(key: str):
     Press the key using the keyboard (its use pyautogui).
     """
     import pyautogui
+
     pyautogui.press(key)
     pyautogui.press(key)
-
-
 
 
 @register_tool
@@ -234,13 +226,12 @@ def connect_wifi(ssid: str, password: str) -> bool:
         return False
 
 
-
 import subprocess
 
 
 @register_tool
 @wrapper
-def run_terminal_command(command:str) -> str:
+def run_terminal_command(command: str) -> str:
     """
     Executes a terminal command and returns the result.
 
@@ -255,7 +246,6 @@ def run_terminal_command(command:str) -> str:
         return result.stdout.strip()
     except Exception as e:
         return str(e)
-
 
 
 def get_standard_tools():

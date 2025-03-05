@@ -1,4 +1,4 @@
-name_ = "GPT Computer Assistant"
+name_ = "GPT Computer Agent"
 
 
 def name():

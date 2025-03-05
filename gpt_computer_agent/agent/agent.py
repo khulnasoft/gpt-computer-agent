@@ -9,7 +9,7 @@ try:
     from .agent_tools import get_tools
     from ..mcp.tool import mcp_tools
     from ..standard_tools import get_standard_tools
-    
+
 except ImportError:
     from llm import get_model
     from utils.db import *
@@ -65,24 +65,26 @@ def get_agent_executor(the_anthropic_model=False, no_tools=False):
         except ImportError:
             pass
 
-
     if the_anthropic_model:
         tools += []
         if load_aws_access_key_id() == "default":
             model_catch = get_model(the_model="claude-3-5-sonnet-20241022")
         else:
-            model_catch = get_model(the_model="us.anthropic.claude-3-5-sonnet-20241022-v2:0")
+            model_catch = get_model(
+                the_model="us.anthropic.claude-3-5-sonnet-20241022-v2:0"
+            )
 
         print("Anthropic model catch", model_catch)
         print("Anthropic tools len", len(tools))
         return create_react_agent(model_catch, tools)
     else:
-        tools += [mouse_scroll, click_to_text, click_to_icon, click_to_area] + mcp_tools() + get_standard_tools()
-
-
+        tools += (
+            [mouse_scroll, click_to_text, click_to_icon, click_to_area]
+            + mcp_tools()
+            + get_standard_tools()
+        )
 
     if no_tools:
         tools = []
-
 
     return create_react_agent(get_model(), tools)

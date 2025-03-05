@@ -9,7 +9,7 @@
     <img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/36714716-6990-40b0-84d5-cd7432811bcb" alt="Logo"  >
   </a>
 
-  <h3 align="center">GPT Computer Assistant</h3>
+  <h3 align="center">GPT Computer Agent</h3>
   <p align="center">
     <a href="https://discord.gg/qApFmWMt8x"><img alt="Static Badge" src="https://img.shields.io/badge/Discord-Join?style=social&logo=discord" width=150></a>
   </p>
