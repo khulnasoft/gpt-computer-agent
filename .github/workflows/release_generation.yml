@@ -80,13 +80,13 @@ jobs:
           tag: ${{ steps.tag_extractor.outputs.latest_tag }}
 
       - name: Download DMG Artifact
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.2.0
         with:
           name: gpt-computer-agent-openai-dmg
           path: dist_dmg
 
       - name: Download EXE Artifact
-        uses: actions/download-artifact@v4.1.8
+        uses: actions/download-artifact@v4.2.0
         with:
           name: gpt-computer-agent-openai-exe
           path: dist_exe
