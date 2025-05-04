@@ -29,9 +29,9 @@ def start(api=False):
     from PyQt5.QtCore import Qt
     from pynput import keyboard
     """
-    Starts the computer agent application.
+    Starts the computer assistant application.
 
-    This function starts the computer agent application, which includes parsing command-line arguments
+    This function starts the computer assistant application, which includes parsing command-line arguments
     to set the profile, initializing the graphical user interface, and starting the application event loop.
 
     Command-line Arguments:

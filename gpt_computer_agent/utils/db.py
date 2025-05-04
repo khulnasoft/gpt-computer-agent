@@ -558,3 +558,4 @@ def load_aws_secret_access_key():
         return kot_db_.get("aws_secret_access_key")
     else:
         return "default"
+

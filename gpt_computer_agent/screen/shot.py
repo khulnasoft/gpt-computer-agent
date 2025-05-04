@@ -38,13 +38,13 @@ def take_screenshot():
 
     This function takes a screenshot of the entire screen using pyautogui,
     saves it to the specified path, and emits a signal indicating that
-    the agent is thinking.
+    the assistant is thinking.
 
     Returns:
     - None
     """
     try:
         screenshot_action_(just_screenshot_path)
-        signal_handler.agent_thinking.emit()
+        signal_handler.assistant_thinking.emit()
     except Exception as e:
         print(f"An error occurred while taking the screenshot: {e}")

@@ -61,7 +61,7 @@ class Human:
 
         return {"type": "human", "content": self.content, "timestamp": self.timestamp, "auto_delete": self.auto_delete, "that_was_empty": self.that_was_empty}
 
-class Agent:
+class Assistant:
     def __init__(self, content, the_time):
 
         self.that_was_empty = False
@@ -82,7 +82,7 @@ class Agent:
         self.timestamp = the_time
 
     def __dict__(self):
-        return {"type": "agent", "content": self.content, "timestamp": self.timestamp, "that_was_empty": self.that_was_empty}
+        return {"type": "assistant", "content": self.content, "timestamp": self.timestamp, "that_was_empty": self.that_was_empty}
 
 class System:
     def __init__(self, content, the_time):
@@ -135,9 +135,9 @@ class ChatHistory:
 
         if message_type == "human":
             message = Human(content, the_time, auto_delete)
-        elif message_type == "agent":
-            print("AGENT", content)
-            message = Agent(content, the_time)
+        elif message_type == "assistant":
+            print("ASSISTANT", content)
+            message = Assistant(content, the_time)
         elif message_type == "system":
             print("SYSTEM", content)
             message = System(content, the_time)
@@ -162,8 +162,8 @@ class ChatHistory:
         for message in chat:
             if message["type"] == "human":
                 the_chat.append(Human(content=message["content"], the_time=message["timestamp"], auto_delete=message["auto_delete"]))
-            elif message["type"] == "agent":
-                the_chat.append(Agent(content=message["content"], the_time=message["timestamp"]))
+            elif message["type"] == "assistant":
+                the_chat.append(Assistant(content=message["content"], the_time=message["timestamp"]))
             elif message["type"] == "system":
                 the_chat.append(System(content=message["content"], the_time=message["timestamp"]))
 
@@ -199,7 +199,7 @@ class ChatHistory:
                 langchain_messages.append(HumanMessage(content=
                     message["content"]
                     ))
-            elif message["type"] == "agent":
+            elif message["type"] == "assistant":
                 langchain_messages.append(AIMessage(content=
                     message["content"]
                     ))

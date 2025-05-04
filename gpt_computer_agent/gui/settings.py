@@ -187,20 +187,20 @@ def settings_popup(self):
         predefined_agents_button.setText("Install gpt-computer-agent[agentic]")
 
     online_tools_button = QPushButton(
-        "Enable KhulnaSoft Tiger Tools - More Capability (Recommended)"
+        "Enable Upsonic Tiger Tools - More Capability (Recommended)"
     )
 
     settings_dialog.layout().addWidget(online_tools_button)
 
     if is_online_tools_setting_active():
         online_tools_button.setText(
-            "Disable KhulnaSoft Tiger Tools - Low Capability (Not Recommended)"
+            "Disable Upsonic Tiger Tools - Low Capability (Not Recommended)"
         )
 
         def deactivate_online_tools_():
             deactivate_online_tools_setting()
             the_main_window.update_from_thread(
-                "Disabled KhulnaSoft Tiger Tools - Low Capability (Not Recommended)"
+                "Disabled Upsonic Tiger Tools - Low Capability (Not Recommended)"
             )
             settings_dialog.close()
 
@@ -210,7 +210,7 @@ def settings_popup(self):
         def activate_online_tools_():
             activate_online_tools_setting()
             the_main_window.update_from_thread(
-                "Enabled KhulnaSoft Tiger Tools - More Capability (Recommended)"
+                "Enabled Upsonic Tiger Tools - More Capability (Recommended)"
             )
             settings_dialog.close()
 

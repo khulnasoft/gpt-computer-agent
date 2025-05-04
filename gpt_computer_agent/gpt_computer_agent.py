@@ -1,10 +1,10 @@
 try:
-    from .assistant.chat_history import *
-    from .assistant.agent import *
+    from .agent.chat_history import *
+    from .agent.assistant import *
     from .llm import *
     from .llm_settings import llm_settings
-    from .assistant.assistant import *
-    from .assistant.background import *
+    from .agent.agent import *
+    from .agent.background import *
 
     from .gui.signal import *
     from .gui.button import *
@@ -20,12 +20,12 @@ try:
 except ImportError:
     # This is for running the script directly
     # in order to test the GUI without rebuilding the package
-    from assistant.chat_history import *
-    from assistant.agent import *
+    from agent.chat_history import *
+    from agent.assistant import *
     from llm import *
     from llm_settings import llm_settings
-    from assistant.assistant import *
-    from assistant.background import *
+    from agent.agent import *
+    from agent.background import *
     from utils.db import *
     from gui.signal import *
     from gui.button import *
@@ -71,7 +71,7 @@ from PyQt5 import QtCore
 try:
     import ctypes
 
-    myappid = "onuratakan.gpt_computer_agent.gui.1"
+    myappid = "khulnasoft.gpt_computer_agent.gui.1"
     ctypes.windll.shell32.SetCurrentProcessExplicitAppUserModelID(myappid)
 except:
     pass
@@ -1015,7 +1015,7 @@ class MainWindow(QMainWindow):
         self.wake_word_thread.start()
 
     def wake_word(self):
-        from .assistant.process import tts_if_you_can
+        from .agent.process import tts_if_you_can
 
         while True and is_wake_word_active() and self.wake_word_active:
             if wake_word(self):
@@ -1447,12 +1447,12 @@ class MainWindow(QMainWindow):
         self.update()
 
     def update_state(self, new_state):
-        agent_stopped = False
+        assistant_stopped = False
         if self.state == "aitalking" and new_state == "idle":
-            agent_stopped = True
+            assistant_stopped = True
 
         if self.manuel_stop:
-            agent_stopped = False
+            assistant_stopped = False
             self.manuel_stop = False
 
         self.state = new_state
@@ -1481,7 +1481,7 @@ class MainWindow(QMainWindow):
             self.pulse_timer = None
         self.update()  # Trigger a repaint
 
-        if agent_stopped:
+        if assistant_stopped:
             global the_input_box
             if (
                 the_input_box.toPlainText().endswith("?")

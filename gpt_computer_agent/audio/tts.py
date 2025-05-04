@@ -53,7 +53,9 @@ def generate_speech_chunk(text_chunk, index, voice, results):
 
         if tts_setting == "microsoft_local":
             if not is_local_tts_available():
-                print("Please install gpt-computer-agent[local_tts] to use local TTS")
+                print(
+                    "Please install gpt-computer-agent[local_tts] to use local TTS"
+                )
             else:
                 tts_microsoft_local(text_chunk, location)
 

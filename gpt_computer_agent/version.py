@@ -15,3 +15,5 @@ def get_version():
                 the_str = the_str.replace("'  # fmt: skip", "")
                 return the_str
     return None
+
+

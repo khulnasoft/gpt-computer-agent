@@ -56,4 +56,4 @@ pip3 install pynput==1.7.7
 pip3 uninstall numpy -y
 pip3 install numpy
 
-pyinstaller --recursive-copy-metadata gpt_computer_agent run.py --onefile --add-data="gpt_computer_agent/utils/media/*":"gpt_computer_agent/utils/media" --icon="gpt_computer_agent/utils/media/icon.ico" --name="GPT_Computer_Agent"
+pyinstaller --recursive-copy-metadata gpt-computer-agent run.py --onefile --add-data="gpt-computer-agent/utils/media/*":"gpt-computer-agent/utils/media" --icon="gpt-computer-agent/utils/media/icon.ico" --name="GPT_Computer_Agent"

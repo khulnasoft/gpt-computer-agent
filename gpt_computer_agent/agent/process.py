@@ -1,6 +1,6 @@
 try:
     from ..llm import *
-    from .agent import *
+    from .assistant import *
     from .chat_history import *
     from ..audio.tts import text_to_speech
     from ..audio.stt import speech_to_text
@@ -12,7 +12,7 @@ try:
     from ..version import get_version
 except ImportError:
     from llm import *
-    from agent.agent import *
+    from agent.assistant import *
     from agent.chat_history import *
     from audio.tts import text_to_speech
     from audio.stt import speech_to_text
@@ -57,7 +57,7 @@ def tts_if_you_can(
         if first_control or bypass_other_settings:
             response_path = text_to_speech(text)
             if status_edit:
-                signal_handler.agent_response_ready.emit()
+                signal_handler.assistant_response_ready.emit()
 
             def play_audio():
                 for each_r in response_path:
@@ -75,7 +75,7 @@ def tts_if_you_can(
                             break
                         time.sleep(0.1)
                 if status_edit:
-                    signal_handler.agent_response_stopped.emit()
+                    signal_handler.assistant_response_stopped.emit()
 
             if not not_threaded:
                 playback_thread = threading.Thread(target=play_audio)
@@ -126,7 +126,7 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
 
             print("LLM INPUT (screenshot)", llm_input)
 
-            llm_output = agent(
+            llm_output = assistant(
                 llm_input,
                 get_client(),
                 screenshot_path=screenshot_path if take_screenshot else None,
@@ -147,7 +147,7 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
                 the_main_window.set_text_to_input_box(last_ai_response)
                 the_main_window.complated_answer = True
 
-            signal_handler.agent_response_ready.emit()
+            signal_handler.assistant_response_ready.emit()
 
             def play_text():
                 from ..gpt_computer_agent import the_main_window
@@ -161,7 +161,7 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
                 the_main_window.read_part_task()
                 if the_main_window.stop_talking:
                     the_main_window.stop_talking = False
-                signal_handler.agent_response_stopped.emit()
+                signal_handler.assistant_response_stopped.emit()
 
             playback_thread = threading.Thread(target=play_text)
             playback_thread.start()
@@ -174,7 +174,7 @@ def process_audio(take_screenshot=True, take_system_audio=False, dont_save_image
 
             the_main_window.update_from_thread("EXCEPTION: " + str(exception_str))
             tts_if_you_can("Exception occurred. Please check the logs.")
-            signal_handler.agent_response_stopped.emit()
+            signal_handler.assistant_response_stopped.emit()
 
 
 def process_screenshot():
@@ -203,7 +203,7 @@ def process_screenshot():
                     "Transciption Completed. Running AI..."
                 )
 
-            llm_output = agent(
+            llm_output = assistant(
                 llm_input,
                 get_client(),
                 screenshot_path=just_screenshot_path,
@@ -222,7 +222,7 @@ def process_screenshot():
                 the_main_window.set_text_to_input_box(last_ai_response)
                 the_main_window.complated_answer = True
 
-            signal_handler.agent_response_ready.emit()
+            signal_handler.assistant_response_ready.emit()
 
             def play_text():
                 from ..gpt_computer_agent import the_main_window
@@ -236,7 +236,7 @@ def process_screenshot():
                 the_main_window.read_part_task()
                 if the_main_window.stop_talking:
                     the_main_window.stop_talking = False
-                signal_handler.agent_response_stopped.emit()
+                signal_handler.assistant_response_stopped.emit()
 
             playback_thread = threading.Thread(target=play_text)
             playback_thread.start()
@@ -250,7 +250,7 @@ def process_screenshot():
 
             the_main_window.update_from_thread("EXCEPTION: " + str(exception_str))
             tts_if_you_can("Exception occurred. Please check the logs.")
-            signal_handler.agent_response_stopped.emit()
+            signal_handler.assistant_response_stopped.emit()
 
 
 def process_text(text, screenshot_path=None):
@@ -262,7 +262,7 @@ def process_text(text, screenshot_path=None):
 
             llm_input = text
 
-            llm_output = agent(
+            llm_output = assistant(
                 llm_input,
                 get_client(),
                 screenshot_path=screenshot_path,
@@ -279,7 +279,7 @@ def process_text(text, screenshot_path=None):
                 the_main_window.set_text_to_input_box(last_ai_response)
                 the_main_window.complated_answer = True
 
-            signal_handler.agent_response_ready.emit()
+            signal_handler.assistant_response_ready.emit()
 
             def play_text():
                 from ..gpt_computer_agent import the_main_window
@@ -293,7 +293,7 @@ def process_text(text, screenshot_path=None):
                 the_main_window.read_part_task()
                 if the_main_window.stop_talking:
                     the_main_window.stop_talking = False
-                signal_handler.agent_response_stopped.emit()
+                signal_handler.assistant_response_stopped.emit()
 
             playback_thread = threading.Thread(target=play_text)
             playback_thread.start()
@@ -307,7 +307,7 @@ def process_text(text, screenshot_path=None):
 
             the_main_window.update_from_thread("EXCEPTION: " + str(exception_str))
             tts_if_you_can("Exception occurred. Please check the logs.")
-            signal_handler.agent_response_stopped.emit()
+            signal_handler.assistant_response_stopped.emit()
 
 
 
@@ -338,7 +338,7 @@ def process_text_api(text, screenshot_path=None):
 
 
             sentry_sdk.profiler.start_profiler()
-            llm_output = agent(
+            llm_output = assistant(
                 llm_input,
                 get_client(),
                 screenshot_path=screenshot_path,
