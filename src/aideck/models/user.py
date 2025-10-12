@@ -1,6 +1,4 @@
-""
-SQLAlchemy models for user authentication.
-"""
+"""SQLAlchemy models for user authentication."""
 from datetime import datetime
 from typing import Optional
 
@@ -29,23 +27,21 @@ class User(Base):
 
     @property
     def is_authenticated(self) -> bool:
-        ""
-        Return True if the user is authenticated.
-        """
+        """Return True if the user is authenticated."""
         return True
 
     @property
     def is_anonymous(self) -> bool:
-        ""
-        Return True if the user is anonymous.
-        """
+        """Return True if the user is anonymous."""
         return False
 
     def get_id(self) -> str:
-        ""
-        Return the user ID as a string.
-        """
+        """Return the user ID as a string."""
         return str(self.id)
+
+class RefreshToken(Base):
+    """Refresh token model for JWT token refresh."""
+    # ... rest of RefreshToken implementation ...
 
 class RefreshToken(Base):
     ""
