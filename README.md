@@ -254,7 +254,7 @@ print(output)
 | Text Inputs               | Completed      | Q2 2024        |
 | Just Text Mode (Mute Speech)           | Completed  | Q2 2024        |
 | Added profiles (Different Chats)          | Completed    | Q2 2024        |
-| More Feedback AboutAgent Status                  | Completed    | Q2 2024        |
+| More Feedback About Agent Status                 | Completed    | Q2 2024        |
 | Local Model Vision and Text (With Ollama, and vision models)  | Completed  | Q2 2024        |
 | **Our Customizable Agent Infrastructure**              | Completed      | Q2 2024        |
 | Supporting Groq Models  | Completed  | Q2 2024        |
