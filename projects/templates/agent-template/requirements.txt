@@ -1,0 +1,10 @@
+# Template Agent Requirements
+
+# Core dependencies
+aideck>=0.29.0
+pydantic-ai>=0.3.2
+openai>=1.86.0
+python-dotenv>=1.0.1
+
+# Additional dependencies (add as needed)
+rich>=13.9.4

@@ -1,0 +1,32 @@
+# Template Agent Configuration
+
+agent:
+  name: "Template Agent"
+  description: "A template agent for customization"
+  model: "openai/gpt-4o"
+  temperature: 0.7
+  max_tokens: 1000
+  system_prompt: |
+    You are a template AI agent. Customize this prompt
+    to match your specific use case and requirements.
+
+memory:
+  enabled: true
+  limit: 5000
+  cleanup_interval: 3600
+
+tools:
+  enabled: true
+  auto_execute: true
+  timeout: 30
+
+conversation:
+  max_messages: 100
+  save_history: true
+  context_window: 10
+
+logging:
+  level: "INFO"
+  file: "logs/template_agent.log"
+  max_size: "10MB"
+  backup_count: 5

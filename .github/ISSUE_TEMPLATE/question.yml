@@ -1,5 +1,5 @@
 name: Question 🤷‍♂️
-description: Got a question about GPT-Computer-Agent, deployment, development or usage?
+description: Got a question about Aideck, deployment, development or usage?
 title: '[QUESTION] <title>'
 labels: ['🤷‍♂️ Question']
 assignees:
@@ -10,9 +10,14 @@ body:
   - type: markdown
     attributes:
       value: >
-        Thanks for using GPT-Computer-Agent! Questions are welcome, but in the future will be moving over to
-        [Discussions](https://github.com/khulnaSoft/gpt-computer-agent/discussions) page.
-        Quick questions should be asked [here](https://github.com/khulnaSoft/gpt-computer-agent/discussions/148) instead.
+        - label: You are using a [supported](https://github.com/khulnaSoft/aideck/blob/master/.github/SECURITY.md#supported-versions) version of Aideck (check the first two digits of the version number)
+           required: true
+        - label: You've checked that this [question hasn't already been raised](https://github.com/khulnaSoft/aideck/issues?q=is%3Aissue)
+           required: true
+        - label: You've checked the [docs](https://github.com/khulnaSoft/aideck/tree/master/docs#readme) and [troubleshooting](https://github.com/khulnaSoft/aideck/blob/master/docs/troubleshooting.md#troubleshooting) guide
+           required: true
+        - label: You agree to the [code of conduct](https://github.com/khulnaSoft/aideck/blob/master/.github/CODE_OF_CONDUCT.md#contributor-covenant-code-of-conduct)
+           required: true
     validations:
       required: false
 

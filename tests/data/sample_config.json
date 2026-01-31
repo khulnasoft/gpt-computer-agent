@@ -1,0 +1,19 @@
+{
+  "test_config": {
+    "debug": true,
+    "log_level": "DEBUG",
+    "database_url": "sqlite:///test.db",
+    "features": ["feature1", "feature2", "feature3"]
+  },
+  "nested_config": {
+    "database": {
+      "host": "localhost",
+      "port": 5432,
+      "name": "test_db"
+    },
+    "api": {
+      "version": "v1",
+      "timeout": 30
+    }
+  }
+}

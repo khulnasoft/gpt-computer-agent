@@ -1,0 +1,92 @@
+import re
+
+from aideck.models.base import BaseModelProvider
+from aideck.models.providers import OpenAI
+
+
+class Canvas:
+    def __init__(
+        self, canvas_name: str, model_provider: BaseModelProvider | None = None
+    ):
+        """
+        Initializes the Canvas.
+
+        Args:
+            canvas_name: The name of the canvas, used for the filename.
+            model_provider: An instantiated model provider object (e.g., OpenAI)
+                              to be used for modifying the canvas. If None, a
+                              default OpenAI GPT-4o Mini model is used.
+        """
+        self.canvas_name = canvas_name
+
+        if model_provider is None:
+            self.model_provider = OpenAI(model_name="gpt-4o-mini")
+        else:
+            self.model_provider = model_provider
+
+        self._clean_canvas()
+
+    def _clean_canvas(self):
+        """Clean the canvas text"""
+        canvas_text = self.get_current_state_of_canvas()
+        canvas_text = re.sub(r"```.*?```", "", canvas_text, flags=re.DOTALL)
+        self._save_canvas(canvas_text)
+
+    def _save_canvas(self, canvas_text: str):
+        """Save the canvas text to a file."""
+        normalized_name = (
+            re.sub(r"[^\w\s-]", "", self.canvas_name).strip().replace(" ", "_")
+        )
+        filename = f"{normalized_name}.txt"
+        with open(filename, "w", encoding="utf-8") as f:
+            f.write(canvas_text)
+
+    def _load_canvas(self) -> str:
+        """Load the canvas text from a file."""
+        normalized_name = (
+            re.sub(r"[^\w\s-]", "", self.canvas_name).strip().replace(" ", "_")
+        )
+        filename = f"{normalized_name}.txt"
+        try:
+            with open(filename, encoding="utf-8") as f:
+                return f.read()
+        except FileNotFoundError:
+            return ""
+
+    def get_current_state_of_canvas(self) -> str:
+        """Get the current state of the text canvas"""
+        result = self._load_canvas()
+        return "Empty Canvas" if result == "" else result
+
+    async def change_in_canvas(
+        self, new_text_of_part: str, part_definition: str
+    ) -> str:
+        """Change the text of a part of the canvas"""
+        from aideck import Direct, Task
+
+        direct = Direct(model=self.model_provider)
+
+        current_canvas = self.get_current_state_of_canvas()
+
+        if current_canvas == "Empty Canvas" or current_canvas == "":
+            self._save_canvas(new_text_of_part)
+            return new_text_of_part
+
+        prompt = (
+            f"I have a text document with the following content:\n\n{current_canvas}\n\n"
+            f"If there is a line or section that contains '{part_definition}', replace it with exactly:\n"
+            f"{new_text_of_part}\n\n"
+            f"If the document does NOT contain a section with '{part_definition}', append the following as a new section at the end of the document:\n"
+            f"{new_text_of_part}\n\n"
+            f"Return only the complete updated text document without any explanations, code blocks, or additional formatting."
+        )
+
+        task = Task(description=prompt)
+        await direct.do_async(task)
+        result = task.response
+
+        self._save_canvas(result)
+        return result
+
+    def functions(self):
+        return [self.get_current_state_of_canvas, self.change_in_canvas]

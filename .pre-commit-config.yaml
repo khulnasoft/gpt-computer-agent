@@ -1,0 +1,61 @@
+repos:
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.5.14
+    hooks:
+      # Update the uv lockfile
+      - id: uv-lock
+        always_run: true
+
+  - repo: https://github.com/astral-sh/uv-pre-commit
+    # uv version.
+    rev: 0.5.14
+    hooks:
+      - id: uv-sync
+        always_run: true
+
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v5.0.0
+    hooks:
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-yaml
+      - id: check-added-large-files
+      - id: check-merge-conflict
+      - id: debug-statements
+
+  - repo: https://github.com/psf/black
+    rev: 24.10.0
+    hooks:
+      - id: black
+        language_version: python3
+        exclude: ^(src/aideck/vectordb/providers/.*\.py|src/aideck/utils/storage\.py|src/aideck/models/user\.py|src/aideck/db/session\.py|src/aideck/core/security\.py|src/aideck/utils/chat_history\.py|src/aideck/utils/db\.py|src/aideck/utils/kot_db\.py|src/aideck/utils/pypi\.py|src/aideck/tools/.*\.py|src/aideck/tooler\.py|src/aideck/top_bar_wrapper\.py|src/aideck/standard_tools\.py|src/aideck/start\.py|src/aideck/teams\.py|src/aideck/text_splitter/.*\.py|src/aideck/tasks/.*\.py|src/aideck/storage/memory/.*\.py|src/aideck/safety_engine/.*\.py|src/aideck/services/activity_tools\.py)$
+
+  - repo: https://github.com/pycqa/isort
+    rev: 5.13.2
+    hooks:
+      - id: isort
+        exclude: ^(src/aideck/vectordb/providers/.*\.py|src/aideck/utils/storage\.py|src/aideck/models/user\.py|src/aideck/db/session\.py|src/aideck/core/security\.py|src/aideck/utils/chat_history\.py|src/aideck/utils/db\.py|src/aideck/utils/kot_db\.py|src/aideck/utils/pypi\.py|src/aideck/tools/.*\.py|src/aideck/tooler\.py|src/aideck/top_bar_wrapper\.py|src/aideck/standard_tools\.py|src/aideck/start\.py|src/aideck/teams\.py|src/aideck/text_splitter/.*\.py|src/aideck/tasks/.*\.py|src/aideck/storage/memory/.*\.py|src/aideck/safety_engine/.*\.py|src/aideck/services/activity_tools\.py)$
+
+  - repo: https://github.com/pycqa/flake8
+    rev: 7.1.1
+    hooks:
+      - id: flake8
+        additional_dependencies: [flake8-docstrings]
+        exclude: ^(src/aideck/vectordb/providers/.*\.py|src/aideck/utils/storage\.py|src/aideck/models/user\.py|src/aideck/db/session\.py|src/aideck/core/security\.py|src/aideck/utils/train\.py|src/aideck/utils/user_id\.py|src/aideck/utils/chat_history\.py|src/aideck/utils/db\.py|src/aideck/utils/kot_db\.py|src/aideck/utils/pypi\.py|src/aideck/tools/.*\.py|src/aideck/tooler\.py|src/aideck/top_bar_wrapper\.py|src/aideck/standard_tools\.py|src/aideck/start\.py|src/aideck/teams\.py|src/aideck/text_splitter/.*\.py|src/aideck/tasks/.*\.py|src/aideck/storage/memory/.*\.py|src/aideck/safety_engine/.*\.py|src/aideck/services/activity_tools\.py)$
+
+  - repo: https://github.com/astral-sh/ruff-pre-commit
+    rev: v0.8.6
+    hooks:
+      - id: ruff
+        args: [--fix]
+        exclude: ^(src/aideck/vectordb/providers/.*\.py|src/aideck/utils/storage\.py|src/aideck/models/user\.py|src/aideck/db/session\.py|src/aideck/core/security\.py|src/aideck/utils/train\.py|src/aideck/utils/user_id\.py|src/aideck/vectordb/config\.py|src/aideck/utils/chat_history\.py|src/aideck/utils/db\.py|src/aideck/utils/kot_db\.py|src/aideck/utils/pypi\.py|src/aideck/tools/.*\.py|src/aideck/tooler\.py|src/aideck/top_bar_wrapper\.py|src/aideck/standard_tools\.py|src/aideck/start\.py|src/aideck/teams\.py|src/aideck/text_splitter/.*\.py|src/aideck/tasks/.*\.py|src/aideck/storage/memory/.*\.py|src/aideck/safety_engine/.*\.py|src/aideck/services/activity_tools\.py)$
+
+  - repo: local
+    hooks:
+      - id: pytest
+        name: pytest
+        entry: uv run pytest tests/test_agent_basic.py --cov=src/aideck/agent --cov-report=term-missing
+        language: python
+        pass_filenames: false
+        always_run: true

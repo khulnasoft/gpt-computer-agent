@@ -1,0 +1,60 @@
+# Slim Dockerfile for Aideck GPT Agent
+# Minimal image size for production deployments
+
+FROM python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Install only essential system dependencies
+RUN apt-get update && apt-get install -y \
+    curl \
+    libffi-dev \
+    libssl-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libwebp-dev \
+    libz-dev \
+    gcc \
+    && rm -rf /var/lib/apt/lists/* \
+    && apt-get clean
+
+# Create app directory
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY pyproject.toml uv.lock ./
+
+# Install uv for faster dependency management
+RUN pip install uv --no-cache-dir
+
+# Install only production dependencies
+RUN uv sync --frozen --no-dev --no-cache
+
+# Copy application code
+COPY src/ ./src/
+COPY docker/ ./docker/
+
+# Install the application
+RUN uv pip install -e . --no-cache-dir
+
+# Create non-root user for security
+RUN useradd --create-home --shell /bin/bash aideck && \
+    chown -R aideck:aideck /app
+
+USER aideck
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/uploads
+
+# Expose port
+EXPOSE 8000
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command - optimized for production
+CMD ["uv", "run", "python", "-m", "aideck.api", "--host", "0.0.0.0", "--port", "8000", "--workers", "4"]

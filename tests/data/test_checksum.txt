@@ -1,0 +1,4 @@
+This is a test file for checksum calculation.
+It contains some text that can be used to verify
+that the checksum function is working correctly.
+The content should be consistent across test runs.

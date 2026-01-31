@@ -1,4 +1,4 @@
-<h1 align="center">GPT Computer Agent</h1>
+<h1 align="center">Aideck</h1>
 <br>
 <p align="center">
 
@@ -6,18 +6,18 @@
     <img src="https://github.com/user-attachments/assets/c60562bf-540e-47d9-b578-994285071128" width="250">
   </a>
   .
-  <a href="https://github.com/KhulnaSoft/gpt-computer-agent/releases/latest/download/gpt-computer-agent-openai.dmg">
+  <a href="https://github.com/KhulnaSoft/aideck/releases/latest/download/aideck-openai.dmg">
     <img src="https://github.com/user-attachments/assets/a0475f31-9dfd-4a0c-91b0-7ae128c3c773" width="250">
   </a>
   .
-  <a href="https://github.com/KhulnaSoft/gpt-computer-agent/releases/latest/download/gpt-computer-agent-openai.exe">
+  <a href="https://github.com/KhulnaSoft/aideck/releases/latest/download/aideck-openai.exe">
     <img src="https://github.com/user-attachments/assets/c94139fd-609c-4780-9541-6e9e01dd0e47" width="250">
   </a>
 
 </p>
 
   <p align="center">
-    <a href="https://www.producthunt.com/posts/gpt-computer-agent?embed=true&utm_source=badge-top-post-badge&utm_medium=badge&utm_souce=badge-gpt&#0045;computer&#0045;assistant" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=465468&theme=dark&period=daily" alt="GPT&#0032;Computer&#0032;Assistant - Create&#0032;intelligence&#0032;for&#0032;your&#0032;products | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
+    <a href="https://www.producthunt.com/posts/gpt-computer-agent?embed=true&utm_source=badge-top-post-badge&utm_medium=badge&utm_souce=badge-gpt&#0045;computer&#0045;agent" target="_blank"><img src="https://api.producthunt.com/widgets/embed-image/v1/top-post-badge.svg?post_id=465468&theme=dark&period=daily" alt="GPT&#0032;Computer&#0032;agent - Create&#0032;intelligence&#0032;for&#0032;your&#0032;products | Product Hunt" style="width: 250px; height: 54px;" width="250" height="54" /></a>
     .
     <a href="https://discord.gg/qApFmWMt8x"><img alt="Static Badge" src="https://img.shields.io/badge/Discord-Join?style=social&logo=discord" width=150></a>
     .
@@ -37,7 +37,7 @@
   <img src="https://img.shields.io/badge/Made%20with-Python-1f425f.svg" alt="Made_with_python">
   </a>
   .
-  <img src="https://static.pepy.tech/personalized-badge/gpt-computer-agent?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads" alt="pypi_downloads">
+  <img src="https://static.pepy.tech/personalized-badge/aideck?period=total&units=international_system&left_color=grey&right_color=blue&left_text=PyPI%20Downloads" alt="pypi_downloads">
   </p>
 
 
@@ -45,7 +45,7 @@
 
 |ENGLISH|[简体中文](README.zh_CN.md)|[正體中文](README.zh_TW.md)|[TÜRKÇE](README.TR.md)
 
-Hi, this is an alternative work for providing ChatGPT MacOS app to Windows and Linux. In this way this is a fresh and stable work. You can easily install as Python library for this time but we will prepare a pipeline for providing native install scripts (.exe).
+Hi, this is an alternative work for providing Aideck to Windows and Linux. In this way this is a fresh and stable work. You can easily install as Python library for this time but we will prepare a pipeline for providing native install scripts (.exe).
 
 Powered by <a href="https://github.com/KhulnaSoft/Tiger"><strong>KhulnaSoft Tiger 🐅</strong></a> A function hub for llm agents.
 
@@ -56,11 +56,11 @@ Powered by <a href="https://github.com/KhulnaSoft/Tiger"><strong>KhulnaSoft Tige
 **Python 3.10 or 3.11 is required**
 
 ```console
-pip install 'gpt-computer-agent[base]'
-pip install 'gpt-computer-agent[api]'
+pip install 'aideck[base]'
+pip install 'aideck[api]'
 ```
 
-To run gpt-computer-agent, simply type
+To run aideck, simply type
 
 ```console
 computeragent --api
@@ -94,7 +94,7 @@ computeragent --api
 ## 2. LLM Settings
 
 ```python
-from gpt_computer_agent.remote import remote
+from aideck.remote import remote
 
 remote.save_models("gpt-4o")
 remote.save_openai_api_key("sk-**")
@@ -102,7 +102,7 @@ remote.save_openai_api_key("sk-**")
 
 <p align="start">
 
-  <a href="https://docs.upsonic.co/gca/dev_guides/llm_settings">
+  <a href="https://docs.aideck.co/gca/dev_guides/llm_settings">
     <img src="https://github.com/user-attachments/assets/a75c8ddf-f9df-436b-9dc8-c5220211e15e" width="150">
   </a>
 
@@ -125,13 +125,13 @@ remote.save_openai_api_key("sk-**")
 # Name of the assitant:
 remote.change_name("X Intelligence")
 
-#Developer personna of the assistant:
+#Developer personna of the agent:
 remote.change_developer("X Company")
 ```
 
 <p align="start">
 
-  <a href="https://docs.upsonic.co/gca/dev_guides/characteristic">
+  <a href="https://docs.aideck.co/gca/dev_guides/characteristic">
     <img src="https://github.com/user-attachments/assets/d7e02ac6-e40c-4b35-8e65-4621bf3fb9a1" width="150">
   </a>
 
@@ -180,7 +180,7 @@ def my_server_status() -> bool:
 
 ### remote.input
 
-Talk with assistant, about user and computer. With this api you can create an consulting process.
+Talk with agent, about user and computer. With this api you can create an consulting process.
 
 ```markdown
 `Hi, look to user window and return which app using now`
@@ -190,7 +190,7 @@ Talk with assistant, about user and computer. With this api you can create an co
 `Extract the user redis config file.`
 ```
 
-With this questions you will make a shortcut for your needs. 
+With this questions you will make a shortcut for your needs.
 **You can collect informations from user computer or directly from user or user computer.**
 
 ```python
@@ -201,15 +201,15 @@ print(output)
 
 <p align="start">
 
-  <a href="https://docs.upsonic.co/gca/dev_guides/interact">
+  <a href="https://docs.aideck.co/gca/dev_guides/interact">
     <img src="https://github.com/user-attachments/assets/81614347-ab85-4965-9b77-225d0f2961e9" width="150">
   </a>
   .
-  <a href="https://docs.upsonic.co/gca/dev_guides/interact">
+  <a href="https://docs.aideck.co/gca/dev_guides/interact">
     <img src="https://github.com/user-attachments/assets/ecaa7590-f4c5-4eda-9482-462cef54aeff" width="150">
   </a>
   .
-  <a href="https://docs.upsonic.co/gca/dev_guides/interact">
+  <a href="https://docs.aideck.co/gca/dev_guides/interact">
     <img src="https://github.com/user-attachments/assets/0f35df10-b32e-4fa1-936e-b336be46b1bd" width="150">
   </a>
 
@@ -219,7 +219,7 @@ print(output)
 
 <p align="start">
 
-  <a href="https://docs.upsonic.co/gca/dev_guides/interact">
+  <a href="https://docs.aideck.co/gca/dev_guides/interact">
     <img src="https://github.com/user-attachments/assets/a893c50c-3ede-4b42-90ee-92e2fea82120" width="150">
   </a>
 
@@ -234,7 +234,7 @@ print(output)
 
 
 ## Usage
-![options](https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/37d34745-ae4b-4b37-9bfa-aec070c97897)
+![options](https://github.com/khulnasoft/aideck/assets/41792982/37d34745-ae4b-4b37-9bfa-aec070c97897)
 
 
 
@@ -254,7 +254,7 @@ print(output)
 | Text Inputs               | Completed      | Q2 2024        |
 | Just Text Mode (Mute Speech)           | Completed  | Q2 2024        |
 | Added profiles (Different Chats)          | Completed    | Q2 2024        |
-| More Feedback About Assistant Status                  | Completed    | Q2 2024        |
+| More Feedback About Agent Status                 | Completed    | Q2 2024        |
 | Local Model Vision and Text (With Ollama, and vision models)  | Completed  | Q2 2024        |
 | **Our Customizable Agent Infrastructure**              | Completed      | Q2 2024        |
 | Supporting Groq Models  | Completed  | Q2 2024        |
@@ -280,7 +280,7 @@ print(output)
 
 
 ## Capabilities
-At this time we have many infrastructure elements. We just aim to provide whole things that already in ChatGPT app.
+At this time we have many infrastructure elements. We just aim to provide whole things that already in Aideck.
 
 | Capability                         | Status                      |
 |------------------------------------|----------------------------------|
@@ -304,21 +304,21 @@ At this time we have many infrastructure elements. We just aim to provide whole 
 | **Writing and running SH**    |            OK                    |
 | **Using your Telegram Account**    |            OK                    |
 | **Knowledge Management**           |            OK                    |
-| **[Add more tool](https://github.com/khulnasoft/gpt-computer-agent/blob/master/gpt_computer_agent/standard_tools.py)**           |            ?                    |
+| **[Add more tool](https://github.com/khulnasoft/aideck/blob/master/aideck/standard_tools.py)**           |            ?                    |
 
 ### Predefined Agents
-If you enable it your assistant will work with these teams:
+If you enable it your agent will work with these teams:
 
 | Team Name                         | Status                      |
 |------------------------------------|----------------------------------|
 | **search_on_internet_and_report_team**                    |            OK                    |
 | **generate_code_with_aim_team_**                    |            OK                    |
-| **[Add your own one](https://github.com/khulnasoft/gpt-computer-agent/blob/master/gpt_computer_agent/teams.py)**                    |            ?                    |
+| **[Add your own one](https://github.com/khulnasoft/aideck/blob/master/aideck/teams.py)**                    |            ?                    |
 
 
 
   <a href="#">
-    <img src="https://github.com/khulnasoft/gpt-computer-agent/assets/41792982/ba590bf8-6059-4cb6-8c4e-6d105ce4edd2" alt="Logo"  >
+    <img src="https://github.com/khulnasoft/aideck/assets/41792982/ba590bf8-6059-4cb6-8c4e-6d105ce4edd2" alt="Logo"  >
   </a>
 
 
@@ -326,6 +326,6 @@ If you enable it your assistant will work with these teams:
 
 ## Contributors
 
-<a href="https://github.com/khulnasoft/gpt-computer-agent/graphs/contributors">
-  <img src="https://contrib.rocks/image?repo=khulnasoft/gpt-computer-agent" />
+<a href="https://github.com/khulnasoft/aideck/graphs/contributors">
+  <img src="https://contrib.rocks/image?repo=khulnasoft/aideck" />
 </a>
