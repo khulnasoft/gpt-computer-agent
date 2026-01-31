@@ -1,6 +1,6 @@
-import time
 import json
-from typing import Optional, Type, Union, TypeVar
+import time
+from typing import TypeVar
 
 import asyncpg
 from pydantic import BaseModel
@@ -8,7 +8,8 @@ from pydantic import BaseModel
 from aideck.storage.base import Storage
 from aideck.storage.session.sessions import InteractionSession, UserProfile
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
+
 
 class PostgresStorage(Storage):
     """
@@ -16,7 +17,13 @@ class PostgresStorage(Storage):
     and the `asyncpg` driver with a connection pool.
     """
 
-    def __init__(self, sessions_table_name: str, profiles_table_name: str, db_url: str, schema: str = "public"):
+    def __init__(
+        self,
+        sessions_table_name: str,
+        profiles_table_name: str,
+        db_url: str,
+        schema: str = "public",
+    ):
         """
         Initializes the async PostgreSQL storage provider.
 
@@ -33,30 +40,33 @@ class PostgresStorage(Storage):
         self.schema = schema
         self._pool = None
 
-
-
     def is_connected(self) -> bool:
         return self._run_async_from_sync(self.is_connected_async())
+
     def connect(self) -> None:
         return self._run_async_from_sync(self.connect_async())
+
     def disconnect(self) -> None:
         return self._run_async_from_sync(self.disconnect_async())
+
     def create(self) -> None:
         return self._run_async_from_sync(self.create_async())
-    def read(self, object_id: str, model_type: Type[T]) -> Optional[T]:
+
+    def read(self, object_id: str, model_type: type[T]) -> T | None:
         return self._run_async_from_sync(self.read_async(object_id, model_type))
-    def upsert(self, data: Union[InteractionSession, UserProfile]) -> None:
+
+    def upsert(self, data: InteractionSession | UserProfile) -> None:
         return self._run_async_from_sync(self.upsert_async(data))
-    def delete(self, object_id: str, model_type: Type[BaseModel]) -> None:
+
+    def delete(self, object_id: str, model_type: type[BaseModel]) -> None:
         return self._run_async_from_sync(self.delete_async(object_id, model_type))
+
     def drop(self) -> None:
         return self._run_async_from_sync(self.drop_async())
-    
-
 
     async def is_connected_async(self) -> bool:
         return self._pool is not None and not self._pool._closing
-    
+
     async def connect_async(self) -> None:
         if await self.is_connected_async():
             return
@@ -85,35 +95,44 @@ class PostgresStorage(Storage):
         pool = await self._get_pool()
         async with pool.acquire() as conn:
             await conn.execute(f"CREATE SCHEMA IF NOT EXISTS {self.schema}")
-            await conn.execute(f"""
+            await conn.execute(
+                f"""
                 CREATE TABLE IF NOT EXISTS {self.sessions_table_name} (
                     session_id TEXT PRIMARY KEY, user_id TEXT, agent_id TEXT,
                     team_session_id TEXT, chat_history TEXT, summary TEXT,
                     session_data TEXT, extra_data TEXT, created_at REAL, updated_at REAL
                 )
-            """)
-            await conn.execute(f"""
+            """
+            )
+            await conn.execute(
+                f"""
                 CREATE TABLE IF NOT EXISTS {self.profiles_table_name} (
                     user_id TEXT PRIMARY KEY, profile_data TEXT,
                     created_at REAL, updated_at REAL
                 )
-            """)
+            """
+            )
 
-    async def read_async(self, object_id: str, model_type: Type[T]) -> Optional[T]:
+    async def read_async(self, object_id: str, model_type: type[T]) -> T | None:
         if model_type is InteractionSession:
             table, key_col = self.sessions_table_name, "session_id"
         elif model_type is UserProfile:
             table, key_col = self.profiles_table_name, "user_id"
         else:
             return None
-        
+
         pool = await self._get_pool()
         sql = f"SELECT * FROM {table} WHERE {key_col} = $1"
         async with pool.acquire() as conn:
             row = await conn.fetchrow(sql, object_id)
             if row:
                 data = dict(row)
-                for key in ['chat_history', 'session_data', 'extra_data', 'profile_data']:
+                for key in [
+                    "chat_history",
+                    "session_data",
+                    "extra_data",
+                    "profile_data",
+                ]:
                     if key in data and isinstance(data[key], str):
                         try:
                             data[key] = json.loads(data[key])
@@ -121,7 +140,8 @@ class PostgresStorage(Storage):
                             pass
                 return model_type.from_dict(data)
         return None
-    async def upsert_async(self, data: Union[InteractionSession, UserProfile]) -> None:
+
+    async def upsert_async(self, data: InteractionSession | UserProfile) -> None:
         data.updated_at = time.time()
 
         if isinstance(data, InteractionSession):
@@ -134,7 +154,18 @@ class PostgresStorage(Storage):
                     chat_history=EXCLUDED.chat_history, summary=EXCLUDED.summary, session_data=EXCLUDED.session_data,
                     extra_data=EXCLUDED.extra_data, updated_at=EXCLUDED.updated_at
             """
-            params = (data.session_id, data.user_id, data.agent_id, data.team_session_id, json.dumps(data.chat_history), data.summary, json.dumps(data.session_data), json.dumps(data.extra_data), data.created_at, data.updated_at)
+            params = (
+                data.session_id,
+                data.user_id,
+                data.agent_id,
+                data.team_session_id,
+                json.dumps(data.chat_history),
+                data.summary,
+                json.dumps(data.session_data),
+                json.dumps(data.extra_data),
+                data.created_at,
+                data.updated_at,
+            )
         elif isinstance(data, UserProfile):
             table = self.profiles_table_name
             sql = f"""
@@ -143,22 +174,27 @@ class PostgresStorage(Storage):
                 ON CONFLICT(user_id) DO UPDATE SET
                     profile_data=EXCLUDED.profile_data, updated_at=EXCLUDED.updated_at
             """
-            params = (data.user_id, json.dumps(data.profile_data), data.created_at, data.updated_at)
+            params = (
+                data.user_id,
+                json.dumps(data.profile_data),
+                data.created_at,
+                data.updated_at,
+            )
         else:
             raise TypeError(f"Unsupported data type for upsert: {type(data).__name__}")
-        
+
         pool = await self._get_pool()
         async with pool.acquire() as conn:
             await conn.execute(sql, *params)
 
-    async def delete_async(self, object_id: str, model_type: Type[BaseModel]) -> None:
+    async def delete_async(self, object_id: str, model_type: type[BaseModel]) -> None:
         if model_type is InteractionSession:
             table, key_col = self.sessions_table_name, "session_id"
         elif model_type is UserProfile:
             table, key_col = self.profiles_table_name, "user_id"
         else:
             return
-            
+
         pool = await self._get_pool()
         sql = f"DELETE FROM {table} WHERE {key_col} = $1"
         async with pool.acquire() as conn:
@@ -169,4 +205,3 @@ class PostgresStorage(Storage):
         async with pool.acquire() as conn:
             await conn.execute(f"DROP TABLE IF EXISTS {self.sessions_table_name}")
             await conn.execute(f"DROP TABLE IF EXISTS {self.profiles_table_name}")
-            

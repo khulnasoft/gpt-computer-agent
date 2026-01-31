@@ -1,22 +1,26 @@
 """
 Activity tracking service for categorizing and analyzing user activities.
 """
-from typing import Dict, List, Optional, Tuple
-from datetime import datetime, timedelta
+
 import json
 from dataclasses import dataclass
+from datetime import datetime
 from enum import Enum
+
 
 class ActivityCategory(Enum):
     """Categories for user activities."""
+
     WORK = "work"
     COMMUNICATION = "communication"
     BREAKS = "breaks"
     UNCATEGORIZED = "uncategorized"
 
+
 @dataclass
 class ActivityEntry:
     """Represents a single activity snapshot."""
+
     timestamp: datetime
     app_name: str
     window_title: str
@@ -25,45 +29,103 @@ class ActivityEntry:
     category: ActivityCategory = ActivityCategory.UNCATEGORIZED
     confidence: float = 0.0
 
+
 @dataclass
 class ActivitySummary:
     """Summary of activities for a time period."""
+
     date: str
     total_tracked_minutes: int
-    apps_used: List[Dict[str, int]]
-    time_distribution: Dict[str, Dict[str, int]]
-    categorized_activities: Dict[ActivityCategory, List[ActivityEntry]]
+    apps_used: list[dict[str, int]]
+    time_distribution: dict[str, dict[str, int]]
+    categorized_activities: dict[ActivityCategory, list[ActivityEntry]]
     total_activities: int
+
 
 class ActivityTracker:
     """Service for tracking and categorizing user activities."""
 
     def __init__(self):
         """Initialize the activity tracker."""
-        self.activity_log: List[ActivityEntry] = []
+        self.activity_log: list[ActivityEntry] = []
         self.category_keywords = {
             ActivityCategory.WORK: [
-                'coding', 'programming', 'development', 'writing', 'editing',
-                'designing', 'analyzing', 'researching', 'planning', 'documenting',
-                'debugging', 'testing', 'reviewing', 'spreadsheet', 'excel',
-                'word', 'document', 'report', 'presentation', 'slide', 'data',
-                'analysis', 'calculation', 'modeling', 'database', 'sql'
+                "coding",
+                "programming",
+                "development",
+                "writing",
+                "editing",
+                "designing",
+                "analyzing",
+                "researching",
+                "planning",
+                "documenting",
+                "debugging",
+                "testing",
+                "reviewing",
+                "spreadsheet",
+                "excel",
+                "word",
+                "document",
+                "report",
+                "presentation",
+                "slide",
+                "data",
+                "analysis",
+                "calculation",
+                "modeling",
+                "database",
+                "sql",
             ],
             ActivityCategory.COMMUNICATION: [
-                'meeting', 'call', 'video', 'conference', 'chat', 'message',
-                'email', 'outlook', 'teams', 'slack', 'discord', 'zoom',
-                'skype', 'webex', 'discussion', 'collaboration', 'review',
-                'feedback', 'planning', 'standup', 'sync', '1:1'
+                "meeting",
+                "call",
+                "video",
+                "conference",
+                "chat",
+                "message",
+                "email",
+                "outlook",
+                "teams",
+                "slack",
+                "discord",
+                "zoom",
+                "skype",
+                "webex",
+                "discussion",
+                "collaboration",
+                "review",
+                "feedback",
+                "planning",
+                "standup",
+                "sync",
+                "1:1",
             ],
             ActivityCategory.BREAKS: [
-                'break', 'lunch', 'coffee', 'rest', 'relax', 'music', 'video',
-                'youtube', 'netflix', 'game', 'social media', 'facebook',
-                'twitter', 'instagram', 'tiktok', 'reddit', 'news', 'entertainment'
-            ]
+                "break",
+                "lunch",
+                "coffee",
+                "rest",
+                "relax",
+                "music",
+                "video",
+                "youtube",
+                "netflix",
+                "game",
+                "social media",
+                "facebook",
+                "twitter",
+                "instagram",
+                "tiktok",
+                "reddit",
+                "news",
+                "entertainment",
+            ],
         }
 
-    def add_activity(self, app_name: str, window_title: str,
-                    content_summary: str, user_activity: str) -> ActivityEntry:
+    def add_activity(
+        self, app_name: str, window_title: str, content_summary: str, user_activity: str
+    ) -> ActivityEntry:
         """Add a new activity and categorize it.
 
         Args:
@@ -81,7 +143,7 @@ class ActivityTracker:
             app_name=app_name,
             window_title=window_title,
             content_summary=content_summary,
-            user_activity=user_activity
+            user_activity=user_activity,
         )
 
         # Categorize the activity
@@ -92,7 +154,9 @@ class ActivityTracker:
 
         return entry
 
-    def _categorize_activity(self, entry: ActivityEntry) -> Tuple[ActivityCategory, float]:
+    def _categorize_activity(
+        self, entry: ActivityEntry
+    ) -> tuple[ActivityCategory, float]:
         """Categorize an activity based on keywords and context.
 
         Args:
@@ -129,8 +193,9 @@ class ActivityTracker:
 
         return best_category, confidence
 
-    def get_summary(self, start_time: Optional[datetime] = None,
-                   end_time: Optional[datetime] = None) -> ActivitySummary:
+    def get_summary(
+        self, start_time: datetime | None = None, end_time: datetime | None = None
+    ) -> ActivitySummary:
         """Generate a summary of activities for a time period.
 
         Args:
@@ -152,7 +217,9 @@ class ActivityTracker:
         # Calculate time statistics
         total_minutes = self._calculate_total_minutes(filtered_activities)
         apps_used = self._calculate_apps_used(filtered_activities)
-        time_distribution = self._calculate_time_distribution(filtered_activities, total_minutes)
+        time_distribution = self._calculate_time_distribution(
+            filtered_activities, total_minutes
+        )
         categorized_activities = self._group_by_category(filtered_activities)
 
         return ActivitySummary(
@@ -161,11 +228,12 @@ class ActivityTracker:
             apps_used=apps_used,
             time_distribution=time_distribution,
             categorized_activities=categorized_activities,
-            total_activities=len(filtered_activities)
+            total_activities=len(filtered_activities),
         )
 
-    def _filter_activities_by_time(self, start_time: Optional[datetime],
-                                  end_time: Optional[datetime]) -> List[ActivityEntry]:
+    def _filter_activities_by_time(
+        self, start_time: datetime | None, end_time: datetime | None
+    ) -> list[ActivityEntry]:
         """Filter activities by time range."""
         if start_time is None:
             start_time = self.activity_log[0].timestamp
@@ -173,11 +241,12 @@ class ActivityTracker:
             end_time = self.activity_log[-1].timestamp
 
         return [
-            entry for entry in self.activity_log
+            entry
+            for entry in self.activity_log
             if start_time <= entry.timestamp <= end_time
         ]
 
-    def _calculate_total_minutes(self, activities: List[ActivityEntry]) -> int:
+    def _calculate_total_minutes(self, activities: list[ActivityEntry]) -> int:
         """Calculate total tracked minutes from activities."""
         if not activities:
             return 0
@@ -188,23 +257,28 @@ class ActivityTracker:
         estimated_minutes = len(activities) * (SNAPSHOT_INTERVAL / 60)
         return int(estimated_minutes)
 
-    def _calculate_apps_used(self, activities: List[ActivityEntry]) -> List[Dict[str, int]]:
+    def _calculate_apps_used(
+        self, activities: list[ActivityEntry]
+    ) -> list[dict[str, int]]:
         """Calculate time spent per application."""
         app_times = {}
         SNAPSHOT_INTERVAL = 10  # seconds
 
         for entry in activities:
-            app_times[entry.app_name] = app_times.get(entry.app_name, 0) + SNAPSHOT_INTERVAL
+            app_times[entry.app_name] = (
+                app_times.get(entry.app_name, 0) + SNAPSHOT_INTERVAL
+            )
 
         return [
             {"app": app, "minutes": int(duration // 60)}
             for app, duration in app_times.items()
         ]
 
-    def _calculate_time_distribution(self, activities: List[ActivityEntry],
-                                   total_minutes: int) -> Dict[str, Dict[str, int]]:
+    def _calculate_time_distribution(
+        self, activities: list[ActivityEntry], total_minutes: int
+    ) -> dict[str, dict[str, int]]:
         """Calculate time distribution by category."""
-        category_times = {category: 0 for category in ActivityCategory}
+        category_times = dict.fromkeys(ActivityCategory, 0)
         SNAPSHOT_INTERVAL = 10  # seconds
 
         for entry in activities:
@@ -214,15 +288,19 @@ class ActivityTracker:
         distribution = {}
         for category, seconds in category_times.items():
             minutes = int(seconds // 60)
-            percentage = int((seconds / (total_minutes * 60)) * 100) if total_minutes > 0 else 0
+            percentage = (
+                int((seconds / (total_minutes * 60)) * 100) if total_minutes > 0 else 0
+            )
             distribution[category.value] = {
                 "minutes": minutes,
-                "percentage": percentage
+                "percentage": percentage,
             }
 
         return distribution
 
-    def _group_by_category(self, activities: List[ActivityEntry]) -> Dict[ActivityCategory, List[ActivityEntry]]:
+    def _group_by_category(
+        self, activities: list[ActivityEntry]
+    ) -> dict[ActivityCategory, list[ActivityEntry]]:
         """Group activities by category."""
         grouped = {category: [] for category in ActivityCategory}
 
@@ -237,10 +315,12 @@ class ActivityTracker:
             date=datetime.now().strftime("%Y-%m-%d"),
             total_tracked_minutes=0,
             apps_used=[],
-            time_distribution={category.value: {"minutes": 0, "percentage": 0}
-                             for category in ActivityCategory},
+            time_distribution={
+                category.value: {"minutes": 0, "percentage": 0}
+                for category in ActivityCategory
+            },
             categorized_activities={category: [] for category in ActivityCategory},
-            total_activities=0
+            total_activities=0,
         )
 
     def save_to_file(self, filename: str) -> None:
@@ -254,18 +334,18 @@ class ActivityTracker:
                     "content_summary": entry.content_summary,
                     "user_activity": entry.user_activity,
                     "category": entry.category.value,
-                    "confidence": entry.confidence
+                    "confidence": entry.confidence,
                 }
                 for entry in self.activity_log
             ]
         }
 
-        with open(filename, 'w') as f:
+        with open(filename, "w") as f:
             json.dump(data, f, indent=2)
 
     def load_from_file(self, filename: str) -> None:
         """Load activity log from a JSON file."""
-        with open(filename, 'r') as f:
+        with open(filename) as f:
             data = json.load(f)
 
         self.activity_log = []
@@ -277,9 +357,10 @@ class ActivityTracker:
                 content_summary=entry_data["content_summary"],
                 user_activity=entry_data["user_activity"],
                 category=ActivityCategory(entry_data["category"]),
-                confidence=entry_data.get("confidence", 0.0)
+                confidence=entry_data.get("confidence", 0.0),
             )
             self.activity_log.append(entry)
+
 
 # Global instance
 activity_tracker = ActivityTracker()

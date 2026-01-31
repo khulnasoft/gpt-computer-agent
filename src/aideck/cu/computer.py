@@ -1,33 +1,27 @@
 try:
-    from ..utils.db import *
     from ..llm import get_model
-    from ..top_bar_wrapper import wrapper
     from ..llm_settings import llm_settings
+    from ..top_bar_wrapper import wrapper
+    from ..utils.db import *
 except ImportError:
-    from utils.db import *
     from top_bar_wrapper import wrapper
-    from llm_settings import llm_settings
-
-from langchain.tools import tool
-
+    from utils.db import *
 
 import base64
-import math
 import os
 import platform
-import shlex
-import shutil
 import tempfile
 import time
-from strenum import StrEnum
 from pathlib import Path
 from typing import Literal, TypedDict
 from uuid import uuid4
-import pyautogui
-from anthropic.types.beta import BetaToolComputerUse20241022Param
-from PIL import Image
 
-from .base import BaseAnthropicTool, ToolError, ToolResult
+import pyautogui
+from langchain.tools import tool
+from PIL import Image
+from strenum import StrEnum
+
+from .base import ToolError, ToolResult
 from .run import run
 
 OUTPUT_DIR = "/tmp/outputs"
@@ -110,7 +104,7 @@ def key_action(text: str):
                 keystroke "{keystroke}" using {modifier}
             end tell
             """
-            os.system("osascript -e '{}'".format(script))
+            os.system(f"osascript -e '{script}'")
         else:
             pyautogui.hotkey(*keys)
     else:
@@ -141,7 +135,6 @@ def screenshot_action(direct_base64: bool = False) -> ToolResult:
     See the screenshot of the current screen.
     """
 
-
     temp_dir = Path(tempfile.gettempdir())
     path = temp_dir / f"screenshot_{uuid4().hex}.png"
 
@@ -164,11 +157,10 @@ def screenshot_action(direct_base64: bool = False) -> ToolResult:
         if direct_base64:
             return base64_image
         return ToolResult(base64_image=base64_image)
-    raise ToolError(f"Failed to take screenshot")
+    raise ToolError("Failed to take screenshot")
 
 
 def screenshot_action_(path):
-
 
     screenshot = pyautogui.screenshot()
     screenshot.save(str(path))
@@ -179,8 +171,6 @@ def screenshot_action_(path):
         with Image.open(path) as img:
             img = img.resize((x, y), Image.Resampling.LANCZOS)
             img.save(path)
-
-
 
 
 def cursor_position_action():
@@ -236,6 +226,7 @@ def mouse_move_action(coordinate: tuple[int, int]):
     x, y = scale_coordinates(ScalingSource.API, coordinate[0], coordinate[1])
     smooth_move_to(x, y)
 
+
 @wrapper
 def left_click_drag_action(coordinate: tuple[int, int]):
     """Perform a left click and drag to the specified coordinate."""
@@ -245,12 +236,14 @@ def left_click_drag_action(coordinate: tuple[int, int]):
     smooth_move_to(x, y)
     pyautogui.dragTo(x, y, button="left")
 
+
 @wrapper
 def key_action_handler(text: str):
     """Press a specific key."""
     if text is None:
         raise ToolError("text is required for key")
     key_action(text)
+
 
 @wrapper
 def type_action_handler(text: str):
@@ -259,31 +252,29 @@ def type_action_handler(text: str):
         raise ToolError("text is required for type")
     type_action(text)
 
+
 @wrapper
 def left_click_action():
     """Perform a left click."""
     click_action("left_click")
+
 
 @wrapper
 def right_click_action():
     """Perform a right click."""
     click_action("right_click")
 
+
 @wrapper
 def middle_click_action():
     """Perform a middle click."""
     click_action("middle_click")
 
+
 @wrapper
 def double_click_action():
     """Perform a double click."""
     click_action("double_click")
-
-
-
-
-
-
 
 
 # Initialize global variables
@@ -294,5 +285,16 @@ _screenshot_delay = 2.0
 _scaling_enabled = True
 
 
-
-computer_tool = [tool(mouse_move_action), tool(left_click_drag_action), tool(key_action_handler), tool(type_action_handler), tool(left_click_action), tool(right_click_action), tool(middle_click_action), tool(double_click_action), tool(screenshot_action), tool(cursor_position_action), tool(shell_action)]
+computer_tool = [
+    tool(mouse_move_action),
+    tool(left_click_drag_action),
+    tool(key_action_handler),
+    tool(type_action_handler),
+    tool(left_click_action),
+    tool(right_click_action),
+    tool(middle_click_action),
+    tool(double_click_action),
+    tool(screenshot_action),
+    tool(cursor_position_action),
+    tool(shell_action),
+]

@@ -22,7 +22,7 @@ body:
     id: solution
     attributes:
       label: Describe the solution you'd like
-      placeholder: An outline of how you would like this to be implemented, include as much details as possible 
+      placeholder: An outline of how you would like this to be implemented, include as much details as possible
     validations:
       required: true
 

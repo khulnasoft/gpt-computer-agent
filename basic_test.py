@@ -2,7 +2,7 @@
 """Simple test script to verify Aideck basic setup"""
 
 import sys
-import os
+
 
 def test_imports():
     """Test basic imports without heavy dependencies"""
@@ -10,11 +10,11 @@ def test_imports():
         # Test basic Python modules
         import os
         import sys
-        import json
+
         print("✅ Basic Python modules work")
 
         # Test if source directory exists
-        src_path = os.path.join(os.path.dirname(__file__), 'src', 'aideck')
+        src_path = os.path.join(os.path.dirname(__file__), "src", "aideck")
         if os.path.exists(src_path):
             print("✅ Source directory exists")
         else:
@@ -26,9 +26,9 @@ def test_imports():
 
         # Try importing version
         try:
-            with open(os.path.join(src_path, 'version.py'), 'r') as f:
+            with open(os.path.join(src_path, "version.py")) as f:
                 version_content = f.read()
-                if '__version__' in version_content:
+                if "__version__" in version_content:
                     print("✅ Version file exists")
                 else:
                     print("⚠️  Version file found but no version info")
@@ -42,6 +42,7 @@ def test_imports():
     except Exception as e:
         print(f"❌ Error during basic test: {e}")
         return False
+
 
 if __name__ == "__main__":
     success = test_imports()

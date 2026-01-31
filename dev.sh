@@ -24,10 +24,10 @@ export LOG_LEVEL=INFO
 
 # Start the application
 echo "🎯 Starting Aideck..."
-echo "📱 The application will be available at http://localhost:8000"
-echo "📚 API documentation will be available at http://localhost:8000/docs"
+echo "📱 The application will be available at http://localhost:7541"
+echo "📚 API documentation will be available at http://localhost:7541"
 echo "🛑 Press Ctrl+C to stop the server"
 echo ""
 
-# Start uvicorn server
-uv run uvicorn src.aideck.api:app --host 0.0.0.0 --port 8000 --reload --log-level info
+# Start Flask server
+uv run python -c "from src.aideck.start import start; start(api=True)"

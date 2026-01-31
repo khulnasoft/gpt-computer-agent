@@ -1,12 +1,11 @@
-import os
+import hashlib
 import logging
 from abc import ABC, abstractmethod
 from pathlib import Path
-from typing import Any, Dict, List, Union
-import hashlib
+from typing import Any
 
-from aideck.schemas.data_models import Document
 from aideck.loaders.config import LoaderConfig
+from aideck.schemas.data_models import Document
 
 
 class BaseLoader(ABC):
@@ -27,42 +26,41 @@ class BaseLoader(ABC):
         """
         self.config = config
         self._processed_document_ids: set[str] = set()
-        self._logger = logging.getLogger(self.__class__.__module__ + '.' + self.__class__.__name__)
-
+        self._logger = logging.getLogger(
+            self.__class__.__module__ + "." + self.__class__.__name__
+        )
 
     @abstractmethod
-    def load(self, source: Union[str, Path, List[Union[str, Path]]]) -> List[Document]:
+    def load(self, source: str | Path | list[str | Path]) -> list[Document]:
         """Loads all documents from the given source synchronously."""
         raise NotImplementedError
 
     @abstractmethod
-    async def aload(self, source: Union[str, Path, List[Union[str, Path]]]) -> List[Document]:
+    async def aload(self, source: str | Path | list[str | Path]) -> list[Document]:
         """Loads all documents from the given source asynchronously."""
         raise NotImplementedError
 
     @abstractmethod
-    def batch(self, sources: List[Union[str, Path]]) -> List[Document]:
+    def batch(self, sources: list[str | Path]) -> list[Document]:
         """Loads documents from a list of sources, potentially in parallel."""
         raise NotImplementedError
 
     @abstractmethod
-    async def abatch(self, sources: List[Union[str, Path]]) -> List[Document]:
+    async def abatch(self, sources: list[str | Path]) -> list[Document]:
         """Loads documents from a list of sources asynchronously and in parallel."""
         raise NotImplementedError
 
     @classmethod
     @abstractmethod
-    def get_supported_extensions(cls) -> List[str]:
+    def get_supported_extensions(cls) -> list[str]:
         """
         Gets a list of file extensions supported by this loader.
         Extensions should be lowercase and include the leading dot (e.g., '.csv').
         """
         raise NotImplementedError
 
-
-
     @classmethod
-    def can_load(cls, source: Union[str, Path]) -> bool:
+    def can_load(cls, source: str | Path) -> bool:
         """
         Checks if this loader can handle the given source file path.
 
@@ -79,7 +77,7 @@ class BaseLoader(ABC):
         absolute_path_str = str(path.resolve())
         return hashlib.md5(absolute_path_str.encode("utf-8")).hexdigest()
 
-    def _handle_loading_error(self, source: str, error: Exception) -> List[Document]:
+    def _handle_loading_error(self, source: str, error: Exception) -> list[Document]:
         """Handles loading errors based on the configuration."""
         if not self.config:
             raise error
@@ -92,7 +90,7 @@ class BaseLoader(ABC):
         else:
             raise error
 
-    def _create_metadata(self, source_path: Path) -> Dict[str, Any]:
+    def _create_metadata(self, source_path: Path) -> dict[str, Any]:
         """
         Creates a base metadata dictionary for a given file.
 
@@ -129,16 +127,16 @@ class BaseLoader(ABC):
     def _check_file_size(self, file_path: Path) -> bool:
         """
         Check if a file size is within the configured limits.
-        
+
         Args:
             file_path: Path to the file to check
-            
+
         Returns:
             True if file size is acceptable, False if it should be skipped
         """
         if self.config.max_file_size is None:
             return True
-            
+
         try:
             file_size = file_path.stat().st_size
             if file_size > self.config.max_file_size:
@@ -152,7 +150,7 @@ class BaseLoader(ABC):
             self._logger.warning(f"Could not check file size for {file_path}: {e}")
             return False
 
-    def _get_supported_files_from_directory(self, directory: Path) -> List[Path]:
+    def _get_supported_files_from_directory(self, directory: Path) -> list[Path]:
         """Recursively finds all supported files within a directory."""
         supported_files = []
         for file_path in directory.rglob("*"):
@@ -160,9 +158,7 @@ class BaseLoader(ABC):
                 supported_files.append(file_path)
         return supported_files
 
-    def _resolve_sources(
-        self, source: Union[str, Path, List[Union[str, Path]]]
-    ) -> List[Path]:
+    def _resolve_sources(self, source: str | Path | list[str | Path]) -> list[Path]:
         """
         Resolves a flexible source input into a definitive list of file paths.
         Prevents duplicate paths from being added to the result.
@@ -172,16 +168,18 @@ class BaseLoader(ABC):
         else:
             source_list = source
 
-        resolved_files: List[Path] = []
+        resolved_files: list[Path] = []
         added_paths: set[Path] = set()  # Track added paths to prevent duplicates
-        
+
         for item in source_list:
             path_item = Path(item)
             if not path_item.exists():
                 if self.config.error_handling == "raise":
                     raise FileNotFoundError(f"Source path does not exist: {path_item}")
                 elif self.config.error_handling == "warn":
-                    self._logger.warning(f"Source path does not exist, skipping: {path_item}")
+                    self._logger.warning(
+                        f"Source path does not exist, skipping: {path_item}"
+                    )
                 continue
 
             if path_item.is_file():
@@ -200,40 +198,36 @@ class BaseLoader(ABC):
     def _detect_content_type(self, source_path: Path) -> str:
         """Detects content type based on file extension for RAG optimization."""
         extension = source_path.suffix.lower()
-        
+
         content_type_map = {
-            '.pdf': 'document',
-            '.docx': 'document', 
-            '.doc': 'document',
-            '.odt': 'document',
-            
-            '.md': 'markdown',
-            '.markdown': 'markdown',
-            '.html': 'web_content',
-            '.htm': 'web_content',
-            '.xml': 'structured_data',
-            
-            '.json': 'structured_data',
-            '.jsonl': 'structured_data',
-            '.csv': 'tabular_data',
-            '.tsv': 'tabular_data',
-            '.yaml': 'configuration',
-            '.yml': 'configuration',
-            
-            '.py': 'code',
-            '.js': 'code',
-            '.ts': 'code',
-            '.java': 'code',
-            '.cpp': 'code',
-            '.c': 'code',
-            '.go': 'code',
-            '.rs': 'code',
-            '.php': 'code',
-            '.rb': 'code',
-            
-            '.txt': 'plain_text',
-            '.log': 'plain_text',
-            '.rst': 'plain_text',
+            ".pdf": "document",
+            ".docx": "document",
+            ".doc": "document",
+            ".odt": "document",
+            ".md": "markdown",
+            ".markdown": "markdown",
+            ".html": "web_content",
+            ".htm": "web_content",
+            ".xml": "structured_data",
+            ".json": "structured_data",
+            ".jsonl": "structured_data",
+            ".csv": "tabular_data",
+            ".tsv": "tabular_data",
+            ".yaml": "configuration",
+            ".yml": "configuration",
+            ".py": "code",
+            ".js": "code",
+            ".ts": "code",
+            ".java": "code",
+            ".cpp": "code",
+            ".c": "code",
+            ".go": "code",
+            ".rs": "code",
+            ".php": "code",
+            ".rb": "code",
+            ".txt": "plain_text",
+            ".log": "plain_text",
+            ".rst": "plain_text",
         }
-        
-        return content_type_map.get(extension, 'unknown')
+
+        return content_type_map.get(extension, "unknown")

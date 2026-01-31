@@ -2,18 +2,18 @@ from __future__ import annotations
 
 import json
 from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Optional, Dict, Any, List
+from typing import TYPE_CHECKING, Any
 
-from aideck.context.task import turn_task_to_string
 from aideck.context.sources import TaskOutputSource
+from aideck.context.task import turn_task_to_string
 from aideck.schemas.data_models import RAGSearchResult
 
 if TYPE_CHECKING:
     from aideck.agent.agent import Direct
-    from aideck.graph.graph import State
     from aideck.agent.context_managers.memory_manager import MemoryManager
-    from aideck.tasks.tasks import Task
+    from aideck.graph.graph import State
     from aideck.knowledge_base.knowledge_base import KnowledgeBase
+    from aideck.tasks.tasks import Task
 
 
 class ContextManager:
@@ -22,7 +22,7 @@ class ContextManager:
 
     This manager is responsible for aggregating all situational data relevant
     to the current task.
-    
+
     Features:
     - Advanced search strategy support (dense, full-text, hybrid)
     - Configurable query parameters for optimal retrieval
@@ -30,7 +30,7 @@ class ContextManager:
     - Support for metadata filtering and advanced query options
     """
 
-    def __init__(self, agent: "Direct", task: "Task", state: Optional[State] = None):
+    def __init__(self, agent: Direct, task: Task, state: State | None = None):
         """
         Initializes the ContextManager.
 
@@ -45,7 +45,7 @@ class ContextManager:
         self.state = state
         self.context_prompt: str = ""
 
-    async def _build_context_prompt(self, memory_handler: Optional[MemoryManager]) -> str:
+    async def _build_context_prompt(self, memory_handler: MemoryManager | None) -> str:
         """
         Asynchronously builds the complete contextual prompt string.
 
@@ -77,50 +77,60 @@ class ContextManager:
             additional_parts = []
 
             for item in self.task.context:
-                from aideck.tasks.tasks import Task
                 from aideck.knowledge_base.knowledge_base import KnowledgeBase
-                if isinstance(item, Task):  
-                    task_parts.append(f"Task ID ({item.get_task_id()}): " + turn_task_to_string(item))
-                
-                elif isinstance(item, KnowledgeBase): 
+                from aideck.tasks.tasks import Task
+
+                if isinstance(item, Task):
+                    task_parts.append(
+                        f"Task ID ({item.get_task_id()}): " + turn_task_to_string(item)
+                    )
+
+                elif isinstance(item, KnowledgeBase):
                     await self._process_knowledge_base_item(
-                        item, 
-                        knowledge_base_parts, 
-                        self.task.description
+                        item, knowledge_base_parts, self.task.description
                     )
 
                 elif isinstance(item, str):
                     additional_parts.append(item)
 
-                elif isinstance(item, TaskOutputSource) and self.state:  
+                elif isinstance(item, TaskOutputSource) and self.state:
                     await self._process_task_output_source(
-                        item, 
-                        previous_task_output_parts
+                        item, previous_task_output_parts
                     )
 
             if task_parts:
-                final_context_parts.append("<Tasks>\n" + "\n".join(task_parts) + "\n</Tasks>")
+                final_context_parts.append(
+                    "<Tasks>\n" + "\n".join(task_parts) + "\n</Tasks>"
+                )
             if knowledge_base_parts:
-                final_context_parts.append("<Knowledge Base>\n" + "\n".join(knowledge_base_parts) + "\n</Knowledge Base>")
+                final_context_parts.append(
+                    "<Knowledge Base>\n"
+                    + "\n".join(knowledge_base_parts)
+                    + "\n</Knowledge Base>"
+                )
             if previous_task_output_parts:
                 final_context_parts.extend(previous_task_output_parts)
             if additional_parts:
-                final_context_parts.append("<Additional Context>\n" + "\n".join(additional_parts) + "\n</Additional Context>")
+                final_context_parts.append(
+                    "<Additional Context>\n"
+                    + "\n".join(additional_parts)
+                    + "\n</Additional Context>"
+                )
 
         if not final_context_parts:
             return ""
-        
+
         return "<Context>\n" + "\n\n".join(final_context_parts) + "\n</Context>"
 
     async def _process_knowledge_base_item(
-        self, 
-        knowledge_base: "KnowledgeBase", 
-        knowledge_base_parts: List[str], 
-        query: str
+        self,
+        knowledge_base: KnowledgeBase,
+        knowledge_base_parts: list[str],
+        query: str,
     ) -> None:
         """
         Process a KnowledgeBase item.
-        
+
         Args:
             knowledge_base: The KnowledgeBase instance to query
             knowledge_base_parts: List to append results to
@@ -129,59 +139,67 @@ class ContextManager:
         try:
             if knowledge_base.rag:
                 await knowledge_base.setup_rag()
-                
+
                 rag_results = await knowledge_base.query_async(query)
-                
+
                 if rag_results:
-                    formatted_results = self._format_rag_results(rag_results, knowledge_base)
+                    formatted_results = self._format_rag_results(
+                        rag_results, knowledge_base
+                    )
                     knowledge_base_parts.append(formatted_results)
                 else:
-                    print(f"Warning: No results found for KnowledgeBase '{knowledge_base.name}' with query: '{query}'")
+                    print(
+                        f"Warning: No results found for KnowledgeBase '{knowledge_base.name}' with query: '{query}'"
+                    )
             else:
                 knowledge_base_parts.append(knowledge_base.markdown())
-                
+
         except Exception as e:
             print(f"Error processing KnowledgeBase '{knowledge_base.name}': {str(e)}")
             try:
                 knowledge_base_parts.append(knowledge_base.markdown())
             except Exception as fallback_error:
-                print(f"Fallback also failed for KnowledgeBase '{knowledge_base.name}': {str(fallback_error)}")
+                print(
+                    f"Fallback also failed for KnowledgeBase '{knowledge_base.name}': {str(fallback_error)}"
+                )
 
-    def _format_rag_results(self, rag_results: List[RAGSearchResult], knowledge_base: "KnowledgeBase") -> str:
+    def _format_rag_results(
+        self, rag_results: list[RAGSearchResult], knowledge_base: KnowledgeBase
+    ) -> str:
         """
         Format RAG results with enhanced context and metadata.
-        
+
         Args:
             rag_results: List of RAGSearchResult objects containing text and metadata
             knowledge_base: The KnowledgeBase instance
-            
+
         Returns:
             Formatted string with RAG results including metadata
         """
         if not rag_results:
             return ""
-        
+
         kb_info = f"Source: {knowledge_base.name}"
-        if hasattr(knowledge_base, 'get_config_summary'):
+        if hasattr(knowledge_base, "get_config_summary"):
             try:
                 config = knowledge_base.get_config_summary()
-                vector_db_info = config.get('vectordb', {})
+                vector_db_info = config.get("vectordb", {})
                 if isinstance(vector_db_info, dict):
-                    provider = vector_db_info.get('class', 'Unknown')
+                    provider = vector_db_info.get("class", "Unknown")
                     kb_info += f" (Vector DB: {provider})"
             except Exception:
                 pass
-        
+
         formatted_chunks = []
         for i, result in enumerate(rag_results, 1):
             cleaned_text = result.text.strip()
             metadata_str = ""
             if result.metadata:
-                source = result.metadata.get('source', 'Unknown')
-                page_number = result.metadata.get('page_number', 'Unknown')
-                chunk_id = result.chunk_id or result.metadata.get('chunk_id', 'Unknown')
+                source = result.metadata.get("source", "Unknown")
+                page_number = result.metadata.get("page_number", "Unknown")
+                chunk_id = result.chunk_id or result.metadata.get("chunk_id", "Unknown")
 
-                retrieved_keys = {'source', 'page_number', 'chunk_id', 'chunk'}
+                retrieved_keys = {"source", "page_number", "chunk_id", "chunk"}
                 metadata_parts = [f"source: {source}"]
                 if page_number is not None:
                     metadata_parts.append(f"page: {page_number}")
@@ -201,50 +219,52 @@ class ContextManager:
         return f"<rag source='{kb_info}'>{' '.join(formatted_chunks)}</rag>"
 
     async def _process_task_output_source(
-        self, 
-        item: TaskOutputSource, 
-        previous_task_output_parts: List[str]
+        self, item: TaskOutputSource, previous_task_output_parts: list[str]
     ) -> None:
         """
         Process a TaskOutputSource item with error handling.
-        
+
         Args:
             item: The TaskOutputSource instance
             previous_task_output_parts: List to append results to
         """
         try:
             source_output = self.state.get_task_output(item.task_description_or_id)
-            
+
             if source_output is not None:
                 output_str = self._format_task_output(source_output)
-                
+
                 previous_task_output_parts.append(
                     f"<PreviousTaskNodeOutput id='{item.task_description_or_id}'>\n{output_str}\n</PreviousTaskNodeOutput>"
                 )
             else:
-                print(f"Warning: No output found for task '{item.task_description_or_id}'")
-                
+                print(
+                    f"Warning: No output found for task '{item.task_description_or_id}'"
+                )
+
         except Exception as e:
-            print(f"Error processing TaskOutputSource '{item.task_description_or_id}': {str(e)}")
+            print(
+                f"Error processing TaskOutputSource '{item.task_description_or_id}': {str(e)}"
+            )
 
     def _format_task_output(self, source_output: Any) -> str:
         """
         Format task output with serialization.
-        
+
         Args:
             source_output: The task output object
-            
+
         Returns:
             Formatted string representation
         """
         try:
-            if hasattr(source_output, 'model_dump_json'):
+            if hasattr(source_output, "model_dump_json"):
                 return source_output.model_dump_json(indent=2)
-            elif hasattr(source_output, 'model_dump'):
+            elif hasattr(source_output, "model_dump"):
                 return json.dumps(source_output.model_dump(), default=str, indent=2)
-            elif hasattr(source_output, 'to_dict'):
+            elif hasattr(source_output, "to_dict"):
                 return json.dumps(source_output.to_dict(), default=str, indent=2)
-            elif hasattr(source_output, '__dict__'):
+            elif hasattr(source_output, "__dict__"):
                 return json.dumps(source_output.__dict__, default=str, indent=2)
             else:
                 return str(source_output)
@@ -257,53 +277,59 @@ class ContextManager:
         return self.context_prompt
 
     @asynccontextmanager
-    async def manage_context(self, memory_handler: Optional[MemoryManager] = None):
+    async def manage_context(self, memory_handler: MemoryManager | None = None):
         """The asynchronous context manager for building the task-specific context."""
         self.context_prompt = await self._build_context_prompt(memory_handler)
 
         self.task.context_formatted = self.context_prompt
-            
+
         try:
             yield self
         finally:
             pass
 
-    async def get_knowledge_base_health_status(self) -> Dict[str, Any]:
+    async def get_knowledge_base_health_status(self) -> dict[str, Any]:
         """
         Get health status of all KnowledgeBase instances in the context.
-        
+
         Returns:
             Dictionary containing health status of all KnowledgeBase components
         """
         health_status = {}
-        
+
         if self.task.context:
             for item in self.task.context:
                 from aideck.knowledge_base.knowledge_base import KnowledgeBase
+
                 if isinstance(item, KnowledgeBase):
                     try:
                         health_status[item.name] = await item.health_check_async()
                     except Exception as e:
-                        health_status[item.name] = {
-                            "healthy": False,
-                            "error": str(e)
-                        }
-        
+                        health_status[item.name] = {"healthy": False, "error": str(e)}
+
         return health_status
 
-    def get_context_summary(self) -> Dict[str, Any]:
+    def get_context_summary(self) -> dict[str, Any]:
         """
         Get a comprehensive summary of the current context configuration.
-        
+
         Returns:
             Dictionary containing detailed context summary information
         """
         summary = {
             "task": {
-                "id": self.task.get_task_id() if hasattr(self.task, 'get_task_id') else "unknown",
+                "id": (
+                    self.task.get_task_id()
+                    if hasattr(self.task, "get_task_id")
+                    else "unknown"
+                ),
                 "description": self.task.description,
                 "attachments": self.task.attachments,
-                "response_format": str(self.task.response_format) if self.task.response_format else "str",
+                "response_format": (
+                    str(self.task.response_format)
+                    if self.task.response_format
+                    else "str"
+                ),
                 "response_lang": self.task.response_lang,
                 "not_main_task": self.task.not_main_task,
                 "start_time": self.task.start_time,
@@ -313,7 +339,9 @@ class ContextManager:
                 "total_cost": self.task.total_cost,
                 "total_input_tokens": self.task.total_input_token,
                 "total_output_tokens": self.task.total_output_token,
-                "tool_calls_count": len(self.task.tool_calls) if self.task.tool_calls else 0
+                "tool_calls_count": (
+                    len(self.task.tool_calls) if self.task.tool_calls else 0
+                ),
             },
             "context": {
                 "items_count": len(self.task.context) if self.task.context else 0,
@@ -321,7 +349,7 @@ class ContextManager:
                 "tasks": [],
                 "task_output_sources": [],
                 "additional_contexts": 0,
-                "context_formatted": self.task.context_formatted is not None
+                "context_formatted": self.task.context_formatted is not None,
             },
             "agent": {
                 "id": self.agent.agent_id,
@@ -335,60 +363,72 @@ class ContextManager:
                 "enable_reasoning_tool": self.agent.enable_reasoning_tool,
                 "has_memory": self.agent.memory is not None,
                 "has_knowledge": self.agent.knowledge is not None,
-                "has_canvas": self.agent.canvas is not None
+                "has_canvas": self.agent.canvas is not None,
             },
-            "state": {
-                "available": self.state is not None
-            }
+            "state": {"available": self.state is not None},
         }
-        
+
         if self.task.context:
             for item in self.task.context:
                 from aideck.knowledge_base.knowledge_base import KnowledgeBase
                 from aideck.tasks.tasks import Task
+
                 if isinstance(item, KnowledgeBase):
                     kb_info = {
                         "name": item.name,
                         "type": "rag" if item.rag else "static",
-                        "is_ready": getattr(item, '_is_ready', False),
-                        "knowledge_id": getattr(item, 'knowledge_id', 'unknown'),
-                        "sources_count": len(item.sources) if hasattr(item, 'sources') else 0
+                        "is_ready": getattr(item, "_is_ready", False),
+                        "knowledge_id": getattr(item, "knowledge_id", "unknown"),
+                        "sources_count": (
+                            len(item.sources) if hasattr(item, "sources") else 0
+                        ),
                     }
-                    
-                    
-                    if hasattr(item, 'vector_db') and hasattr(item.vector_db, 'get_config_summary'):
+
+                    if hasattr(item, "vector_db") and hasattr(
+                        item.vector_db, "get_config_summary"
+                    ):
                         try:
                             kb_info["vector_db"] = item.vector_db.get_config_summary()
                         except Exception:
-                            kb_info["vector_db"] = {"provider": item.vector_db.__class__.__name__}
-                    
-                    if hasattr(item, 'get_collection_info_async'):
+                            kb_info["vector_db"] = {
+                                "provider": item.vector_db.__class__.__name__
+                            }
+
+                    if hasattr(item, "get_collection_info_async"):
                         try:
                             kb_info["collection_info_available"] = True
                         except Exception:
                             kb_info["collection_info_available"] = False
-                    
+
                     summary["context"]["knowledge_bases"].append(kb_info)
-                    
+
                 elif isinstance(item, Task):
-                    summary["context"]["tasks"].append({
-                        "id": item.get_task_id() if hasattr(item, 'get_task_id') else "unknown",
-                        "description": item.description,
-                        "not_main_task": item.not_main_task,
-                        "has_response": item.response is not None,
-                        "has_attachments": bool(item.attachments),
-                        "tools_count": len(item.tools) if item.tools else 0
-                    })
-                    
+                    summary["context"]["tasks"].append(
+                        {
+                            "id": (
+                                item.get_task_id()
+                                if hasattr(item, "get_task_id")
+                                else "unknown"
+                            ),
+                            "description": item.description,
+                            "not_main_task": item.not_main_task,
+                            "has_response": item.response is not None,
+                            "has_attachments": bool(item.attachments),
+                            "tools_count": len(item.tools) if item.tools else 0,
+                        }
+                    )
+
                 elif isinstance(item, TaskOutputSource):
-                    summary["context"]["task_output_sources"].append({
-                        "task_id": item.task_description_or_id,
-                        "retrieval_mode": item.retrieval_mode,
-                        "enabled": item.enabled,
-                        "source_id": item.source_id
-                    })
-                    
+                    summary["context"]["task_output_sources"].append(
+                        {
+                            "task_id": item.task_description_or_id,
+                            "retrieval_mode": item.retrieval_mode,
+                            "enabled": item.enabled,
+                            "source_id": item.source_id,
+                        }
+                    )
+
                 elif isinstance(item, str):
                     summary["context"]["additional_contexts"] += 1
-        
+
         return summary

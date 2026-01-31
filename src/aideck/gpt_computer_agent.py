@@ -1,72 +1,64 @@
 try:
-    from .agent.chat_history import *
-    from .agent.agent_executor import *
-    from .llm import *
-    from .llm_settings import llm_settings
     from .agent.agent_executor import *
     from .agent.background import *
-
-    from .gui.signal import *
+    from .agent.chat_history import *
+    from .audio.tts import text_to_speech
+    from .audio.wake_word import wake_word
+    from .character import developer, name
     from .gui.button import *
-    from .gui.settings import settings_popup
     from .gui.llmsettings import llmsettings_popup
+    from .gui.settings import settings_popup
+    from .gui.signal import *
+    from .llm import *
+    from .llm_settings import llm_settings
     from .utils.db import *
     from .utils.telemetry import my_tracer, os_name
-
-    from .audio.wake_word import wake_word
-    from .audio.tts import text_to_speech
-    from .character import name, developer
 
 except ImportError:
     # This is for running the script directly
     # in order to test the GUI without rebuilding the package
-    from agent.chat_history import *
-    from agent.agent_executor import *
-    from llm import *
-    from llm_settings import llm_settings
     from agent.agent_executor import *
     from agent.background import *
-    from utils.db import *
-    from gui.signal import *
-    from gui.button import *
-    from gui.settings import settings_popup
-    from gui.llmsettings import llmsettings_popup
-    from utils.telemetry import my_tracer, os_name
-    from audio.wake_word import wake_word
+    from agent.chat_history import *
     from audio.tts import text_to_speech
+    from audio.wake_word import wake_word
+    from gui.button import *
+    from gui.llmsettings import llmsettings_popup
+    from gui.settings import settings_popup
+    from gui.signal import *
+    from llm import *
+    from llm_settings import llm_settings
+    from utils.db import *
+    from utils.telemetry import my_tracer, os_name
+
+import math
 import platform
+import random
 import threading
 import time
-import random
-import math
 
-from PyQt5.QtWidgets import QMainWindow, QVBoxLayout, QWidget
-from PyQt5.QtGui import QMouseEvent, QPainter, QPen, QBrush, QIcon, QColor
-from PyQt5.QtCore import Qt, QTimer, QRect, pyqtSignal
-from PyQt5.QtGui import QKeySequence
-from PyQt5.QtWidgets import QShortcut
-from PyQt5.QtWidgets import QSpacerItem, QSizePolicy
-from PyQt5.QtWidgets import QDesktopWidget
-
-
-from PyQt5.QtWidgets import (
-    QPushButton,
-    QLabel,
-    QHBoxLayout,
-)
-from PyQt5.QtCore import QPoint
-
-from PyQt5.QtWidgets import QTextEdit
-from PyQt5 import QtGui
-from PyQt5.QtCore import QThread
 import pygame
-
+from PyQt5 import QtGui
+from PyQt5.QtCore import QPoint, QRect, Qt, QThread, QTimer, pyqtSignal
+from PyQt5.QtGui import QBrush, QColor, QIcon, QKeySequence, QMouseEvent, QPainter, QPen
+from PyQt5.QtWidgets import (
+    QDesktopWidget,
+    QHBoxLayout,
+    QLabel,
+    QMainWindow,
+    QPushButton,
+    QShortcut,
+    QSizePolicy,
+    QSpacerItem,
+    QTextEdit,
+    QVBoxLayout,
+    QWidget,
+)
 
 print("Imported all libraries")
 
 
 from PyQt5 import QtCore
-
 
 try:
     import ctypes
@@ -91,7 +83,7 @@ os_name_ = os_name()
 
 
 from PyQt5.QtCore import QRegExp
-from PyQt5.QtGui import QSyntaxHighlighter, QTextCharFormat, QFont
+from PyQt5.QtGui import QFont, QSyntaxHighlighter, QTextCharFormat
 
 
 class PythonSyntaxHighlighter(QSyntaxHighlighter):
@@ -341,7 +333,9 @@ class CustomTextEdit(QTextEdit):
         super(CustomTextEdit, self).__init__(parent)
 
     def keyPressEvent(self, event):
-        if (event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter) and not (event.modifiers() & Qt.ShiftModifier):
+        if (event.key() == Qt.Key_Return or event.key() == Qt.Key_Enter) and not (
+            event.modifiers() & Qt.ShiftModifier
+        ):
             global return_key_event
             return_key_event()
         super(CustomTextEdit, self).keyPressEvent(
@@ -351,7 +345,7 @@ class CustomTextEdit(QTextEdit):
     def insertFromMimeData(self, source):
         newData = QtCore.QMimeData()
         for format in source.formats():
-            if format == 'text/plain':
+            if format == "text/plain":
                 newData.setData(format, source.data(format))
         super().insertFromMimeData(newData)
 
@@ -861,9 +855,7 @@ class MainWindow(QMainWindow):
 
                 start_api()
             except:
-                raise Exception(
-                    "API could not be started, please install aideck[api]"
-                )
+                raise Exception("API could not be started, please install aideck[api]")
         self.stop_talking = False
         self.setWindowFlags(
             Qt.FramelessWindowHint | Qt.WindowStaysOnTopHint
@@ -1184,9 +1176,8 @@ class MainWindow(QMainWindow):
 
         input_box.setFixedHeight(80)
 
-
         # If its used for a chat, you can use the following line to disable word wrap
-        #input_box.setWordWrapMode(QtGui.QTextOption.NoWrap)
+        # input_box.setWordWrapMode(QtGui.QTextOption.NoWrap)
 
         # Change the font size
         font = QtGui.QFont()

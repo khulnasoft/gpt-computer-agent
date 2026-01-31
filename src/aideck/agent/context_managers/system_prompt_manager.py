@@ -1,17 +1,17 @@
 from __future__ import annotations
 
-from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Dict, Any, Optional
 import json
+from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING
 
 from aideck.context.agent import turn_agent_to_string
 from aideck.context.default_prompt import default_prompt
-from aideck.tools.thought import Thought, AnalysisResult
+from aideck.tools.thought import AnalysisResult, Thought
 
 if TYPE_CHECKING:
     from aideck.agent.agent import Direct
-    from aideck.tasks.tasks import Task
     from aideck.agent.context_managers.memory_manager import MemoryManager
+    from aideck.tasks.tasks import Task
 
 
 class SystemPromptManager:
@@ -39,7 +39,7 @@ class SystemPromptManager:
         self.task = task
         self.system_prompt: str = ""
 
-    def _build_system_prompt(self, memory_handler: Optional[MemoryManager]) -> str:
+    def _build_system_prompt(self, memory_handler: MemoryManager | None) -> str:
         """
         Builds the complete system prompt string by assembling its components.
 
@@ -53,7 +53,7 @@ class SystemPromptManager:
             The fully constructed system prompt string.
         """
         prompt_parts = []
-    
+
         is_thinking_enabled = self.agent.enable_thinking_tool
         if self.task.enable_thinking_tool is not None:
             is_thinking_enabled = self.task.enable_thinking_tool
@@ -61,12 +61,14 @@ class SystemPromptManager:
         is_reasoning_enabled = self.agent.enable_reasoning_tool
         if self.task.enable_reasoning_tool is not None:
             is_reasoning_enabled = self.task.enable_reasoning_tool
-        
+
         if is_thinking_enabled:
             thought_schema_str = json.dumps(Thought.model_json_schema(), indent=2)
 
             if is_reasoning_enabled:
-                analysis_result_schema_str = json.dumps(AnalysisResult.model_json_schema(), indent=2)
+                analysis_result_schema_str = json.dumps(
+                    AnalysisResult.model_json_schema(), indent=2
+                )
 
                 reflective_instructions = f"""---
                 ### MISSION BRIEFING: OPERATION DELIBERATE THOUGHT ###
@@ -233,7 +235,7 @@ class SystemPromptManager:
 
         if self.agent.system_prompt:
             base_prompt = self.agent.system_prompt
-        
+
         else:
             has_any_info = False
 
@@ -244,17 +246,21 @@ class SystemPromptManager:
                 base_prompt += f"\nThis is your goal: {self.agent.goal}"
                 has_any_info = True
             if self.agent.instructions:
-                base_prompt += f"\nThis is your instructions to follow: {self.agent.instructions}"
+                base_prompt += (
+                    f"\nThis is your instructions to follow: {self.agent.instructions}"
+                )
                 has_any_info = True
             if self.agent.education:
                 base_prompt += f"\nThis is your education: {self.agent.education}"
                 has_any_info = True
             if self.agent.work_experience:
-                base_prompt += f"\nThis is your work experiences: {self.agent.work_experience}"
+                base_prompt += (
+                    f"\nThis is your work experiences: {self.agent.work_experience}"
+                )
                 has_any_info = True
             if not has_any_info and not is_thinking_enabled:
                 base_prompt = default_prompt().prompt
-        
+
         prompt_parts.append(base_prompt.strip())
 
         agent_context_str = "<YourCharacter>"
@@ -265,12 +271,12 @@ class SystemPromptManager:
                 if isinstance(item, type(self.agent)):
                     agent_context_str += f"\nAgent ID ({item.get_agent_id()}): {turn_agent_to_string(item)}"
                     found_agent_context = True
-        
+
         if found_agent_context:
             agent_context_str += "\n</YourCharacter>"
             prompt_parts.append(agent_context_str)
         return "\n\n".join(prompt_parts)
-    
+
     def get_system_prompt(self) -> str:
         """
         Public getter to retrieve the constructed system prompt.
@@ -284,7 +290,7 @@ class SystemPromptManager:
         return self.system_prompt
 
     @asynccontextmanager
-    async def manage_system_prompt(self, memory_handler: Optional[MemoryManager] = None):
+    async def manage_system_prompt(self, memory_handler: MemoryManager | None = None):
         """
         The asynchronous context manager for building the system prompt.
 
@@ -292,7 +298,7 @@ class SystemPromptManager:
         system prompt and makes it available via the `get_system_prompt` method.
         """
         self.system_prompt = self._build_system_prompt(memory_handler)
-            
+
         try:
             yield self
         finally:

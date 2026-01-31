@@ -1,15 +1,16 @@
 import asyncio
 from pathlib import Path
-from typing import List, Union
 
 try:
     from lxml import etree
 except ImportError:
-    raise ImportError("`lxml` is not installed. Please install it with `pip install lxml`.")
+    raise ImportError(
+        "`lxml` is not installed. Please install it with `pip install lxml`."
+    )
 
-from aideck.schemas.data_models import Document
 from aideck.loaders.base import BaseLoader
 from aideck.loaders.config import XMLLoaderConfig
+from aideck.schemas.data_models import Document
 
 
 class XMLLoader(BaseLoader):
@@ -31,24 +32,24 @@ class XMLLoader(BaseLoader):
         super().__init__(config)
         self.config: XMLLoaderConfig = config
 
-
     @classmethod
-    def get_supported_extensions(cls) -> List[str]:
+    def get_supported_extensions(cls) -> list[str]:
         """Gets a list of file extensions supported by this loader."""
         return [".xml"]
 
-    def load(self, source: Union[str, Path, List[Union[str, Path]]]) -> List[Document]:
+    def load(self, source: str | Path | list[str | Path]) -> list[Document]:
         """Loads all XML documents from the given source synchronously."""
         try:
             loop = asyncio.get_running_loop()
             import concurrent.futures
+
             with concurrent.futures.ThreadPoolExecutor() as executor:
                 future = executor.submit(asyncio.run, self.aload(source))
                 return future.result()
         except RuntimeError:
             return asyncio.run(self.aload(source))
 
-    async def aload(self, source: Union[str, Path, List[Union[str, Path]]]) -> List[Document]:
+    async def aload(self, source: str | Path | list[str | Path]) -> list[Document]:
         """Loads all XML documents from the given source asynchronously and concurrently."""
         file_paths = self._resolve_sources(source)
         if not file_paths:
@@ -59,16 +60,15 @@ class XMLLoader(BaseLoader):
 
         return [doc for doc_list in results for doc in doc_list]
 
-    def batch(self, sources: List[Union[str, Path]]) -> List[Document]:
+    def batch(self, sources: list[str | Path]) -> list[Document]:
         """Loads documents from a list of sources, leveraging the core `load` method."""
         return self.load(sources)
 
-    async def abatch(self, sources: List[Union[str, Path]]) -> List[Document]:
+    async def abatch(self, sources: list[str | Path]) -> list[Document]:
         """Loads documents from a list of sources asynchronously, leveraging `aload`."""
         return await self.aload(sources)
 
-
-    async def _process_single_xml_file(self, path: Path) -> List[Document]:
+    async def _process_single_xml_file(self, path: Path) -> list[Document]:
         """
         Processes a single XML file. Wraps the synchronous parsing logic in a
         separate thread to avoid blocking the asyncio event loop.
@@ -80,7 +80,7 @@ class XMLLoader(BaseLoader):
         except Exception as e:
             return self._handle_loading_error(str(path), e)
 
-    def _parse_and_extract(self, path: Path) -> List[Document]:
+    def _parse_and_extract(self, path: Path) -> list[Document]:
         """
         Synchronous helper that performs the actual parsing and document creation.
         """
@@ -105,7 +105,7 @@ class XMLLoader(BaseLoader):
         documents = []
         all_element_contents = []
         combined_metadata = self._create_metadata(path)
-        
+
         for element in elements_to_process:
             if self.config.content_xpath:
                 content_elements = element.xpath(self.config.content_xpath)
@@ -119,8 +119,10 @@ class XMLLoader(BaseLoader):
             if self.config.content_synthesis_mode == "smart_text":
                 content = " ".join(content_element.xpath(".//text()")).strip()
                 content = " ".join(content.split())
-            else: # "xml_snippet"
-                content = etree.tostring(content_element, pretty_print=True).decode("utf-8")
+            else:  # "xml_snippet"
+                content = etree.tostring(content_element, pretty_print=True).decode(
+                    "utf-8"
+                )
 
             if self.config.skip_empty_content and not content.strip():
                 continue
@@ -130,28 +132,36 @@ class XMLLoader(BaseLoader):
             # Collect metadata from all elements
             if self.config.include_attributes:
                 combined_metadata.update(dict(element.attrib))
-            
+
             if self.config.metadata_xpaths:
                 for key, xpath in self.config.metadata_xpaths.items():
                     result = element.xpath(xpath)
                     if result:
                         value = result[0]
-                        if hasattr(value, 'text'):
-                            combined_metadata[key] = value.text.strip() if value.text else ""
+                        if hasattr(value, "text"):
+                            combined_metadata[key] = (
+                                value.text.strip() if value.text else ""
+                            )
                         else:
                             combined_metadata[key] = str(value).strip()
-        
+
         if all_element_contents:
             combined_content = "\n\n".join(all_element_contents)
             if self.config.include_metadata:
                 combined_metadata["element_count"] = len(all_element_contents)
-                documents.append(Document(document_id=document_id, content=combined_content, metadata=combined_metadata))
+                documents.append(
+                    Document(
+                        document_id=document_id,
+                        content=combined_content,
+                        metadata=combined_metadata,
+                    )
+                )
             else:
-                documents.append(Document(document_id=document_id, content=combined_content))
-            
+                documents.append(
+                    Document(document_id=document_id, content=combined_content)
+                )
+
         return documents
-
-
 
     @staticmethod
     def _strip_namespaces(root_element: etree._Element):
@@ -159,7 +169,7 @@ class XMLLoader(BaseLoader):
         Recursively removes namespace information from all elements in the tree.
         """
         for elem in root_element.iter():
-            if '}' in elem.tag:
-                elem.tag = elem.tag.split('}', 1)[1]
-        
+            if "}" in elem.tag:
+                elem.tag = elem.tag.split("}", 1)[1]
+
         etree.cleanup_namespaces(root_element.getroottree())

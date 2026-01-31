@@ -1,6 +1,6 @@
 import json
 import time
-from typing import Optional, Dict, Any, Type, Union, TypeVar
+from typing import Any, TypeVar
 
 from pydantic import BaseModel
 
@@ -11,9 +11,12 @@ try:
     from redis.asyncio import Redis
     from redis.exceptions import ConnectionError as RedisConnectionError
 except ImportError:
-    raise ImportError("`redis` is required for async RedisStorage. Please install it using `pip install redis`.")
+    raise ImportError(
+        "`redis` is required for async RedisStorage. Please install it using `pip install redis`."
+    )
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
+
 
 class RedisStorage(Storage):
     """
@@ -27,9 +30,9 @@ class RedisStorage(Storage):
         host: str = "localhost",
         port: int = 6379,
         db: int = 0,
-        password: Optional[str] = None,
+        password: str | None = None,
         ssl: bool = False,
-        expire: Optional[int] = None,
+        expire: int | None = None,
     ):
         """
         Initializes the async Redis storage provider.
@@ -48,30 +51,52 @@ class RedisStorage(Storage):
         self.expire = expire
         # Client is configured but not connected on initialization
         self.redis_client: Redis = Redis(
-            host=host, port=port, db=db, password=password,
-            ssl=ssl, decode_responses=True
+            host=host,
+            port=port,
+            db=db,
+            password=password,
+            ssl=ssl,
+            decode_responses=True,
         )
 
-    def _get_key(self, object_id: str, model_type: Type[BaseModel]) -> str:
-        if model_type is InteractionSession: return f"{self.prefix}:session:{object_id}"
-        elif model_type is UserProfile: return f"{self.prefix}:profile:{object_id}"
-        raise TypeError(f"Unsupported model type for key generation: {model_type.__name__}")
-    
-    def _serialize(self, data: Dict[str, Any]) -> str: return json.dumps(data)
-    def _deserialize(self, data: str) -> Dict[str, Any]: return json.loads(data)
+    def _get_key(self, object_id: str, model_type: type[BaseModel]) -> str:
+        if model_type is InteractionSession:
+            return f"{self.prefix}:session:{object_id}"
+        elif model_type is UserProfile:
+            return f"{self.prefix}:profile:{object_id}"
+        raise TypeError(
+            f"Unsupported model type for key generation: {model_type.__name__}"
+        )
 
+    def _serialize(self, data: dict[str, Any]) -> str:
+        return json.dumps(data)
 
+    def _deserialize(self, data: str) -> dict[str, Any]:
+        return json.loads(data)
 
-    def is_connected(self) -> bool: return self._run_async_from_sync(self.is_connected_async())
-    def connect(self) -> None: return self._run_async_from_sync(self.connect_async())
-    def disconnect(self) -> None: return self._run_async_from_sync(self.disconnect_async())
-    def create(self) -> None: return self._run_async_from_sync(self.create_async())
-    def read(self, object_id: str, model_type: Type[T]) -> Optional[T]: return self._run_async_from_sync(self.read_async(object_id, model_type))
-    def upsert(self, data: Union[InteractionSession, UserProfile]) -> None: return self._run_async_from_sync(self.upsert_async(data))
-    def delete(self, object_id: str, model_type: Type[BaseModel]) -> None: return self._run_async_from_sync(self.delete_async(object_id, model_type))
-    def drop(self) -> None: return self._run_async_from_sync(self.drop_async())
-    
+    def is_connected(self) -> bool:
+        return self._run_async_from_sync(self.is_connected_async())
 
+    def connect(self) -> None:
+        return self._run_async_from_sync(self.connect_async())
+
+    def disconnect(self) -> None:
+        return self._run_async_from_sync(self.disconnect_async())
+
+    def create(self) -> None:
+        return self._run_async_from_sync(self.create_async())
+
+    def read(self, object_id: str, model_type: type[T]) -> T | None:
+        return self._run_async_from_sync(self.read_async(object_id, model_type))
+
+    def upsert(self, data: InteractionSession | UserProfile) -> None:
+        return self._run_async_from_sync(self.upsert_async(data))
+
+    def delete(self, object_id: str, model_type: type[BaseModel]) -> None:
+        return self._run_async_from_sync(self.delete_async(object_id, model_type))
+
+    def drop(self) -> None:
+        return self._run_async_from_sync(self.drop_async())
 
     async def is_connected_async(self) -> bool:
         if not self._connected:
@@ -100,7 +125,7 @@ class RedisStorage(Storage):
     async def create_async(self) -> None:
         await self.connect_async()
 
-    async def read_async(self, object_id: str, model_type: Type[T]) -> Optional[T]:
+    async def read_async(self, object_id: str, model_type: type[T]) -> T | None:
         key = self._get_key(object_id, model_type)
         data_str = await self.redis_client.get(key)
         if data_str is None:
@@ -112,23 +137,28 @@ class RedisStorage(Storage):
             print(f"Warning: Could not parse key {key}. Error: {e}")
             return None
 
-    async def upsert_async(self, data: Union[InteractionSession, UserProfile]) -> None:
+    async def upsert_async(self, data: InteractionSession | UserProfile) -> None:
         data.updated_at = time.time()
         data_dict = data.model_dump(mode="json")
         json_string = self._serialize(data_dict)
 
-        if isinstance(data, InteractionSession): key = self._get_key(data.session_id, InteractionSession)
-        elif isinstance(data, UserProfile): key = self._get_key(data.user_id, UserProfile)
-        else: raise TypeError(f"Unsupported data type for upsert: {type(data).__name__}")
-        
+        if isinstance(data, InteractionSession):
+            key = self._get_key(data.session_id, InteractionSession)
+        elif isinstance(data, UserProfile):
+            key = self._get_key(data.user_id, UserProfile)
+        else:
+            raise TypeError(f"Unsupported data type for upsert: {type(data).__name__}")
+
         await self.redis_client.set(key, json_string, ex=self.expire)
 
-    async def delete_async(self, object_id: str, model_type: Type[BaseModel]) -> None:
+    async def delete_async(self, object_id: str, model_type: type[BaseModel]) -> None:
         key = self._get_key(object_id, model_type)
         await self.redis_client.delete(key)
 
     async def drop_async(self) -> None:
         """Asynchronously deletes ALL keys associated with this provider's prefix."""
-        keys_to_delete = [key async for key in self.redis_client.scan_iter(match=f"{self.prefix}:*")]
+        keys_to_delete = [
+            key async for key in self.redis_client.scan_iter(match=f"{self.prefix}:*")
+        ]
         if keys_to_delete:
             await self.redis_client.delete(*keys_to_delete)

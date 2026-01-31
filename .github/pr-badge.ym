@@ -96,7 +96,7 @@
 - label: New Code
   message: 'Commits: $payload.pull_request.commits | Files Changed: $payload.pull_request.changed_files | Additions: $payload.pull_request.additions-$payload.pull_request.deletions'
   color: '#dddd00'
-  
+
 # Checks if the required sections are missing
 - label: ⚠️Missing
   message: Category

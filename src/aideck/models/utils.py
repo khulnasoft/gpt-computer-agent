@@ -1,19 +1,14 @@
 import os
-from typing import List, Dict, Type
 from decimal import Decimal
 
+from aideck.exceptions import ConfigurationError
 from aideck.models.base import BaseModelProvider
-from aideck.models.providers import (
-    OpenAI, AzureOpenAI, Ollama, Anthropic, Gemini 
-)
-
-from aideck.utils.package.exception import ConfigurationError
-
+from aideck.models.providers import Anthropic, AzureOpenAI, Gemini, Ollama, OpenAI
 
 ALL_PROVIDER_CLASSES = [OpenAI, AzureOpenAI, Ollama, Anthropic, Gemini]
 
 
-def list_available_models(provider_class: Type[BaseModelProvider]) -> List[str]:
+def list_available_models(provider_class: type[BaseModelProvider]) -> list[str]:
     """
     Lists the officially supported model names for a given provider class.
 
@@ -23,13 +18,13 @@ def list_available_models(provider_class: Type[BaseModelProvider]) -> List[str]:
     Returns:
         A sorted list of supported model name strings.
     """
-    model_meta = getattr(provider_class, '_model_meta', None)
-    if not model_meta or not hasattr(model_meta, 'default'):
+    model_meta = getattr(provider_class, "_model_meta", None)
+    if not model_meta or not hasattr(model_meta, "default"):
         return []
     return sorted(list(model_meta.default.keys()))
 
 
-def get_all_supported_models() -> Dict[str, List[str]]:
+def get_all_supported_models() -> dict[str, list[str]]:
     """
     Returns a complete dictionary of all supported models, grouped by provider.
 
@@ -58,7 +53,7 @@ def check_provider_environment(model_provider: BaseModelProvider) -> None:
     for var_name in model_provider.required_environment_variables:
         if not os.getenv(var_name):
             missing_vars.append(var_name)
-    
+
     if missing_vars:
         raise ConfigurationError(
             f"Missing required environment variables for provider '{type(model_provider).__name__}': "
@@ -67,9 +62,7 @@ def check_provider_environment(model_provider: BaseModelProvider) -> None:
 
 
 def get_estimated_cost(
-    input_tokens: int, 
-    output_tokens: int, 
-    model_provider: BaseModelProvider
+    input_tokens: int, output_tokens: int, model_provider: BaseModelProvider
 ) -> str:
     """
     Calculates the estimated cost for token usage using a configured model
@@ -87,16 +80,15 @@ def get_estimated_cost(
         A formatted string representing the estimated cost (e.g., "~$0.0005").
     """
     pricing = model_provider.pricing
-    
+
     if not pricing or "input" not in pricing or "output" not in pricing:
         return "Cost Unknown"
 
-    input_tokens_millions = Decimal(str(input_tokens)) / Decimal('1000000')
-    output_tokens_millions = Decimal(str(output_tokens)) / Decimal('1000000')
-    
+    input_tokens_millions = Decimal(str(input_tokens)) / Decimal("1000000")
+    output_tokens_millions = Decimal(str(output_tokens)) / Decimal("1000000")
+
     input_cost = Decimal(str(pricing["input"])) * input_tokens_millions
     output_cost = Decimal(str(pricing["output"])) * output_tokens_millions
     total_cost = input_cost + output_cost
 
     return f"~${float(round(total_cost, 4))}"
-

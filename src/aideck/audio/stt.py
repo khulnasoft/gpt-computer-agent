@@ -4,11 +4,12 @@ try:
     from .stt_providers.openai import stt_openai
     from .stt_providers.openai_whisper_local import stt_openai_whisper_local
 except ImportError:
-    from utils.db import *
     from audio.stt_providers.openai import stt_openai
     from audio.stt_providers.openai_whisper_local import stt_openai_whisper_local
+    from utils.db import *
 
 import os
+
 from pydub import AudioSegment
 
 

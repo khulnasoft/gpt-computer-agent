@@ -15,6 +15,8 @@ dependencies = [
     "uv>=0.5.20",
     "mcp[cli]==1.9.4",
     "pydantic-ai==0.3.2",
+    "pydantic-settings>=2.0.0",
+    "pydantic[email]>=2.0.0",
     "python-dotenv>=1.0.1",
     "uvicorn>=0.34.0",
     "beautifulsoup4>=4.12.3",
@@ -36,7 +38,7 @@ dependencies = [
     "onnxruntime>=1.22.1",
     "google-generativeai>=0.8.5",
     "google-auth>=2.40.3",
-    "torch>=2.5.0,<2.8.0",
+    # "torch>=2.5.0,<2.6.0",  # Temporarily disabled - requires Python 3.10-3.12 for macOS x86_64 compatibility
     "huggingface-hub>=0.34.4",
     "aiohttp>=3.12.15",
     "python-docx>=1.2.0",
@@ -52,6 +54,13 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+api = [
+    "flask>=3.0.0",
+    "flask-cors>=4.0.0",
+    "pyautogui>=0.9.54",
+    "waitress>=3.0.0",
+]
+
 rag = [
     "chromadb>=1.0.20",
     "faiss-cpu>=1.12.0",
@@ -90,6 +99,11 @@ dev = [
     "pre-commit>=4.0.1",
     "pytest>=8.3.4",
     "pytest-asyncio>=0.25.1",
+    "pytest-cov>=6.0.0",
+    "black>=24.0.0",
+    "isort>=5.13.0",
+    "flake8>=7.0.0",
+    "ruff>=0.8.0",
 ]
 
 
@@ -105,3 +119,113 @@ publish-url = "https://upload.pypi.org/legacy/"
 name = "testpypi"
 url = "https://test.pypi.org/simple/"
 publish-url = "https://test.pypi.org/legacy/"
+
+[tool.black]
+line-length = 88
+target-version = ['py310', 'py311']
+include = '\.pyi?$'
+extend-exclude = '''
+/(
+  # directories
+  \.eggs
+  | \.git
+  | \.hg
+  | \.mypy_cache
+  | \.tox
+  | \.venv
+  | build
+  | dist
+)/
+'''
+
+[tool.isort]
+profile = "black"
+multi_line_output = 3
+line_length = 88
+known_first_party = ["aideck"]
+
+[tool.mypy]
+python_version = "3.10"
+warn_return_any = true
+warn_unused_configs = true
+disallow_untyped_defs = false
+disallow_incomplete_defs = false
+check_untyped_defs = true
+disallow_untyped_decorators = false
+no_implicit_optional = true
+warn_redundant_casts = true
+warn_unused_ignores = true
+warn_no_return = true
+warn_unreachable = true
+strict_equality = true
+
+[[tool.mypy.overrides]]
+module = [
+    "openai.*",
+    "anthropic.*",
+    "google.*",
+    "boto3.*",
+    "transformers.*",
+    "chromadb.*",
+    "faiss.*",
+    "pinecone.*",
+]
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+minversion = "6.0"
+addopts = "-ra -q --strict-markers --strict-config"
+testpaths = ["tests"]
+asyncio_mode = "auto"
+markers = [
+    "slow: marks tests as slow (deselect with '-m \"not slow\"')",
+    "integration: marks tests as integration tests",
+    "unit: marks tests as unit tests",
+]
+
+[tool.coverage.run]
+source = ["src"]
+omit = [
+    "*/tests/*",
+    "*/test_*",
+    "*/__pycache__/*",
+    "*/site-packages/*",
+]
+
+[tool.coverage.report]
+exclude_lines = [
+    "pragma: no cover",
+    "def __repr__",
+    "if self.debug:",
+    "if settings.DEBUG",
+    "raise AssertionError",
+    "raise NotImplementedError",
+    "if 0:",
+    "if __name__ == .__main__.:",
+    "class .*\\bProtocol\\):",
+    "@(abc\\.)?abstractmethod",
+]
+
+[tool.ruff]
+target-version = "py310"
+line-length = 88
+lint.select = [
+    "E",  # pycodestyle errors
+    "W",  # pycodestyle warnings
+    "F",  # pyflakes
+    "I",  # isort
+    "B",  # flake8-bugbear
+    "C4", # flake8-comprehensions
+    "UP", # pyupgrade
+]
+lint.ignore = [
+    "E501",  # line too long, handled by black
+    "B008",  # do not perform function calls in argument defaults
+    "C901",  # too complex
+    "B904",  # raise from without exception
+]
+
+[tool.ruff.lint.per-file-ignores]
+"__init__.py" = ["F401"]
+"tests/*" = ["B011"]
+"src/aideck/vectordb/providers/*" = ["B904"]

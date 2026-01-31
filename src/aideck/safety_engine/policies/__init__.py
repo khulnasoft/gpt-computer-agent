@@ -1,7 +1,7 @@
 from .adult_content_policies import *
 from .crypto_policies import *
-from .sensitive_social_policies import *
 from .phone_policies import *
+from .sensitive_social_policies import *
 
 __all__ = [
     "AdultContentBlockPolicy",

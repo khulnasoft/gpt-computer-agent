@@ -1,0 +1,11 @@
+# Basic Chat Agent Requirements
+
+# Core dependencies
+aideck>=0.29.0
+pydantic-ai>=0.3.2
+openai>=1.86.0
+python-dotenv>=1.0.1
+
+# Additional dependencies for this example
+rich>=13.9.4
+asyncio-mqtt>=0.16.1

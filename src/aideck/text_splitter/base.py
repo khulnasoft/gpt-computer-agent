@@ -4,12 +4,15 @@ import asyncio
 import copy
 import logging
 from abc import ABC, abstractmethod
-from typing import Any, Callable, Coroutine, Dict, Generic, List, Optional, TypeVar
+from collections.abc import Callable, Coroutine
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel, Field
+
 from aideck.schemas.data_models import Chunk, Document
 
 logger = logging.getLogger(__name__)
+
 
 class BaseChunkingConfig(BaseModel):
     """
@@ -19,6 +22,7 @@ class BaseChunkingConfig(BaseModel):
     applicable to most chunking methods. Specific chunkers can extend this
     class to add their own unique configuration options.
     """
+
     chunk_size: int = Field(
         default=1024,
         description="The target size of each chunk.",
@@ -29,7 +33,7 @@ class BaseChunkingConfig(BaseModel):
         description="The number of overlapping units (e.g., characters or tokens) between consecutive chunks to maintain context.",
         ge=0,
     )
-    min_chunk_size: Optional[int] = Field(
+    min_chunk_size: int | None = Field(
         default=None,
         description=(
             "The minimum size for a chunk to be considered 'full'. This prevents "
@@ -55,8 +59,6 @@ class BaseChunkingConfig(BaseModel):
 ConfigType = TypeVar("ConfigType", bound=BaseChunkingConfig)
 
 
-
-
 class BaseChunker(ABC, Generic[ConfigType]):
     """
     Abstract Base Class for all chunking strategies.
@@ -71,7 +73,7 @@ class BaseChunker(ABC, Generic[ConfigType]):
     the abstract `_chunk_document` method.
     """
 
-    def __init__(self, config: Optional[ConfigType] = None):
+    def __init__(self, config: ConfigType | None = None):
         """
         Initializes the chunker with a given configuration.
 
@@ -80,7 +82,9 @@ class BaseChunker(ABC, Generic[ConfigType]):
                     If None, a default configuration will be instantiated.
         """
 
-        self.config: ConfigType = config if config is not None else self._get_default_config()
+        self.config: ConfigType = (
+            config if config is not None else self._get_default_config()
+        )
 
         if self.config.chunk_overlap >= self.config.chunk_size:
             logger.warning(
@@ -90,13 +94,13 @@ class BaseChunker(ABC, Generic[ConfigType]):
     def _get_effective_min_chunk_size(self) -> int:
         """
         Get the effective minimum chunk size, deriving from chunk_size if not explicitly set.
-        
+
         Returns:
             The minimum chunk size to use for chunking decisions.
         """
         if self.config.min_chunk_size is not None:
             return self.config.min_chunk_size
-        
+
         return max(int(self.config.chunk_size * 0.8), 50)
 
     @classmethod
@@ -109,9 +113,7 @@ class BaseChunker(ABC, Generic[ConfigType]):
         config_class = cls.__orig_bases__[0].__args__[0]
         return config_class()
 
-
-
-    def chunk(self, documents: List[Document]) -> List[Chunk]:
+    def chunk(self, documents: list[Document]) -> list[Chunk]:
         """
         Splits a list of documents into chunks (synchronous).
 
@@ -124,16 +126,18 @@ class BaseChunker(ABC, Generic[ConfigType]):
         Returns:
             A single list containing all `Chunk` objects from all documents.
         """
-        all_chunks: List[Chunk] = []
+        all_chunks: list[Chunk] = []
         for doc in documents:
             try:
                 if not doc.content or not doc.content.strip():
-                    logger.info(f"Document {doc.document_id} has empty content, skipping chunking")
+                    logger.info(
+                        f"Document {doc.document_id} has empty content, skipping chunking"
+                    )
                     continue
-                
+
                 chunks = self._chunk_document(doc)
                 all_chunks.extend(chunks)
-                
+
             except Exception as e:
                 logger.error(f"Error chunking document {doc.document_id}: {e}")
                 error_chunk = self._create_chunk(
@@ -141,13 +145,13 @@ class BaseChunker(ABC, Generic[ConfigType]):
                     text_content=f"[CHUNKING ERROR: {str(e)}]",
                     start_index=0,
                     end_index=len(doc.content),
-                    extra_metadata={"chunking_error": True, "error_message": str(e)}
+                    extra_metadata={"chunking_error": True, "error_message": str(e)},
                 )
                 all_chunks.append(error_chunk)
-        
+
         return all_chunks
 
-    async def achunk(self, documents: List[Document]) -> List[Chunk]:
+    async def achunk(self, documents: list[Document]) -> list[Chunk]:
         """
         Splits a list of documents into chunks (asynchronous).
 
@@ -160,16 +164,18 @@ class BaseChunker(ABC, Generic[ConfigType]):
         Returns:
             A single list containing all `Chunk` objects from all documents.
         """
-        all_chunks: List[Chunk] = []
+        all_chunks: list[Chunk] = []
         for doc in documents:
             try:
                 if not doc.content or not doc.content.strip():
-                    logger.info(f"Document {doc.document_id} has empty content, skipping chunking")
+                    logger.info(
+                        f"Document {doc.document_id} has empty content, skipping chunking"
+                    )
                     continue
-                
+
                 chunks = await self._achunk_document(doc)
                 all_chunks.extend(chunks)
-                
+
             except Exception as e:
                 logger.error(f"Error chunking document {doc.document_id}: {e}")
                 error_chunk = self._create_chunk(
@@ -177,19 +183,19 @@ class BaseChunker(ABC, Generic[ConfigType]):
                     text_content=f"[CHUNKING ERROR: {str(e)}]",
                     start_index=0,
                     end_index=len(doc.content),
-                    extra_metadata={"chunking_error": True, "error_message": str(e)}
+                    extra_metadata={"chunking_error": True, "error_message": str(e)},
                 )
                 all_chunks.append(error_chunk)
-        
+
         return all_chunks
 
-    def batch(self, documents: List[Document], **kwargs: Any) -> List[Chunk]:
+    def batch(self, documents: list[Document], **kwargs: Any) -> list[Chunk]:
         """
         Alias for the `chunk` method for API consistency.
         """
         return self.chunk(documents)
 
-    async def abatch(self, documents: List[Document], **kwargs: Any) -> List[Chunk]:
+    async def abatch(self, documents: list[Document], **kwargs: Any) -> list[Chunk]:
         """
         Splits a list of documents into chunks concurrently (asynchronous).
 
@@ -206,16 +212,15 @@ class BaseChunker(ABC, Generic[ConfigType]):
         if not documents:
             return []
 
-        tasks: List[Coroutine[Any, Any, List[Chunk]]] = [
+        tasks: list[Coroutine[Any, Any, list[Chunk]]] = [
             self._achunk_document(doc) for doc in documents
         ]
         list_of_chunk_lists = await asyncio.gather(*tasks)
 
         return [chunk for sublist in list_of_chunk_lists for chunk in sublist]
 
-
     @abstractmethod
-    def _chunk_document(self, document: Document) -> List[Chunk]:
+    def _chunk_document(self, document: Document) -> list[Chunk]:
         """
         The core chunking logic for a single document (synchronous).
 
@@ -226,9 +231,11 @@ class BaseChunker(ABC, Generic[ConfigType]):
         Returns:
             A list of `Chunk` objects derived from the document.
         """
-        raise NotImplementedError("Subclasses must implement the _chunk_document method.")
+        raise NotImplementedError(
+            "Subclasses must implement the _chunk_document method."
+        )
 
-    async def _achunk_document(self, document: Document) -> List[Chunk]:
+    async def _achunk_document(self, document: Document) -> list[Chunk]:
         """
         The core chunking logic for a single document (asynchronous).
 
@@ -246,14 +253,13 @@ class BaseChunker(ABC, Generic[ConfigType]):
 
         return self._chunk_document(document)
 
-
     def _create_chunk(
         self,
         parent_document: Document,
         text_content: str,
         start_index: int,
         end_index: int,
-        extra_metadata: Optional[Dict[str, Any]] = None,
+        extra_metadata: dict[str, Any] | None = None,
     ) -> Chunk:
         """
         A robust factory for creating `Chunk` objects.
@@ -271,13 +277,15 @@ class BaseChunker(ABC, Generic[ConfigType]):
         Returns:
             A fully-formed `Chunk` object.
         """
-        final_text = text_content.strip() if self.config.strip_whitespace else text_content
-        
+        final_text = (
+            text_content.strip() if self.config.strip_whitespace else text_content
+        )
+
         chunk_metadata = copy.deepcopy(parent_document.metadata)
-        
+
         if extra_metadata:
             chunk_metadata.update(extra_metadata)
-            
+
         return Chunk(
             text_content=final_text,
             metadata=chunk_metadata,

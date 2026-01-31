@@ -1,20 +1,22 @@
 try:
+    from .. import the_input_box
     from ..gui.signal import *
     from ..utils.db import *
     from ..utils.telemetry import my_tracer, os_name
-    from .. import the_input_box
 except ImportError:
     from gui.signal import *
     from utils.db import *
     from utils.telemetry import my_tracer, os_name
-    from . import the_input_box
-import numpy as np
-import sounddevice as sd
-import soundfile as sf
-import scipy.io.wavfile as wavfile
-import soundcard as sc
+
+
 import threading
 import time
+
+import numpy as np
+import scipy.io.wavfile as wavfile
+import soundcard as sc
+import sounddevice as sd
+import soundfile as sf
 from scipy.io.wavfile import write
 
 samplerate = 48000  # Updated samplerate for better quality
@@ -25,8 +27,6 @@ audio_data = None
 
 user_id = load_user_id()
 os_name_ = os_name()
-
-
 
 
 import queue

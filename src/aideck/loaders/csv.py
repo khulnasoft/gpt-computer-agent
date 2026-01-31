@@ -2,14 +2,14 @@ import asyncio
 import csv
 import json
 from pathlib import Path
-from typing import Any, Dict, List, Union
+from typing import Any
 
 import aiofiles
 import aiofiles.os
 
-from aideck.schemas.data_models import Document
 from aideck.loaders.base import BaseLoader
 from aideck.loaders.config import CSVLoaderConfig
+from aideck.schemas.data_models import Document
 
 
 class CSVLoader(BaseLoader):
@@ -26,35 +26,39 @@ class CSVLoader(BaseLoader):
         self.config: CSVLoaderConfig = config
 
     @classmethod
-    def get_supported_extensions(cls) -> List[str]:
+    def get_supported_extensions(cls) -> list[str]:
         """Gets the list of supported file extensions."""
         return [".csv"]
 
-    def _filter_row_columns(self, row: Dict[str, Any]) -> Dict[str, Any]:
+    def _filter_row_columns(self, row: dict[str, Any]) -> dict[str, Any]:
         """Filters columns in a row based on include/exclude rules in the config."""
         if self.config.include_columns:
             return {k: v for k, v in row.items() if k in self.config.include_columns}
         if self.config.exclude_columns:
-            return {k: v for k, v in row.items() if k not in self.config.exclude_columns}
+            return {
+                k: v for k, v in row.items() if k not in self.config.exclude_columns
+            }
         return row
 
-    def _synthesize_content(self, row: Dict[str, Any]) -> str:
+    def _synthesize_content(self, row: dict[str, Any]) -> str:
         """Creates the document content from a row based on the synthesis mode."""
         filtered_row = self._filter_row_columns(row)
         if self.config.content_synthesis_mode == "json":
             return json.dumps(filtered_row)
-        
+
         content_parts = []
         for k, v in filtered_row.items():
             if v and str(v).strip():
                 content_parts.append(f"{k}: {v}")
-        
+
         return "\n".join(content_parts)
 
-    def _create_documents_from_rows(self, all_rows: List[str], file_path: Path, document_id: str) -> List[Document]:
+    def _create_documents_from_rows(
+        self, all_rows: list[str], file_path: Path, document_id: str
+    ) -> list[Document]:
         """Creates documents from processed rows based on split_mode configuration."""
         documents = []
-        
+
         if self.config.split_mode == "per_row":
             # Each row becomes a separate document
             for i, row_content in enumerate(all_rows):
@@ -64,23 +68,33 @@ class CSVLoader(BaseLoader):
                     metadata["total_rows"] = len(all_rows)
                 row_doc_id = f"{document_id}_row_{i}"
                 if metadata:
-                    doc = Document(document_id=row_doc_id, content=row_content, metadata=metadata)
+                    doc = Document(
+                        document_id=row_doc_id, content=row_content, metadata=metadata
+                    )
                 else:
                     doc = Document(document_id=row_doc_id, content=row_content)
                 documents.append(doc)
         elif self.config.split_mode == "per_chunk":
             # Group rows into chunks
             for chunk_idx in range(0, len(all_rows), self.config.rows_per_chunk):
-                chunk_rows = all_rows[chunk_idx:chunk_idx + self.config.rows_per_chunk]
+                chunk_rows = all_rows[
+                    chunk_idx : chunk_idx + self.config.rows_per_chunk
+                ]
                 chunk_content = "\n\n".join(chunk_rows)
                 if self.config.include_metadata:
                     metadata = self._create_metadata(file_path)
                     metadata["chunk_index"] = chunk_idx // self.config.rows_per_chunk
                     metadata["rows_in_chunk"] = len(chunk_rows)
                     metadata["total_rows"] = len(all_rows)
-                chunk_doc_id = f"{document_id}_chunk_{chunk_idx // self.config.rows_per_chunk}"
+                chunk_doc_id = (
+                    f"{document_id}_chunk_{chunk_idx // self.config.rows_per_chunk}"
+                )
                 if metadata:
-                    doc = Document(document_id=chunk_doc_id, content=chunk_content, metadata=metadata)
+                    doc = Document(
+                        document_id=chunk_doc_id,
+                        content=chunk_content,
+                        metadata=metadata,
+                    )
                 else:
                     doc = Document(document_id=chunk_doc_id, content=chunk_content)
                 documents.append(doc)
@@ -91,14 +105,16 @@ class CSVLoader(BaseLoader):
                 metadata = self._create_metadata(file_path)
                 metadata["row_count"] = len(all_rows)
             if metadata:
-                doc = Document(document_id=document_id, content=combined_content, metadata=metadata)
+                doc = Document(
+                    document_id=document_id, content=combined_content, metadata=metadata
+                )
             else:
                 doc = Document(document_id=document_id, content=combined_content)
             documents.append(doc)
-            
+
         return documents
 
-    def _load_single_file(self, file_path: Path) -> List[Document]:
+    def _load_single_file(self, file_path: Path) -> list[Document]:
         """Helper method to load documents from a single CSV file."""
         documents = []
         try:
@@ -109,7 +125,11 @@ class CSVLoader(BaseLoader):
                 )
             self._processed_document_ids.add(document_id)
 
-            with open(file_path, mode="r", encoding=self.config.encoding or "utf-8", newline="") as f:
+            with open(
+                file_path,
+                encoding=self.config.encoding or "utf-8",
+                newline="",
+            ) as f:
                 if self.config.has_header:
                     reader = csv.DictReader(
                         f,
@@ -133,16 +153,20 @@ class CSVLoader(BaseLoader):
                     if self.config.skip_empty_content and not content.strip():
                         continue
                     all_rows.append(content)
-                
+
                 if all_rows:
-                    documents.extend(self._create_documents_from_rows(all_rows, file_path, document_id))
+                    documents.extend(
+                        self._create_documents_from_rows(
+                            all_rows, file_path, document_id
+                        )
+                    )
         except Exception as e:
             docs_from_error = self._handle_loading_error(str(file_path), e)
             documents.extend(docs_from_error)
-        
+
         return documents
 
-    def load(self, source: Union[str, Path, List[Union[str, Path]]]) -> List[Document]:
+    def load(self, source: str | Path | list[str | Path]) -> list[Document]:
         """
         Loads documents from the given CSV source(s) synchronously.
         """
@@ -155,7 +179,7 @@ class CSVLoader(BaseLoader):
             all_documents.extend(self._load_single_file(file_path))
         return all_documents
 
-    async def _aload_single_file(self, file_path: Path) -> List[Document]:
+    async def _aload_single_file(self, file_path: Path) -> list[Document]:
         """Async helper to load documents from a single CSV file."""
         documents = []
         try:
@@ -169,7 +193,11 @@ class CSVLoader(BaseLoader):
             if not self._check_file_size(file_path):
                 return []
 
-            async with aiofiles.open(file_path, mode="r", encoding=self.config.encoding or "utf-8", newline="") as f:
+            async with aiofiles.open(
+                file_path,
+                encoding=self.config.encoding or "utf-8",
+                newline="",
+            ) as f:
                 content_str = await f.read()
                 file_lines = content_str.splitlines()
 
@@ -189,23 +217,27 @@ class CSVLoader(BaseLoader):
                         {f"column_{i}": val for i, val in enumerate(row)}
                         for row in standard_reader
                     )
-                
+
                 all_rows = []
                 for i, row in enumerate(reader):
                     content = self._synthesize_content(row)
                     if self.config.skip_empty_content and not content.strip():
                         continue
                     all_rows.append(content)
-                
+
                 if all_rows:
-                    documents.extend(self._create_documents_from_rows(all_rows, file_path, document_id))
+                    documents.extend(
+                        self._create_documents_from_rows(
+                            all_rows, file_path, document_id
+                        )
+                    )
         except Exception as e:
             docs_from_error = self._handle_loading_error(str(file_path), e)
             documents.extend(docs_from_error)
 
         return documents
 
-    async def aload(self, source: Union[str, Path, List[Union[str, Path]]]) -> List[Document]:
+    async def aload(self, source: str | Path | list[str | Path]) -> list[Document]:
         """
         Loads documents from the given CSV source(s) asynchronously.
         """
@@ -214,10 +246,10 @@ class CSVLoader(BaseLoader):
         results = await asyncio.gather(*tasks)
         return [doc for sublist in results for doc in sublist]
 
-    def batch(self, sources: List[Union[str, Path]]) -> List[Document]:
+    def batch(self, sources: list[str | Path]) -> list[Document]:
         """A simple synchronous batch load implementation."""
         return self.load(sources)
 
-    async def abatch(self, sources: List[Union[str, Path]]) -> List[Document]:
+    async def abatch(self, sources: list[str | Path]) -> list[Document]:
         """An efficient asynchronous batch load implementation using asyncio.gather."""
         return await self.aload(sources)

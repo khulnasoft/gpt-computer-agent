@@ -3,100 +3,125 @@ Crypto Currency Block Policy
 """
 
 import re
-from typing import List, Optional, Dict, Any
-from ..base import RuleBase, ActionBase, Policy
-from ..models import PolicyInput, RuleOutput, PolicyOutput
+from typing import Any
+
+from ..base import ActionBase, Policy, RuleBase
+from ..models import PolicyInput, PolicyOutput, RuleOutput
 
 
 class CryptoRule(RuleBase):
     """Rule to detect crypto currency related content"""
-    
+
     name = "Crypto Keywords Rule"
     description = "Detects cryptocurrency keywords and patterns in text"
     language = "en"  # Default language for this rule
-    
-    def __init__(self, options: Optional[Dict[str, Any]] = None):
+
+    def __init__(self, options: dict[str, Any] | None = None):
         super().__init__(options)
-        
+
         # Default crypto keywords
         self.keywords_list = [
-            "bitcoin", "btc", "ethereum", "eth", "cryptocurrency", 
-            "crypto", "blockchain", "mining", "wallet", "coinbase",
-            "binance", "dogecoin", "litecoin", "ripple", "xrp",
-            "altcoin", "defi", "nft", "hodl", "satoshi", "hash rate",
-            "proof of work", "proof of stake", "smart contract",
-            "token", "coin", "exchange", "trading", "pump", "dump",
+            "bitcoin",
+            "btc",
+            "ethereum",
+            "eth",
+            "cryptocurrency",
+            "crypto",
+            "blockchain",
+            "mining",
+            "wallet",
+            "coinbase",
+            "binance",
+            "dogecoin",
+            "litecoin",
+            "ripple",
+            "xrp",
+            "altcoin",
+            "defi",
+            "nft",
+            "hodl",
+            "satoshi",
+            "hash rate",
+            "proof of work",
+            "proof of stake",
+            "smart contract",
+            "token",
+            "coin",
+            "exchange",
+            "trading",
+            "pump",
+            "dump",
         ]
-        
+
         # Allow custom keywords from options
         if options and "keywords" in options:
             self.keywords_list.extend(options["keywords"])
-    
+
     def process(self, policy_input: PolicyInput) -> RuleOutput:
         """Process input texts for crypto content detection"""
-        
+
         # Combine all input texts
         combined_text = " ".join(policy_input.input_texts or []).lower()
-        
+
         # Find matching keywords
         triggered_keywords = []
         for keyword in self.keywords_list:
             # Use word boundaries to avoid false positives
-            pattern = r'\b' + re.escape(keyword.lower()) + r'\b'
+            pattern = r"\b" + re.escape(keyword.lower()) + r"\b"
             if re.search(pattern, combined_text):
                 triggered_keywords.append(keyword)
-        
-        # Calculate confidence based on number of matches
-        if not triggered_keywords:
-                    return RuleOutput(
-            confidence=0.0,
-            content_type="CRYPTO",
-            details="No crypto keywords detected"
-        )
-        
-        return RuleOutput(
-            confidence=1.0,
-            content_type="CRYPTO",
-            details=f"Detected {len(triggered_keywords)} crypto keywords",
-            triggered_keywords=triggered_keywords
-        )
 
-
-class CryptoRule_LLM_Finder(RuleBase):
-    """Rule to find crypto content using LLM"""
-    
-    name = "Crypto LLM Finder Rule"
-    description = "Finds crypto content using LLM"
-    language = "en"  # Default language for this rule
-    
-    def process(self, policy_input: PolicyInput) -> RuleOutput:
-        """Process input texts for crypto content detection"""
-        
-        triggered_keywords = self._llm_find_keywords_with_input("Crypto", policy_input)
-        
         # Calculate confidence based on number of matches
         if not triggered_keywords:
             return RuleOutput(
                 confidence=0.0,
                 content_type="CRYPTO",
-                details="No crypto keywords detected"
+                details="No crypto keywords detected",
             )
-        
+
         return RuleOutput(
             confidence=1.0,
             content_type="CRYPTO",
             details=f"Detected {len(triggered_keywords)} crypto keywords",
-            triggered_keywords=triggered_keywords
+            triggered_keywords=triggered_keywords,
+        )
+
+
+class CryptoRule_LLM_Finder(RuleBase):
+    """Rule to find crypto content using LLM"""
+
+    name = "Crypto LLM Finder Rule"
+    description = "Finds crypto content using LLM"
+    language = "en"  # Default language for this rule
+
+    def process(self, policy_input: PolicyInput) -> RuleOutput:
+        """Process input texts for crypto content detection"""
+
+        triggered_keywords = self._llm_find_keywords_with_input("Crypto", policy_input)
+
+        # Calculate confidence based on number of matches
+        if not triggered_keywords:
+            return RuleOutput(
+                confidence=0.0,
+                content_type="CRYPTO",
+                details="No crypto keywords detected",
+            )
+
+        return RuleOutput(
+            confidence=1.0,
+            content_type="CRYPTO",
+            details=f"Detected {len(triggered_keywords)} crypto keywords",
+            triggered_keywords=triggered_keywords,
         )
 
 
 class CryptoBlockAction(ActionBase):
     """Action for crypto content detection"""
-    
+
     name = "Crypto Keywords Action"
     description = "Handles crypto content with blocking, flagging or transformation"
     language = "en"  # Default language for this action
-    
+
     def __init__(self):
         super().__init__()
         # Crypto-specific messages
@@ -112,30 +137,36 @@ class CryptoBlockAction(ActionBase):
 
 class CryptoBlockAction_LLM(ActionBase):
     """Action for crypto content detection using LLM"""
-    
+
     name = "Crypto Keywords Action LLM"
-    description = "Handles crypto content with blocking, flagging or transformation using LLM"
+    description = (
+        "Handles crypto content with blocking, flagging or transformation using LLM"
+    )
     language = "en"  # Default language for this action
 
     def action(self, rule_result: RuleOutput) -> PolicyOutput:
         """Execute crypto-specific action based on rule confidence"""
         if rule_result.confidence >= 0.8:
-            return self.llm_raise_block_error(reason="Providing investment advice is not a legally permitted operation.")
+            return self.llm_raise_block_error(
+                reason="Providing investment advice is not a legally permitted operation."
+            )
         else:
             return self.allow_content()
 
 
 class CryptoReplaceAction(ActionBase):
     """Action for crypto content replacement"""
-    
+
     name = "Crypto Replace Action"
     description = "Replaces crypto keywords with safe alternatives"
     language = "en"  # Default language for this action
-    
+
     def __init__(self):
         super().__init__()
-        self.replace_message = "Cryptocurrency related content detected and transformed."
-    
+        self.replace_message = (
+            "Cryptocurrency related content detected and transformed."
+        )
+
     def action(self, rule_result: RuleOutput) -> PolicyOutput:
         """Execute crypto-specific action based on rule confidence"""
         if rule_result.confidence >= 0.8:
@@ -146,14 +177,16 @@ class CryptoReplaceAction(ActionBase):
 
 class CryptoRaiseExceptionAction(ActionBase):
     """Action for crypto content that raises exception"""
-    
+
     name = "Crypto Raise Exception Action"
     description = "Raises DisallowedOperation exception when crypto content is detected"
     language = "en"  # Default language for this action
-    
+
     def __init__(self):
         super().__init__()
-        self.exception_message = "Cryptocurrency related content detected and operation stopped."
+        self.exception_message = (
+            "Cryptocurrency related content detected and operation stopped."
+        )
 
     def action(self, rule_result: RuleOutput) -> PolicyOutput:
         """Execute crypto-specific action based on rule confidence"""
@@ -165,7 +198,7 @@ class CryptoRaiseExceptionAction(ActionBase):
 
 class CryptoRaiseExceptionAction_LLM(ActionBase):
     """Action for crypto content that raises exception using LLM"""
-    
+
     name = "Crypto Raise Exception Action LLM"
     description = "Raises DisallowedOperation exception with LLM-generated message when crypto content is detected"
     language = "en"  # Default language for this action
@@ -173,7 +206,9 @@ class CryptoRaiseExceptionAction_LLM(ActionBase):
     def action(self, rule_result: RuleOutput) -> PolicyOutput:
         """Execute crypto-specific action based on rule confidence"""
         if rule_result.confidence >= 0.8:
-            return self.llm_raise_exception(reason="Providing investment advice is not a legally permitted operation.")
+            return self.llm_raise_exception(
+                reason="Providing investment advice is not a legally permitted operation."
+            )
         else:
             return self.allow_content()
 
@@ -181,7 +216,7 @@ class CryptoRaiseExceptionAction_LLM(ActionBase):
 # Policy Definitions
 
 ## Crypto Block Policy
-# Bu policy static şekilde tarama yapar ve eğer kripto keywordleri bulursa direk block aksiyonunu dönderir. 
+# Bu policy static şekilde tarama yapar ve eğer kripto keywordleri bulursa direk block aksiyonunu dönderir.
 CryptoBlockPolicy = Policy(
     name="Crypto Block Policy",
     description="Designed for financial institutions to block cryptocurrency discussions",
@@ -197,17 +232,17 @@ CryptoBlockPolicy_LLM_Block = Policy(
     name="Crypto Block Policy LLM Block",
     description="Designed for financial institutions to block cryptocurrency discussions",
     rule=CryptoRule(),
-    action=CryptoBlockAction_LLM()
+    action=CryptoBlockAction_LLM(),
 )
 
 ## Crypto Block Policy LLM Finder
-# Bu policy LLM ile tarama yapar bu sayede daha geniş ölçekli ve iyi bir bulma sistemi çalışmış olur 
-# ve eğer kripto keywordleri bulursa direk block askiyonu dödnerir 
+# Bu policy LLM ile tarama yapar bu sayede daha geniş ölçekli ve iyi bir bulma sistemi çalışmış olur
+# ve eğer kripto keywordleri bulursa direk block askiyonu dödnerir
 CryptoBlockPolicy_LLM_Finder = Policy(
     name="Crypto Block Policy LLM Finder",
     description="Designed for financial institutions to block cryptocurrency discussions",
     rule=CryptoRule_LLM_Finder(),
-    action=CryptoBlockAction()
+    action=CryptoBlockAction(),
 )
 
 # Example of using custom LLM specifications
@@ -240,19 +275,19 @@ CryptoReplace = Policy(
     name="Crypto Replace Policy",
     description="Find and replace crypto keywords with safe alternatives",
     rule=CryptoRule(),
-    action=CryptoReplaceAction()
+    action=CryptoReplaceAction(),
 )
 
 CryptoRaiseExceptionPolicy = Policy(
     name="Crypto Raise Exception Policy",
     description="Raises DisallowedOperation exception when crypto content is detected",
     rule=CryptoRule(),
-    action=CryptoRaiseExceptionAction()
+    action=CryptoRaiseExceptionAction(),
 )
 
 CryptoRaiseExceptionPolicy_LLM_Raise = Policy(
     name="Crypto Raise Exception Policy LLM",
     description="Raises DisallowedOperation exception with LLM-generated message when crypto content is detected",
     rule=CryptoRule(),
-    action=CryptoRaiseExceptionAction_LLM()
+    action=CryptoRaiseExceptionAction_LLM(),
 )

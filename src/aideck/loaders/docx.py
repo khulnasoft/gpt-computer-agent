@@ -1,15 +1,13 @@
 import asyncio
 from pathlib import Path
-from typing import List, Union
 
 import docx
 from docx.document import Document as DocxDocument
 from docx.table import Table as DocxTable
-from docx.text.paragraph import Paragraph as DocxParagraph
 
-from aideck.schemas.data_models import Document
 from aideck.loaders.base import BaseLoader
 from aideck.loaders.config import DOCXLoaderConfig
+from aideck.schemas.data_models import Document
 
 
 class DOCXLoader(BaseLoader):
@@ -26,7 +24,7 @@ class DOCXLoader(BaseLoader):
         self.config: DOCXLoaderConfig = config
 
     @classmethod
-    def get_supported_extensions(cls) -> List[str]:
+    def get_supported_extensions(cls) -> list[str]:
         """Gets the list of supported file extensions."""
         return [".docx"]
 
@@ -51,14 +49,14 @@ class DOCXLoader(BaseLoader):
                 row_text = [cell.text.replace("\n", " ") for cell in row.cells]
                 markdown.append("| " + " | ".join(row_text) + " |")
             return "\n".join(markdown)
-        
+
         text = []
         for row in table.rows:
             row_text = [cell.text for cell in row.cells]
             text.append("\t".join(row_text))
         return "\n".join(text)
 
-    def _load_single_file(self, file_path: Path) -> List[Document]:
+    def _load_single_file(self, file_path: Path) -> list[Document]:
         """Helper method to load a single .docx file into one or zero Documents."""
         try:
             document_id = self._generate_document_id(file_path)
@@ -73,7 +71,11 @@ class DOCXLoader(BaseLoader):
 
             if self.config.include_headers:
                 for section in doc.sections:
-                    for header in [section.header, section.first_page_header, section.even_page_header]:
+                    for header in [
+                        section.header,
+                        section.first_page_header,
+                        section.even_page_header,
+                    ]:
                         if header:
                             for paragraph in header.paragraphs:
                                 content_parts.append(paragraph.text)
@@ -81,19 +83,25 @@ class DOCXLoader(BaseLoader):
             for paragraph in doc.paragraphs:
                 if paragraph.text.strip():
                     content_parts.append(paragraph.text)
-            
+
             if self.config.include_tables:
                 for table in doc.tables:
                     content_parts.append(self._format_table(table))
-            
+
             if self.config.include_footers:
                 for section in doc.sections:
-                    for footer in [section.footer, section.first_page_footer, section.even_page_footer]:
+                    for footer in [
+                        section.footer,
+                        section.first_page_footer,
+                        section.even_page_footer,
+                    ]:
                         if footer:
                             for paragraph in footer.paragraphs:
                                 content_parts.append(paragraph.text)
-            
-            full_content = "\n\n".join(part for part in content_parts if part and part.strip())
+
+            full_content = "\n\n".join(
+                part for part in content_parts if part and part.strip()
+            )
 
             if self.config.skip_empty_content and not full_content.strip():
                 return []
@@ -101,23 +109,27 @@ class DOCXLoader(BaseLoader):
             metadata = self._create_metadata(file_path)
             core_props = doc.core_properties
             if self.config.include_metadata:
-                metadata.update({
-                    "author": core_props.author,
-                    "category": core_props.category,
-                    "comments": core_props.comments,
-                    "title": core_props.title,
-                    "subject": core_props.subject,
-                    "created": core_props.created,
-                    "modified": core_props.modified,
-                })
-            
-            doc_obj = Document(document_id=document_id, content=full_content, metadata=metadata)
+                metadata.update(
+                    {
+                        "author": core_props.author,
+                        "category": core_props.category,
+                        "comments": core_props.comments,
+                        "title": core_props.title,
+                        "subject": core_props.subject,
+                        "created": core_props.created,
+                        "modified": core_props.modified,
+                    }
+                )
+
+            doc_obj = Document(
+                document_id=document_id, content=full_content, metadata=metadata
+            )
             return [doc_obj]
 
         except Exception as e:
             return self._handle_loading_error(str(file_path), e)
 
-    def load(self, source: Union[str, Path, List[Union[str, Path]]]) -> List[Document]:
+    def load(self, source: str | Path | list[str | Path]) -> list[Document]:
         """Loads documents from the given .docx source(s) synchronously."""
         files_to_process = self._resolve_sources(source)
         all_documents = []
@@ -127,26 +139,28 @@ class DOCXLoader(BaseLoader):
             all_documents.extend(self._load_single_file(file_path))
         return all_documents
 
-    async def aload(self, source: Union[str, Path, List[Union[str, Path]]]) -> List[Document]:
+    async def aload(self, source: str | Path | list[str | Path]) -> list[Document]:
         """
         Loads documents from the given .docx source(s) asynchronously.
         """
         files_to_process = self._resolve_sources(source)
-        
+
         valid_files = []
         for file_path in files_to_process:
             if not self._check_file_size(file_path):
                 continue
             valid_files.append(file_path)
 
-        tasks = [asyncio.to_thread(self._load_single_file, file) for file in valid_files]
+        tasks = [
+            asyncio.to_thread(self._load_single_file, file) for file in valid_files
+        ]
         results = await asyncio.gather(*tasks)
         return [doc for sublist in results for doc in sublist]
 
-    def batch(self, sources: List[Union[str, Path]]) -> List[Document]:
+    def batch(self, sources: list[str | Path]) -> list[Document]:
         """A synchronous batch load implementation."""
         return self.load(sources)
 
-    async def abatch(self, sources: List[Union[str, Path]]) -> List[Document]:
+    async def abatch(self, sources: list[str | Path]) -> list[Document]:
         """An efficient asynchronous batch load implementation using asyncio.gather."""
         return await self.aload(sources)

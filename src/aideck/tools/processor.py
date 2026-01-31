@@ -1,24 +1,25 @@
 from __future__ import annotations
 
+import asyncio
+import copy
 import functools
 import hashlib
 import inspect
 import json
 import re
 import time
+from collections.abc import Callable, Generator
 from pathlib import Path
-from typing import Callable, Any, Generator, Tuple, Dict, TYPE_CHECKING, List, Optional
-import asyncio
-import copy
+from typing import TYPE_CHECKING, Any
 
 from pydantic_ai.mcp import MCPServerSSE, MCPServerStdio
 
-from .tool import ToolConfig, ToolKit
-from aideck.utils.printing import console, spacing, print_orchestrator_tool_step
-from aideck.tools.pseudo_tools import plan_and_execute
-from aideck.tools.thought import Thought, AnalysisResult
 from aideck.tools.external_tool import ExternalToolCall
+from aideck.tools.pseudo_tools import plan_and_execute
+from aideck.tools.thought import AnalysisResult, Thought
+from aideck.utils.printing import console, print_orchestrator_tool_step, spacing
 
+from .tool import ToolConfig, ToolKit
 
 if TYPE_CHECKING:
     from aideck.agent.agent import Direct
@@ -26,16 +27,21 @@ if TYPE_CHECKING:
 
 class ToolValidationError(Exception):
     """Custom exception raised for invalid tool definitions."""
+
     pass
+
 
 class ExternalExecutionPause(Exception):
     """
     Custom exception used to signal a pause in the agent's execution flow,
     allowing for external tool execution (human-in-the-loop).
     """
+
     def __init__(self, tool_call: ExternalToolCall):
         self.tool_call = tool_call
-        super().__init__(f"Agent paused for external execution of tool: {tool_call.tool_name}")
+        super().__init__(
+            f"Agent paused for external execution of tool: {tool_call.tool_name}"
+        )
 
 
 class ToolProcessor:
@@ -43,7 +49,8 @@ class ToolProcessor:
     The internal engine for inspecting, validating, normalizing, and wrapping
     user-provided tools into a format the agent can execute.
     """
-    def __init__(self, agent: Optional['Direct'] = None):
+
+    def __init__(self, agent: Direct | None = None):
         """
         Initializes the ToolProcessor.
         Args:
@@ -63,7 +70,7 @@ class ToolProcessor:
         signature = inspect.signature(func)
 
         for param_name, param in signature.parameters.items():
-            if param.name in ('self', 'cls'):
+            if param.name in ("self", "cls"):
                 continue
             if param.annotation is inspect.Parameter.empty:
                 raise ToolValidationError(
@@ -80,7 +87,9 @@ class ToolProcessor:
                 f"Tool '{func.__name__}' is missing a docstring. The docstring is required to explain the tool's purpose to the LLM."
             )
 
-    def generate_orchestrator_wrapper(self, original_agent_instance: 'Direct', task: 'Task') -> Callable:
+    def generate_orchestrator_wrapper(
+        self, original_agent_instance: Direct, task: Task
+    ) -> Callable:
         """
         Generates a highly specialized wrapper for the 'plan_and_execute' tool.
 
@@ -88,9 +97,13 @@ class ToolProcessor:
         of tool calls from the LLM. If reasoning is enabled, it automatically injects
         a mandatory analysis step after each tool call, creating an 'Act-then-Analyze' loop.
         """
+
         async def orchestrator_wrapper(thought: Thought) -> Any:
             from aideck.tasks.tasks import Task
-            console.print("[bold magenta]Orchestrator Activated:[/bold magenta] Received initial plan.")
+
+            console.print(
+                "[bold magenta]Orchestrator Activated:[/bold magenta] Received initial plan."
+            )
             spacing()
             agent = self.agent_tool
             if not agent:
@@ -99,26 +112,30 @@ class ToolProcessor:
             is_reasoning_enabled = agent.enable_reasoning_tool
 
             original_user_request = task.description
-            execution_history = f"Orchestrator's execution history for the user's request:\n"
+            execution_history = (
+                "Orchestrator's execution history for the user's request:\n"
+            )
             execution_history += f"Initial Thought & Plan: {thought.plan}\nReasoning: {thought.reasoning}\n Criticism: {thought.criticism}\n\n"
             pending_plan = thought.plan
             program_counter = 0
 
             all_tools = {
-                tool_func.__name__: tool_func 
+                tool_func.__name__: tool_func
                 for tool_func in original_agent_instance._aideck_wrapped_tools.values()
-                if tool_func.__name__ != 'plan_and_execute'
+                if tool_func.__name__ != "plan_and_execute"
             }
 
             while program_counter < len(pending_plan):
                 step = pending_plan[program_counter]
-                
+
                 tool_name = step.tool_name
                 params = step.parameters
-                tool_name = tool_name.split('.')[-1]
+                tool_name = tool_name.split(".")[-1]
 
-                console.print(f"[bold blue]Executing Tool Step {program_counter + 1}/{len(pending_plan)}:[/bold blue] Calling tool [cyan]{tool_name}[/cyan] with params {params}")
-                
+                console.print(
+                    f"[bold blue]Executing Tool Step {program_counter + 1}/{len(pending_plan)}:[/bold blue] Calling tool [cyan]{tool_name}[/cyan] with params {params}"
+                )
+
                 if tool_name not in all_tools:
                     result = f"Error: Tool '{tool_name}' is not an available tool."
                     console.print(f"[bold red]{result}[/bold red]")
@@ -127,7 +144,9 @@ class ToolProcessor:
                         tool_to_call = all_tools[tool_name]
                         result = await tool_to_call(**params)
                     except Exception as e:
-                        error_message = f"An error occurred while executing tool '{tool_name}': {e}"
+                        error_message = (
+                            f"An error occurred while executing tool '{tool_name}': {e}"
+                        )
                         console.print(f"[bold red]{error_message}[/bold red]")
                         result = error_message
 
@@ -135,8 +154,10 @@ class ToolProcessor:
                 execution_history += f"\nStep {program_counter + 1} (Tool: {tool_name}):\nResult: {result}\n"
 
                 if is_reasoning_enabled:
-                    console.print(f"[bold yellow]Injecting Mandatory Analysis Step after Tool '{tool_name}'...[/bold yellow]")
-                    
+                    console.print(
+                        f"[bold yellow]Injecting Mandatory Analysis Step after Tool '{tool_name}'...[/bold yellow]"
+                    )
+
                     analysis_prompt = (
                         f"Original user request(This is just for remembrance. You have to follow instructions below based on this. But this is not the main focus you will try to fulfill right now): '{original_user_request}'\n\n"
                         "You are in the middle of a multi-step plan. An action has just been completed. You must now analyze the outcome before proceeding. "
@@ -147,26 +168,38 @@ class ToolProcessor:
                         "</ExecutionHistory>"
                     )
 
-                    analysis_task = Task(description=analysis_prompt, not_main_task=True, response_format=AnalysisResult)
+                    analysis_task = Task(
+                        description=analysis_prompt,
+                        not_main_task=True,
+                        response_format=AnalysisResult,
+                    )
                     analysis_agent = copy.copy(agent)
                     analysis_agent.enable_thinking_tool = False
                     analysis_agent.enable_reasoning_tool = False
 
-                    analysis_result: AnalysisResult = await analysis_agent.do_async(analysis_task)
+                    analysis_result: AnalysisResult = await analysis_agent.do_async(
+                        analysis_task
+                    )
                     execution_history += f"\n--- Injected Analysis ---\nEvaluation: {analysis_result.evaluation}\n"
 
-                    if analysis_result.next_action == 'continue_plan':
-                        console.print("[bold green]Analysis complete. Continuing with the original plan.[/bold green]")
+                    if analysis_result.next_action == "continue_plan":
+                        console.print(
+                            "[bold green]Analysis complete. Continuing with the original plan.[/bold green]"
+                        )
                         program_counter += 1
                         continue
-                    
-                    elif analysis_result.next_action == 'final_answer':
-                        console.print("[bold green]Analysis concluded that the task is complete. Proceeding to final synthesis.[/bold green]")
+
+                    elif analysis_result.next_action == "final_answer":
+                        console.print(
+                            "[bold green]Analysis concluded that the task is complete. Proceeding to final synthesis.[/bold green]"
+                        )
                         break
-                    
-                    elif analysis_result.next_action == 'revise_plan':
-                        console.print("[bold red]Analysis concluded that the plan is flawed. Requesting a new plan.[/bold red]")
-                        
+
+                    elif analysis_result.next_action == "revise_plan":
+                        console.print(
+                            "[bold red]Analysis concluded that the plan is flawed. Requesting a new plan.[/bold red]"
+                        )
+
                         revision_prompt = (
                             f"Original user request(This is just for remembrance. You have to follow instructions below based on this. But this is not the main focus you will try to fulfill right now): '{original_user_request}'\n\n"
                             "You are in the middle of a multi-step plan. Your own analysis has determined that the "
@@ -178,22 +211,32 @@ class ToolProcessor:
                             "</ExecutionHistory>"
                         )
 
-                        revision_task = Task(description=revision_prompt, not_main_task=True, response_format=Thought)
+                        revision_task = Task(
+                            description=revision_prompt,
+                            not_main_task=True,
+                            response_format=Thought,
+                        )
                         revision_agent = copy.copy(agent)
                         revision_agent.enable_thinking_tool = False
                         revision_agent.enable_reasoning_tool = False
 
-                        new_thought: Thought = await revision_agent.do_async(revision_task)
-                        
-                        console.print("[bold magenta]Orchestrator:[/bold magenta] Received revised plan. Restarting execution.")
+                        new_thought: Thought = await revision_agent.do_async(
+                            revision_task
+                        )
+
+                        console.print(
+                            "[bold magenta]Orchestrator:[/bold magenta] Received revised plan. Restarting execution."
+                        )
                         pending_plan = new_thought.plan
                         program_counter = 0
                         execution_history += f"\n--- PLAN REVISED ---\nNew Reasoning: {new_thought.reasoning}\n"
                         continue
-                
+
                 program_counter += 1
 
-            console.print("[bold magenta]Orchestrator:[/bold magenta] Plan complete. Preparing for final synthesis.")
+            console.print(
+                "[bold magenta]Orchestrator:[/bold magenta] Plan complete. Preparing for final synthesis."
+            )
             spacing()
 
             synthesis_prompt = (
@@ -206,7 +249,7 @@ class ToolProcessor:
                 f"{execution_history}"
                 "</ExecutionHistory>"
             )
-            
+
             synthesis_task = Task(description=synthesis_prompt, not_main_task=True)
             synthesis_agent = copy.copy(agent)
             synthesis_agent.enable_thinking_tool = False
@@ -216,7 +259,9 @@ class ToolProcessor:
 
         return orchestrator_wrapper
 
-    def normalize_and_process(self, task_tools: List[Any]) -> Generator[Tuple[Callable, Any], None, None]:
+    def normalize_and_process(
+        self, task_tools: list[Any]
+    ) -> Generator[tuple[Callable, Any], None, None]:
         """
         Processes a list of raw tools from a Task.
         This method iterates through functions, agent instances, and other object methods,
@@ -230,27 +275,33 @@ class ToolProcessor:
             - For a regular tool: (callable_function, ToolConfig)
             - For an MCP tool: (None, mcp_server_instance)
         """
-        if self.agent_tool and getattr(self.agent_tool, 'enable_thinking_tool', False):
-            setattr(plan_and_execute, '_is_orchestrator', True)
+        if self.agent_tool and getattr(self.agent_tool, "enable_thinking_tool", False):
+            plan_and_execute._is_orchestrator = True
             self._validate_function(plan_and_execute)
             yield (plan_and_execute, ToolConfig())
 
         from aideck.agent.agent import Direct
+
         if not task_tools:
             return
         mcp_tools_to_remove = []
         for tool_item in task_tools:
             if inspect.isclass(tool_item):
                 is_mcp_tool = False
-                if hasattr(tool_item, 'url'):
-                    url = getattr(tool_item, 'url')
+                if hasattr(tool_item, "url"):
+                    url = tool_item.url
                     the_mcp_server = MCPServerSSE(url)
                     yield (None, the_mcp_server)
                     is_mcp_tool = True
-                elif hasattr(tool_item, 'command'):
-                    env = getattr(tool_item, 'env', {}) if hasattr(tool_item, 'env') and isinstance(getattr(tool_item, 'env', None), dict) else {}
-                    command = getattr(tool_item, 'command', None)
-                    args = getattr(tool_item, 'args', [])
+                elif hasattr(tool_item, "command"):
+                    env = (
+                        getattr(tool_item, "env", {})
+                        if hasattr(tool_item, "env")
+                        and isinstance(getattr(tool_item, "env", None), dict)
+                        else {}
+                    )
+                    command = getattr(tool_item, "command", None)
+                    args = getattr(tool_item, "args", [])
                     the_mcp_server = MCPServerStdio(command, args=args, env=env)
                     yield (None, the_mcp_server)
                     is_mcp_tool = True
@@ -259,30 +310,50 @@ class ToolProcessor:
                     continue
             if inspect.isfunction(tool_item):
                 self._validate_function(tool_item)
-                config = getattr(tool_item, '_aideck_tool_config', ToolConfig())
+                config = getattr(tool_item, "_aideck_tool_config", ToolConfig())
                 yield (tool_item, config)
             elif isinstance(tool_item, Direct):
                 class_name_base = tool_item.name or f"AgentTool{tool_item.agent_id[:8]}"
-                dynamic_class_name = "".join(word.capitalize() for word in re.sub(r"[^a-zA-Z0-9 ]", "", class_name_base).split())
-                method_name_base = tool_item.name or f"AgentTool{tool_item.agent_id[:8]}"
-                dynamic_method_name = "ask_" + re.sub(r"[^a-zA-Z0-9_]", "", method_name_base.lower().replace(" ", "_"))
-                agent_specialty = tool_item.system_prompt or tool_item.company_description or f"a general purpose assistant named '{tool_item.name}'"
+                dynamic_class_name = "".join(
+                    word.capitalize()
+                    for word in re.sub(r"[^a-zA-Z0-9 ]", "", class_name_base).split()
+                )
+                method_name_base = (
+                    tool_item.name or f"AgentTool{tool_item.agent_id[:8]}"
+                )
+                dynamic_method_name = "ask_" + re.sub(
+                    r"[^a-zA-Z0-9_]", "", method_name_base.lower().replace(" ", "_")
+                )
+                agent_specialty = (
+                    tool_item.system_prompt
+                    or tool_item.company_description
+                    or f"a general purpose assistant named '{tool_item.name}'"
+                )
                 dynamic_docstring = (
                     f"Delegates a sub-task to a specialist agent named '{tool_item.name}'. "
                     f"This agent's role is: {agent_specialty}. "
                     f"Use this tool ONLY for tasks that fall squarely within this agent's described expertise. "
                     f"The 'request' parameter must be a full, clear, and self-contained instruction for the specialist agent."
                 )
+
                 async def agent_method_logic(self, request: str) -> str:
                     """This docstring will be replaced dynamically."""
                     from aideck.tasks.tasks import Task
+
                     the_task = Task(description=request)
                     response = await self.agent.do_async(the_task)
-                    return str(response) if response is not None else "The specialist agent returned no response."
+                    return (
+                        str(response)
+                        if response is not None
+                        else "The specialist agent returned no response."
+                    )
+
                 agent_method_logic.__doc__ = dynamic_docstring
                 agent_method_logic.__name__ = dynamic_method_name
+
                 def agent_tool_init(self, agent: Direct):
                     self.agent = agent
+
                 AgentToolWrapper = type(
                     dynamic_class_name,
                     (object,),
@@ -292,24 +363,30 @@ class ToolProcessor:
                     },
                 )
                 wrapper_instance = AgentToolWrapper(agent=tool_item)
-                for name, method in inspect.getmembers(wrapper_instance, inspect.ismethod):
-                    if not name.startswith('_'):
+                for name, method in inspect.getmembers(
+                    wrapper_instance, inspect.ismethod
+                ):
+                    if not name.startswith("_"):
                         self._validate_function(method)
-                        config = getattr(method, '_aideck_tool_config', ToolConfig())
+                        config = getattr(method, "_aideck_tool_config", ToolConfig())
                         yield (method, config)
-            elif not inspect.isfunction(tool_item) and hasattr(tool_item, '__class__'):
+            elif not inspect.isfunction(tool_item) and hasattr(tool_item, "__class__"):
                 is_toolkit = isinstance(tool_item, ToolKit)
                 if is_toolkit:
                     for name, method in inspect.getmembers(tool_item, inspect.ismethod):
-                        if hasattr(method, '_aideck_tool_config'):
+                        if hasattr(method, "_aideck_tool_config"):
                             self._validate_function(method)
-                            config = getattr(method, '_aideck_tool_config', ToolConfig())
+                            config = getattr(
+                                method, "_aideck_tool_config", ToolConfig()
+                            )
                             yield (method, config)
                 else:
                     for name, method in inspect.getmembers(tool_item, inspect.ismethod):
-                        if not name.startswith('_'):
+                        if not name.startswith("_"):
                             self._validate_function(method)
-                            config = getattr(method, '_aideck_tool_config', ToolConfig())
+                            config = getattr(
+                                method, "_aideck_tool_config", ToolConfig()
+                            )
                             yield (method, config)
 
         if mcp_tools_to_remove:
@@ -317,18 +394,20 @@ class ToolProcessor:
                 while tool in task_tools:
                     task_tools.remove(tool)
 
-    def generate_behavioral_wrapper(self, original_func: Callable, config: ToolConfig) -> Callable:
+    def generate_behavioral_wrapper(
+        self, original_func: Callable, config: ToolConfig
+    ) -> Callable:
         """
         Dynamically generates and returns a new function that wraps the original tool.
         This new function contains all the behavioral logic (caching, confirmation, etc.)
         defined in the ToolConfig.
         """
+
         @functools.wraps(original_func)
         async def behavioral_wrapper(*args: Any, **kwargs: Any) -> Any:
             if config.external_execution:
                 tool_call = ExternalToolCall(
-                    tool_name=original_func.__name__,
-                    tool_args=kwargs
+                    tool_name=original_func.__name__, tool_args=kwargs
                 )
                 raise ExternalExecutionPause(tool_call)
 
@@ -339,31 +418,39 @@ class ToolProcessor:
                     spacing()
                     return message
                 self.agent_tool.tool_call_count += 1
-            func_dict: Dict[str, Any] = {}
-            
+            func_dict: dict[str, Any] = {}
+
             if config.tool_hooks and config.tool_hooks.before:
                 result_before = config.tool_hooks.before(*args, **kwargs)
                 func_dict["func_before"] = result_before if result_before else None
 
             if config.requires_confirmation:
-                console.print(f"[bold yellow]⚠️ Confirmation Required[/bold yellow]")
-                console.print(f"About to execute tool: [cyan]{original_func.__name__}[/cyan]")
+                console.print("[bold yellow]⚠️ Confirmation Required[/bold yellow]")
+                console.print(
+                    f"About to execute tool: [cyan]{original_func.__name__}[/cyan]"
+                )
                 console.print(f"With arguments: [dim]{args}, {kwargs}[/dim]")
                 try:
                     confirm = input("Do you want to proceed? (y/n): ").lower().strip()
                 except KeyboardInterrupt:
-                    confirm = 'n'
-                if confirm not in ['y', 'yes']:
-                    console.print("[bold red]Tool execution cancelled by user.[/bold red]")
+                    confirm = "n"
+                if confirm not in ["y", "yes"]:
+                    console.print(
+                        "[bold red]Tool execution cancelled by user.[/bold red]"
+                    )
                     spacing()
                     return "Tool execution was cancelled by the user."
                 spacing()
 
             if config.requires_user_input and config.user_input_fields:
-                console.print(f"[bold blue]📝 User Input Required for {original_func.__name__}[/bold blue]")
+                console.print(
+                    f"[bold blue]📝 User Input Required for {original_func.__name__}[/bold blue]"
+                )
                 for field_name in config.user_input_fields:
                     try:
-                        user_provided_value = input(f"Please provide a value for '{field_name}': ")
+                        user_provided_value = input(
+                            f"Please provide a value for '{field_name}': "
+                        )
                         kwargs[field_name] = user_provided_value
                     except KeyboardInterrupt:
                         console.print("\n[bold red]Input cancelled by user.[/bold red]")
@@ -372,24 +459,30 @@ class ToolProcessor:
 
             cache_file = None
             if config.cache_results:
-                cache_dir_path = Path(config.cache_dir) if config.cache_dir else Path.home() / '.aideck' / 'cache'
+                cache_dir_path = (
+                    Path(config.cache_dir)
+                    if config.cache_dir
+                    else Path.home() / ".aideck" / "cache"
+                )
                 arg_string = json.dumps((args, kwargs), sort_keys=True, default=str)
-                call_signature = f"{original_func.__name__}:{arg_string}".encode('utf-8')
+                call_signature = f"{original_func.__name__}:{arg_string}".encode()
                 cache_key = hashlib.sha256(call_signature).hexdigest()
                 cache_file = cache_dir_path / f"{cache_key}.json"
                 if cache_file.exists():
                     try:
-                        with open(cache_file, 'r') as f:
+                        with open(cache_file) as f:
                             cache_data = json.load(f)
                         is_expired = False
                         if config.cache_ttl is not None:
-                            age = time.time() - cache_data.get('timestamp', 0)
+                            age = time.time() - cache_data.get("timestamp", 0)
                             if age > config.cache_ttl:
                                 is_expired = True
                         if not is_expired:
-                            console.print(f"[bold green]✓ Cache Hit[/bold green] for tool [cyan]{original_func.__name__}[/cyan]. Returning cached result.")
+                            console.print(
+                                f"[bold green]✓ Cache Hit[/bold green] for tool [cyan]{original_func.__name__}[/cyan]. Returning cached result."
+                            )
                             spacing()
-                            return cache_data['result']
+                            return cache_data["result"]
                         else:
                             cache_file.unlink()
                     except (json.JSONDecodeError, KeyError, OSError):
@@ -403,8 +496,7 @@ class ToolProcessor:
                     # run it in a thread pool executor * _ *
                     loop = asyncio.get_running_loop()
                     result = await loop.run_in_executor(
-                        None,
-                        functools.partial(original_func, *args, **kwargs)
+                        None, functools.partial(original_func, *args, **kwargs)
                     )
                 func_dict["func"] = result if result else None
                 if result and config.show_result:
@@ -413,24 +505,29 @@ class ToolProcessor:
                 if result and config.stop_after_tool_call:
                     exit()
             except Exception as e:
-                console.print(f"[bold red]An error occurred while executing tool '{original_func.__name__}': {e}[/bold red]")
+                console.print(
+                    f"[bold red]An error occurred while executing tool '{original_func.__name__}': {e}[/bold red]"
+                )
                 raise
 
             if config.cache_results and cache_file:
                 try:
                     cache_file.parent.mkdir(parents=True, exist_ok=True)
-                    cache_data_to_write = {'timestamp': time.time(), 'result': result}
-                    with open(cache_file, 'w') as f:
+                    cache_data_to_write = {"timestamp": time.time(), "result": result}
+                    with open(cache_file, "w") as f:
                         json.dump(cache_data_to_write, f, indent=2, default=str)
                 except (TypeError, OSError) as e:
-                    console.print(f"[yellow]Warning: Could not cache result for tool '{original_func.__name__}'. Reason: {e}[/yellow]")
+                    console.print(
+                        f"[yellow]Warning: Could not cache result for tool '{original_func.__name__}'. Reason: {e}[/yellow]"
+                    )
 
             if config.tool_hooks and config.tool_hooks.after:
                 result_after = config.tool_hooks.after(result)
                 func_dict["funct_after"] = result_after if result_after else None
 
-            setattr(behavioral_wrapper, '_aideck_stop_after_call', config.stop_after_tool_call)
-            setattr(behavioral_wrapper, '_aideck_show_result', config.show_result)
+            behavioral_wrapper._aideck_stop_after_call = config.stop_after_tool_call
+            behavioral_wrapper._aideck_show_result = config.show_result
 
             return func_dict
+
         return behavioral_wrapper

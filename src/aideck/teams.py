@@ -1,14 +1,14 @@
 from langchain.tools import tool
 
 try:
-    from .utils.db import load_api_key
+    from .agent.agent_tools import get_tools
     from .llm import get_model
     from .top_bar_wrapper import wrapper
-    from .agent.agent_tools import get_tools
+    from .utils.db import load_api_key
 except ImportError:
+    from agent.agent_tools import get_tools
     from llm import get_model
     from top_bar_wrapper import wrapper
-    from agent.agent_tools import get_tools
 
 
 @wrapper
@@ -26,7 +26,7 @@ def search_on_internet_and_report_team_(
     - str: The report of the search.
     """
 
-    from crewai import Task, Crew, Agent
+    from crewai import Agent, Crew, Task
 
     tools = get_tools()
 
@@ -125,7 +125,7 @@ def save_code(name, code):
 
 def required_old_code(aim):
     try:
-        from crewai import Task, Crew, Agent
+        from crewai import Agent, Crew, Task
 
         requirement_analyzer = Agent(
             role="requirement_analyzer",
@@ -183,7 +183,7 @@ def generate_code_with_aim_team_(aim: str, copy_to_clipboard: bool = False) -> s
         except:
             pass
 
-        from crewai import Task, Crew, Agent
+        from crewai import Agent, Crew, Task
 
         tools = get_tools()
 

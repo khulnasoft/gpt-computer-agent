@@ -1,17 +1,15 @@
 import asyncio
 import time
 from collections import OrderedDict
-from typing import Dict, Optional, Type, TypeVar, Union
+from typing import TypeVar
 
 from pydantic import BaseModel
 
 from aideck.storage.base import Storage
-from aideck.storage.session.sessions import (
-    InteractionSession,
-    UserProfile
-)
+from aideck.storage.session.sessions import InteractionSession, UserProfile
 
-T = TypeVar('T', bound=BaseModel)
+T = TypeVar("T", bound=BaseModel)
+
 
 class InMemoryStorage(Storage):
     """
@@ -22,7 +20,9 @@ class InMemoryStorage(Storage):
     event loop to run the core async logic.
     """
 
-    def __init__(self, max_sessions: Optional[int] = None, max_profiles: Optional[int] = None):
+    def __init__(
+        self, max_sessions: int | None = None, max_profiles: int | None = None
+    ):
         """
         Initializes the in-memory storage provider.
 
@@ -32,11 +32,14 @@ class InMemoryStorage(Storage):
         """
         super().__init__()
         self.max_sessions = max_sessions
-        self._sessions: Dict[str, InteractionSession] = OrderedDict() if self.max_sessions else {}
+        self._sessions: dict[str, InteractionSession] = (
+            OrderedDict() if self.max_sessions else {}
+        )
         self.max_profiles = max_profiles
-        self._user_profiles: Dict[str, UserProfile] = OrderedDict() if self.max_profiles else {}
-        self._lock: Optional[asyncio.Lock] = None
-
+        self._user_profiles: dict[str, UserProfile] = (
+            OrderedDict() if self.max_profiles else {}
+        )
+        self._lock: asyncio.Lock | None = None
 
     @property
     def lock(self) -> asyncio.Lock:
@@ -49,12 +52,11 @@ class InMemoryStorage(Storage):
         except RuntimeError:
             current_loop = asyncio.new_event_loop()
             asyncio.set_event_loop(current_loop)
-        
+
         if self._lock is None or self._lock._loop is not current_loop:
             self._lock = asyncio.Lock()
-            
-        return self._lock
 
+        return self._lock
 
     def is_connected(self) -> bool:
         return self._run_async_from_sync(self.is_connected_async())
@@ -68,19 +70,17 @@ class InMemoryStorage(Storage):
     def create(self) -> None:
         return self._run_async_from_sync(self.create_async())
 
-    def read(self, object_id: str, model_type: Type[T]) -> Optional[T]:
+    def read(self, object_id: str, model_type: type[T]) -> T | None:
         return self._run_async_from_sync(self.read_async(object_id, model_type))
 
-    def upsert(self, data: Union[InteractionSession, UserProfile]) -> None:
+    def upsert(self, data: InteractionSession | UserProfile) -> None:
         return self._run_async_from_sync(self.upsert_async(data))
-    
-    def delete(self, object_id: str, model_type: Type[BaseModel]) -> None:
+
+    def delete(self, object_id: str, model_type: type[BaseModel]) -> None:
         return self._run_async_from_sync(self.delete_async(object_id, model_type))
 
     def drop(self) -> None:
         return self._run_async_from_sync(self.drop_async())
-
-
 
     async def is_connected_async(self) -> bool:
         """Checks the internal connected flag."""
@@ -98,7 +98,7 @@ class InMemoryStorage(Storage):
         """For in-memory, there is no persistent schema to create. This is a no-op."""
         pass
 
-    async def read_async(self, object_id: str, model_type: Type[T]) -> Optional[T]:
+    async def read_async(self, object_id: str, model_type: type[T]) -> T | None:
         """Asynchronously reads an object from the corresponding in-memory dictionary."""
         async with self.lock:
             if model_type is InteractionSession:
@@ -115,7 +115,7 @@ class InMemoryStorage(Storage):
                     return item.model_copy(deep=True)
         return None
 
-    async def upsert_async(self, data: Union[InteractionSession, UserProfile]) -> None:
+    async def upsert_async(self, data: InteractionSession | UserProfile) -> None:
         """Asynchronously upserts an object into the corresponding in-memory dictionary."""
         async with self.lock:
             data.updated_at = time.time()
@@ -133,9 +133,11 @@ class InMemoryStorage(Storage):
                     if len(self._user_profiles) > self.max_profiles:
                         self._user_profiles.popitem(last=False)
             else:
-                raise TypeError(f"Unsupported data type for upsert: {type(data).__name__}")
-    
-    async def delete_async(self, object_id: str, model_type: Type[BaseModel]) -> None:
+                raise TypeError(
+                    f"Unsupported data type for upsert: {type(data).__name__}"
+                )
+
+    async def delete_async(self, object_id: str, model_type: type[BaseModel]) -> None:
         """Asynchronously deletes an object from the corresponding in-memory dictionary."""
         async with self.lock:
             if model_type is InteractionSession and object_id in self._sessions:

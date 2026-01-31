@@ -1,16 +1,16 @@
 try:
     from ..llm import *
     from ..utils.db import *
-    from .tts_providers.openai import tts_openai
     from .tts_providers.microsoft_local import tts_microsoft_local
+    from .tts_providers.openai import tts_openai
 except ImportError:
+    from audio.tts_providers.microsoft_local import tts_microsoft_local
+    from audio.tts_providers.openai import tts_openai
     from llm import *
     from utils.db import *
-    from audio.tts_providers.openai import tts_openai
-    from audio.tts_providers.microsoft_local import tts_microsoft_local
 
-import os
 import hashlib
+import os
 import random
 import threading
 
@@ -53,9 +53,7 @@ def generate_speech_chunk(text_chunk, index, voice, results):
 
         if tts_setting == "microsoft_local":
             if not is_local_tts_available():
-                print(
-                    "Please install aideck[local_tts] to use local TTS"
-                )
+                print("Please install aideck[local_tts] to use local TTS")
             else:
                 tts_microsoft_local(text_chunk, location)
 

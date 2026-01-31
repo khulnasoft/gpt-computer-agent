@@ -1,29 +1,28 @@
 try:
-    from .start import start
-
     from .agentic import Agent
-
+    from .start import start
     from .tooler import Tool
 except:
     pass
+
+try:
+    from .rag import RAGConfig, RAGPipeline, get_simple_rag_config
+except:
+    pass
+
 __version__ = '0.28.3'  # fmt: skip
 
 
-
-
-
-from .classes import BaseClass, BaseVerifier, TypeVerifier, Task
-
 import os
-import time
 import subprocess
+import time
+
 import requests
-
-
 from requests.packages.urllib3.exceptions import InsecureRequestWarning
 
-requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
+from .classes import BaseClass, BaseVerifier, Task, TypeVerifier
 
+requests.packages.urllib3.disable_warnings(InsecureRequestWarning)
 
 
 class instance:
@@ -32,7 +31,6 @@ class instance:
         self.task = []
         for t in tasks:
             self.add_task(t)
-
 
     def request(self):
         pass
@@ -57,21 +55,19 @@ class instance:
 
         return results
 
-    
     def run(self, task):
-        task.add_client(self)   
+        task.add_client(self)
         task.run()
         return task.result
 
-
     def user_id(self):
         from .utils.user_id import load_user_id
+
         return load_user_id()
 
 
 class interface:
     pass
-
 
 
 class local_instance(instance):
@@ -85,11 +81,9 @@ class local_instance(instance):
 
         return self.client.request(the_request, the_response, screen)
 
-
     def start(self):
         command = "python -c 'from aideck import start; start(True);'"
         self.process = subprocess.Popen(command, shell=True)
-
 
     def close(self):
         try:
@@ -100,19 +94,15 @@ class local_instance(instance):
         self.process.terminate()
         self.process.wait()
 
-
-
     def client_status(self):
         return self.client.status
-
-
 
 
 class local(interface):
 
     @staticmethod
-    def agent( *args, **kwargs):
-        the_instance = local_instance( *args, **kwargs)
+    def agent(*args, **kwargs):
+        the_instance = local_instance(*args, **kwargs)
         the_instance.start()
 
         time.sleep(5)
@@ -121,62 +111,90 @@ class local(interface):
 
         if not client_status:
             raise Exception("Failed to start the local instance")
-        
+
         return the_instance
-        
 
 
 class cloud_instance(instance):
     def __init__(self, *args, **kwargs):
         super().__init__("https://free_cloud_1.gca.dev/", *args, **kwargs)
-        
 
     def request(self, the_request, the_response, screen=False):
         screen = "false" if not screen else "true"
 
-        response = requests.post(self.url+"request", data={"request": the_request, "response": the_response, "screen":screen, "instance":self.instance_id}, verify=False)
+        response = requests.post(
+            self.url + "request",
+            data={
+                "request": the_request,
+                "response": the_response,
+                "screen": screen,
+                "instance": self.instance_id,
+            },
+            verify=False,
+        )
         json_response = response.json()
         request_id = json_response["request_id"]
         try:
             while True:
-                response = requests.post(self.url+"request_result", data={"request_id": request_id}, verify=False)
+                response = requests.post(
+                    self.url + "request_result",
+                    data={"request_id": request_id},
+                    verify=False,
+                )
                 the_json = response.json()
                 if the_json["status"] == True:
                     return the_json["result"]
                 time.sleep(1)
         except:
             return response.text
-        
-
 
     def change_profile(self, profile):
-        response = requests.post(self.url+"change_profile", data={"profile": profile, "instance":self.instance_id}, verify=False)
-        the_json = response.json()
-        return the_json["result"]
-    
-    def add_system_message(self, system_message):
-        response = requests.post(self.url+"add_system_message", data={"system_message": system_message, "instance":self.instance_id}, verify=False)
+        response = requests.post(
+            self.url + "change_profile",
+            data={"profile": profile, "instance": self.instance_id},
+            verify=False,
+        )
         the_json = response.json()
         return the_json["result"]
 
+    def add_system_message(self, system_message):
+        response = requests.post(
+            self.url + "add_system_message",
+            data={"system_message": system_message, "instance": self.instance_id},
+            verify=False,
+        )
+        the_json = response.json()
+        return the_json["result"]
 
     def add_user_id(self, user_id):
-        response = requests.post(self.url+"add_user_id", data={"user_id": user_id, "instance":self.instance_id}, verify=False)
+        response = requests.post(
+            self.url + "add_user_id",
+            data={"user_id": user_id, "instance": self.instance_id},
+            verify=False,
+        )
         the_json = response.json()
         return the_json["result"]
 
     def get_logs(self):
-        response = requests.post(self.url+"get_logs", data={"instance":self.instance_id}, verify=False)
+        response = requests.post(
+            self.url + "get_logs", data={"instance": self.instance_id}, verify=False
+        )
         the_json = response.json()
         return the_json["result"]
 
     def reset_memory(self):
-        response = requests.post(self.url+"reset_memory", data={"instance":self.instance_id}, verify=False)
+        response = requests.post(
+            self.url + "reset_memory", data={"instance": self.instance_id}, verify=False
+        )
         the_json = response.json()
         return the_json["result"]
 
     def screenshot(self):
-        response = requests.post(self.url+"screenshot_instance", data={"instance":self.instance_id}, verify=False)
+        response = requests.post(
+            self.url + "screenshot_instance",
+            data={"instance": self.instance_id},
+            verify=False,
+        )
 
         its_an_error = False
 
@@ -187,39 +205,35 @@ class cloud_instance(instance):
         except:
             pass
 
-
         if not its_an_error:
-            with open('current_screenshot.png', 'wb') as file:
+            with open("current_screenshot.png", "wb") as file:
                 file.write(response.content)
-            import matplotlib.pyplot as plt
             import matplotlib.image as mpimg
+            import matplotlib.pyplot as plt
 
-            img = mpimg.imread('current_screenshot.png')
+            img = mpimg.imread("current_screenshot.png")
             plt.imshow(img)
-            plt.axis('off')
+            plt.axis("off")
             plt.show()
 
-
-
-
-
     def start(self):
-        req = requests.get(self.url+"start_instance", verify=False)
+        req = requests.get(self.url + "start_instance", verify=False)
         the_json = req.json()
 
         self.instance_id = the_json["result"]
         self.add_user_id(self.user_id())
 
-
-
     def close(self):
-        req = requests.post(self.url+"stop_instance", data={"instance": self.instance_id}, verify=False)
+        req = requests.post(
+            self.url + "stop_instance",
+            data={"instance": self.instance_id},
+            verify=False,
+        )
         the_json = req.json()
         return the_json["result"]
 
     def client_status(self):
         return True
-
 
 
 class Cloud(interface):
@@ -228,7 +242,7 @@ class Cloud(interface):
     def agent(*args, **kwargs):
         start_time = time.time()
 
-        the_instance = cloud_instance( *args, **kwargs)
+        the_instance = cloud_instance(*args, **kwargs)
         the_instance.start()
         time.sleep(1)
 
@@ -237,11 +251,6 @@ class Cloud(interface):
         print(f"Time to start the instance: {end_time - start_time}")
 
         return the_instance
-    
-
-
-
-
 
 
 class docker_instance(instance):
@@ -255,20 +264,14 @@ class docker_instance(instance):
 
         return self.client.request(the_request, the_response, screen)
 
-
     def start(self):
         pass
-
 
     def close(self):
         pass
 
-
-
     def client_status(self):
         return self.client.status
-
-
 
 
 class docker(interface):
@@ -278,11 +281,9 @@ class docker(interface):
         the_instance = docker_instance(url, *args, **kwargs)
         the_instance.start()
 
-
         client_status = the_instance.client_status()
 
         if not client_status:
             raise Exception("Failed to start the docker instance")
-        
+
         return the_instance
-          

@@ -1,61 +1,65 @@
 """Common utility functions for the GPT Computer Agent."""
-from typing import Any, Dict, List, Optional, Union
-from pathlib import Path
-import json
-import yaml
-import logging
-from datetime import datetime
-from urllib.parse import urlparse
-import hashlib
-import os
 
+import hashlib
+import json
+import os
+from datetime import datetime
+from pathlib import Path
+from typing import Any
+from urllib.parse import urlparse
+
+import yaml
 from loguru import logger
 
 
-def load_config(config_path: Union[str, Path]) -> Dict[str, Any]:
+def load_config(config_path: str | Path) -> dict[str, Any]:
     """
     Load configuration from a JSON or YAML file.
-    
+
     Args:
         config_path: Path to the configuration file.
-        
+
     Returns:
         Dict containing the configuration.
     """
     config_path = Path(config_path)
     if not config_path.exists():
         raise FileNotFoundError(f"Config file not found: {config_path}")
-    
+
     try:
-        with open(config_path, 'r', encoding='utf-8') as f:
-            if config_path.suffix.lower() == '.json':
+        with open(config_path, encoding="utf-8") as f:
+            if config_path.suffix.lower() == ".json":
                 return json.load(f)
-            elif config_path.suffix.lower() in ('.yaml', '.yml'):
+            elif config_path.suffix.lower() in (".yaml", ".yml"):
                 return yaml.safe_load(f)
             else:
-                raise ValueError(f"Unsupported config file format: {config_path.suffix}")
+                raise ValueError(
+                    f"Unsupported config file format: {config_path.suffix}"
+                )
     except Exception as e:
         logger.error(f"Error loading config from {config_path}: {e}")
         raise
 
 
-def save_config(config: Dict[str, Any], config_path: Union[str, Path]) -> None:
+def save_config(config: dict[str, Any], config_path: str | Path) -> None:
     """
     Save configuration to a JSON or YAML file.
-    
+
     Args:
         config: Configuration dictionary to save.
         config_path: Path to save the configuration to.
     """
     config_path = Path(config_path)
     try:
-        with open(config_path, 'w', encoding='utf-8') as f:
-            if config_path.suffix.lower() == '.json':
+        with open(config_path, "w", encoding="utf-8") as f:
+            if config_path.suffix.lower() == ".json":
                 json.dump(config, f, indent=2, ensure_ascii=False)
-            elif config_path.suffix.lower() in ('.yaml', '.yml'):
+            elif config_path.suffix.lower() in (".yaml", ".yml"):
                 yaml.dump(config, f, default_flow_style=False, allow_unicode=True)
             else:
-                raise ValueError(f"Unsupported config file format: {config_path.suffix}")
+                raise ValueError(
+                    f"Unsupported config file format: {config_path.suffix}"
+                )
         logger.info(f"Configuration saved to {config_path}")
     except Exception as e:
         logger.error(f"Error saving config to {config_path}: {e}")
@@ -65,10 +69,10 @@ def save_config(config: Dict[str, Any], config_path: Union[str, Path]) -> None:
 def get_timestamp(fmt: str = "%Y%m%d_%H%M%S") -> str:
     """
     Get current timestamp as a formatted string.
-    
+
     Args:
         fmt: Format string for the timestamp.
-        
+
     Returns:
         Formatted timestamp string.
     """
@@ -78,10 +82,10 @@ def get_timestamp(fmt: str = "%Y%m%d_%H%M%S") -> str:
 def is_url(string: str) -> bool:
     """
     Check if a string is a valid URL.
-    
+
     Args:
         string: String to check.
-        
+
     Returns:
         True if the string is a valid URL, False otherwise.
     """
@@ -92,40 +96,40 @@ def is_url(string: str) -> bool:
         return False
 
 
-def calculate_checksum(file_path: Union[str, Path], algorithm: str = 'sha256') -> str:
+def calculate_checksum(file_path: str | Path, algorithm: str = "sha256") -> str:
     """
     Calculate the checksum of a file.
-    
+
     Args:
         file_path: Path to the file.
         algorithm: Hash algorithm to use (default: 'sha256').
-        
+
     Returns:
         Hexadecimal digest of the file's hash.
     """
     file_path = Path(file_path)
     if not file_path.is_file():
         raise FileNotFoundError(f"File not found: {file_path}")
-    
+
     hash_func = getattr(hashlib, algorithm, None)
     if hash_func is None:
         raise ValueError(f"Unsupported hash algorithm: {algorithm}")
-    
+
     h = hash_func()
-    with open(file_path, 'rb') as f:
+    with open(file_path, "rb") as f:
         while chunk := f.read(8192):
             h.update(chunk)
-    
+
     return h.hexdigest()
 
 
-def ensure_directory(path: Union[str, Path]) -> Path:
+def ensure_directory(path: str | Path) -> Path:
     """
     Ensure a directory exists, creating it if necessary.
-    
+
     Args:
         path: Path to the directory.
-        
+
     Returns:
         Path object for the directory.
     """
@@ -137,27 +141,27 @@ def ensure_directory(path: Union[str, Path]) -> Path:
 def get_file_extension(filename: str) -> str:
     """
     Get the file extension from a filename.
-    
+
     Args:
         filename: Name of the file.
-        
+
     Returns:
         File extension (without the dot), or an empty string if no extension.
     """
-    return Path(filename).suffix.lstrip('.').lower()
+    return Path(filename).suffix.lstrip(".").lower()
 
 
 def format_bytes(size: int) -> str:
     """
     Format a size in bytes to a human-readable string.
-    
+
     Args:
         size: Size in bytes.
-        
+
     Returns:
         Formatted string with appropriate unit (e.g., '1.2 MB').
     """
-    for unit in ['B', 'KB', 'MB', 'GB', 'TB']:
+    for unit in ["B", "KB", "MB", "GB", "TB"]:
         if size < 1024.0:
             return f"{size:.1f} {unit}"
         size /= 1024.0
@@ -165,16 +169,16 @@ def format_bytes(size: int) -> str:
 
 
 def setup_logging(
-    log_dir: Union[str, Path] = "logs",
+    log_dir: str | Path = "logs",
     log_level: str = "INFO",
     log_format: str = "{time:YYYY-MM-DD HH:mm:ss.SSS} | {level: <8} | {name}:{function}:{line} - {message}",
     retention: str = "30 days",
     rotation: str = "100 MB",
-    serialize: bool = False
+    serialize: bool = False,
 ) -> None:
     """
     Configure logging with loguru.
-    
+
     Args:
         log_dir: Directory to store log files.
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL).
@@ -183,12 +187,13 @@ def setup_logging(
         rotation: Log rotation condition.
         serialize: Whether to output logs as JSON.
     """
-    from loguru import logger
     import sys
-    
+
+    from loguru import logger
+
     # Remove default handler
     logger.remove()
-    
+
     # Add stderr handler
     logger.add(
         sys.stderr,
@@ -196,13 +201,13 @@ def setup_logging(
         format=log_format,
         colorize=True,
         backtrace=True,
-        diagnose=True
+        diagnose=True,
     )
-    
+
     # Add file handler
     log_dir = ensure_directory(log_dir)
     log_file = log_dir / f"gpt_agent_{get_timestamp('%Y%m%d')}.log"
-    
+
     logger.add(
         str(log_file),
         level=log_level,
@@ -212,23 +217,22 @@ def setup_logging(
         enqueue=True,
         backtrace=True,
         diagnose=True,
-        serialize=serialize
+        serialize=serialize,
     )
-    
+
     logger.info(f"Logging configured. Log file: {log_file}")
 
 
-def get_environment_info() -> Dict[str, str]:
+def get_environment_info() -> dict[str, str]:
     """
     Get information about the current environment.
-    
+
     Returns:
         Dictionary containing environment information.
     """
     import platform
     import sys
-    import os
-    
+
     return {
         "platform": platform.system(),
         "platform_release": platform.release(),

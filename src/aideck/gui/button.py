@@ -1,31 +1,31 @@
-import pyautogui
-from .signal import *
 import threading
+
+import pyautogui
+
+from .signal import *
 
 try:
 
-    from ..screen.shot import *
-    from ..agent.process import *
     from ..agent.chat_history import clear_chat_history
+    from ..agent.process import *
+    from ..screen.shot import *
+    from ..screen.shot import take_screenshot
     from ..utils.db import (
-        screenshot_path,
-        save_api_key,
-        load_api_key,
         activate_just_text_model,
         deactivate_just_text_model,
-        is_just_text_model_active,
-        set_profile,
         get_profile,
+        is_just_text_model_active,
+        load_api_key,
+        save_api_key,
+        screenshot_path,
+        set_profile,
     )
-    from ..screen.shot import take_screenshot
 except ImportError:
 
-    from screen.shot import *
     from agent.process import *
-    from utils.db import (
-        screenshot_path,
-    )
+    from screen.shot import *
     from screen.shot import take_screenshot
+    from utils.db import screenshot_path
 
 recording_thread = None
 
@@ -42,12 +42,8 @@ class ButtonHandler:
         signal_handler.recording_started.connect(self.on_recording_started)
         signal_handler.recording_stopped.connect(self.on_recording_stopped)
         signal_handler.agent_thinking.connect(self.on_agent_thinking)
-        signal_handler.agent_response_ready.connect(
-            self.on_agent_response_ready
-        )
-        signal_handler.agent_response_stopped.connect(
-            self.on_agent_response_stopped
-        )
+        signal_handler.agent_response_ready.connect(self.on_agent_response_ready)
+        signal_handler.agent_response_stopped.connect(self.on_agent_response_stopped)
 
     def toggle_recording(
         self,
@@ -59,9 +55,9 @@ class ButtonHandler:
         """Toggle audio recording."""
 
         try:
-            from ..audio.record import stop_recording, start_recording
+            from ..audio.record import start_recording, stop_recording
         except ImportError:
-            from audio.record import stop_recording, start_recording
+            from audio.record import start_recording, stop_recording
 
         if self.recording and not new_record:
             stop_recording()

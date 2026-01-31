@@ -2,20 +2,11 @@
 from kot import KOT
 
 try:
-    from .folder import currently_dir, artifacts_dir, media_dir
+    from .folder import artifacts_dir, currently_dir, media_dir
 except:
     from folder import currently_dir, artifacts_dir, media_dir
 
-
-
-
-
-
-
-
-
-from langchain_core.messages import HumanMessage, SystemMessage, AIMessage
-
+from langchain_core.messages import AIMessage, HumanMessage, SystemMessage
 
 try:
     from .db import *
@@ -23,9 +14,7 @@ try:
 except:
     from db import *
 
-
 import time
-
 
 
 class Human:
@@ -118,7 +107,7 @@ class ChatHistory:
 
         if self.db.get("chat") is None:
             self.db.set("chat", [])
-  
+
         if self.get_chat() == []:
             print("SETTING CHAT")
             self.add_message("system", {"type":"text", "text": load_system_prompt()})
@@ -144,7 +133,7 @@ class ChatHistory:
         else:
             raise ValueError("Invalid message type")
 
-       
+
         chat = self.db.get("chat")
         chat.append(message.__dict__())
 
@@ -167,7 +156,7 @@ class ChatHistory:
             elif message["type"] == "system":
                 the_chat.append(System(content=message["content"], the_time=message["timestamp"]))
 
-        
+
         last_chat = []
         for message in the_chat:
             if message.that_was_empty:
@@ -185,7 +174,7 @@ class ChatHistory:
                 message["content"] = list(message["content"])
             if isinstance(message["content"], dict):
                 message["content"] = [message["content"]]
-            
+
 
 
 
@@ -195,7 +184,7 @@ class ChatHistory:
 
 
             if message["type"] == "human":
-                
+
                 langchain_messages.append(HumanMessage(content=
                     message["content"]
                     ))
@@ -210,11 +199,7 @@ class ChatHistory:
 
 
         return langchain_messages
-    
+
 
     def clear_chat(self):
         self.db.set("chat", [])
-
-    
-
-        

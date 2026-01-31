@@ -1,4 +1,4 @@
-from PyQt5.QtCore import pyqtSignal, QObject
+from PyQt5.QtCore import QObject, pyqtSignal
 
 
 class SignalHandler(QObject):

@@ -1,14 +1,12 @@
 """Unit tests for Aideck core classes"""
 
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch
-
 # Add src to path for testing
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from aideck.classes import BaseClass, BaseVerifier, TypeVerifier, Task
+from aideck.classes import BaseClass, BaseVerifier, Task, TypeVerifier
 
 
 class TestBaseClass:
@@ -21,6 +19,7 @@ class TestBaseClass:
 
     def test_base_class_inheritance(self):
         """Test BaseClass inheritance works"""
+
         class TestClass(BaseClass):
             def __init__(self):
                 super().__init__()
@@ -39,6 +38,7 @@ class TestBaseVerifier:
 
     def test_verifier_inheritance(self):
         """Test BaseVerifier inheritance works"""
+
         class TestVerifier(BaseVerifier):
             def verify(self, data):
                 return True
@@ -57,6 +57,7 @@ class TestTypeVerifier:
 
     def test_type_verification(self):
         """Test type verification functionality"""
+
         class TestTypeVerifier(TypeVerifier):
             def verify_type(self, value, expected_type):
                 return isinstance(value, expected_type)
@@ -77,6 +78,7 @@ class TestTask:
 
     def test_task_with_function(self):
         """Test Task with function assignment"""
+
         def sample_function():
             return "result"
 
@@ -86,6 +88,7 @@ class TestTask:
 
     def test_task_execution(self):
         """Test Task execution"""
+
         def sample_function():
             return "success"
 
@@ -96,6 +99,7 @@ class TestTask:
 
     def test_task_with_parameters(self):
         """Test Task with parameters"""
+
         def add_numbers(a, b):
             return a + b
 

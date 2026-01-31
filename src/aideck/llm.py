@@ -1,20 +1,19 @@
-from openai import OpenAI
-from langchain_openai import ChatOpenAI, AzureChatOpenAI
+from langchain_anthropic import ChatAnthropic
+from langchain_aws import ChatBedrock
 from langchain_community.chat_models import ChatOllama
 from langchain_google_genai import ChatGoogleGenerativeAI
 from langchain_groq import ChatGroq
-from langchain_anthropic import ChatAnthropic
-from langchain_aws import ChatBedrock
-
+from langchain_openai import AzureChatOpenAI, ChatOpenAI
+from openai import OpenAI
 
 try:
-    from .utils.db import *
     from .custom_callback import customcallback
     from .llm_settings import llm_settings
+    from .utils.db import *
 except ImportError:
-    from utils.db import *
     from custom_callback import customcallback
     from llm_settings import llm_settings
+    from utils.db import *
 
 
 the_callback = customcallback(strip_tokens=False, answer_prefix_tokens=["Answer"])
@@ -63,7 +62,7 @@ def get_model(high_context=False, the_model=None):
             "model_id": the_model,
             "aws_access_key_id": load_aws_access_key_id(),
             "aws_secret_access_key": load_aws_secret_access_key(),
-            "region_name":"us-east-1",
+            "region_name": "us-east-1",
             "streaming": False,
             "callbacks": [the_callback],
         },
@@ -98,6 +97,7 @@ def get_model(high_context=False, the_model=None):
             the_tuple = (ChatBedrock, args_mapping[ChatBedrock])
         elif model_args["provider"] == "azureai":
             import os
+
             os.environ["AZURE_OPENAI_API_KEY"] = the_api_key
             os.environ["AZURE_OPENAI_ENDPOINT"] = the_openai_url
             the_tuple = (AzureChatOpenAI, args_mapping[AzureChatOpenAI])

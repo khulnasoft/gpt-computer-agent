@@ -71,7 +71,7 @@ uv run test.py
 If you get an error about the aideck is module is not found just try
 
 ```python
-uv pip uninstall aideck && uv run 
+uv pip uninstall aideck && uv run
 ```
 
 ## Model Providers and Configuration
@@ -79,7 +79,7 @@ uv pip uninstall aideck && uv run
 The framework supports multiple AI providers through a unified interface:
 
 - **OpenAI**: Set `OPENAI_API_KEY` environment variable
-- **Anthropic**: Set `ANTHROPIC_API_KEY` environment variable  
+- **Anthropic**: Set `ANTHROPIC_API_KEY` environment variable
 - **Azure**: Configure Azure-specific credentials
 - **AWS Bedrock**: Configure AWS credentials
 
@@ -103,7 +103,7 @@ Unified storage interface supporting multiple backends for session management, m
 
 Tests are organized by functionality:
 - `tests/` - Core functionality tests
-- `tests/rag/` - RAG and chunking tests  
+- `tests/rag/` - RAG and chunking tests
 - `tests/safety_engine/` - Safety policy tests
 - `tests/pricing/` - Cost calculation tests
 

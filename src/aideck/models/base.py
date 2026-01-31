@@ -1,9 +1,9 @@
 from __future__ import annotations
+
 from abc import ABC, abstractmethod
-from typing import Tuple, Any, Optional, Dict, List
+from typing import Any
 
 from pydantic import BaseModel
-
 from pydantic_ai.models import Model
 from pydantic_ai.settings import ModelSettings
 
@@ -20,10 +20,13 @@ class BaseModelProvider(BaseModel, ABC):
 
     class Config:
         """Pydantic model configuration."""
+
         arbitrary_types_allowed = True
 
     @abstractmethod
-    async def _provision(self, tools: Optional[List[Any]] = None) -> Tuple[Model, Optional[ModelSettings]]:
+    async def _provision(
+        self, tools: list[Any] | None = None
+    ) -> tuple[Model, ModelSettings | None]:
         """
         The core abstract method that every concrete provider must implement.
 
@@ -41,11 +44,11 @@ class BaseModelProvider(BaseModel, ABC):
 
     @property
     @abstractmethod
-    def pricing(self) -> Dict[str, float]:
+    def pricing(self) -> dict[str, float]:
         """
         Returns the pricing information for the specific model configured
         in this provider instance.
-        
+
         Returns:
             A dictionary containing 'input' and 'output' cost per million tokens.
         """
@@ -53,7 +56,7 @@ class BaseModelProvider(BaseModel, ABC):
 
     @property
     @abstractmethod
-    def capabilities(self) -> List[str]:
+    def capabilities(self) -> list[str]:
         """
         Returns a list of special capabilities for the specific model
         configured in this provider instance (e.g., 'vision', 'audio').
@@ -62,7 +65,7 @@ class BaseModelProvider(BaseModel, ABC):
 
     @property
     @abstractmethod
-    def required_environment_variables(self) -> List[str]:
+    def required_environment_variables(self) -> list[str]:
         """
         Returns a list of environment variable names that are required
         for this provider to function correctly.

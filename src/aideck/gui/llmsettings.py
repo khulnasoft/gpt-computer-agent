@@ -1,25 +1,25 @@
 try:
-    from ..utils.db import *
     from ..agent.chat_history import clear_chat_history
-    from ..llm_settings import llm_show_name, llm_settings
-    from ..audio.tts import is_local_tts_available
     from ..audio.stt import is_local_stt_available
+    from ..audio.tts import is_local_tts_available
+    from ..llm_settings import llm_settings, llm_show_name
+    from ..utils.db import *
 
 except ImportError:
-    from utils.db import *
-    from llm_settings import llm_show_name, llm_settings
-    from audio.tts import is_local_tts_available
     from audio.stt import is_local_stt_available
+    from audio.tts import is_local_tts_available
+    from llm_settings import llm_settings, llm_show_name
+    from utils.db import *
 
+from PyQt5.QtCore import Qt
 from PyQt5.QtWidgets import (
+    QComboBox,
     QDialog,
-    QVBoxLayout,
     QLabel,
     QLineEdit,
     QPushButton,
-    QComboBox,
+    QVBoxLayout,
 )
-from PyQt5.QtCore import Qt
 
 
 def llmsettings_popup(self):
@@ -65,9 +65,6 @@ def llmsettings_popup(self):
     openai_url_save_button.clicked.connect(save_openai_url_)
     settings_dialog.layout().addWidget(openai_url_save_button)
 
-
-
-
     api_version_label = QLabel("API Version")
     settings_dialog.layout().addWidget(api_version_label)
     api_version_input = QLineEdit()
@@ -85,9 +82,6 @@ def llmsettings_popup(self):
     api_version_save_button = QPushButton("Save URL")
     api_version_save_button.clicked.connect(save_api_version_)
     settings_dialog.layout().addWidget(api_version_save_button)
-
-
-    
 
     groq_api_key_label = QLabel("Groq API Key")
     settings_dialog.layout().addWidget(groq_api_key_label)
@@ -133,7 +127,6 @@ def llmsettings_popup(self):
 
         save_button.hide()
 
-
     def hide_azureai():
         api_key_label.hide()
         api_key_input.hide()
@@ -144,7 +137,6 @@ def llmsettings_popup(self):
         api_version_label.hide()
         api_version_input.hide()
         api_version_save_button.hide()
-        
 
     def hide_groq():
         groq_api_key_label.hide()
@@ -204,7 +196,6 @@ def llmsettings_popup(self):
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "azureai":
         show_azureai()
 
-    
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "groq":
         show_groq()
     if llm_settings[llm_show_name[model_select.currentText()]]["provider"] == "google":
@@ -289,9 +280,7 @@ def llmsettings_popup(self):
 
     if not is_local_tts_available():
         # add an text to inform the user that local tts is not available
-        information_text = QLabel(
-            "Please install aideck[local_tts] to use local TTS"
-        )
+        information_text = QLabel("Please install aideck[local_tts] to use local TTS")
         settings_dialog.layout().addWidget(information_text)
         tts_model_select.setEnabled(False)
 
@@ -321,9 +310,7 @@ def llmsettings_popup(self):
 
     if not is_local_stt_available():
         # add an text to inform the user that local stt is not available
-        information_text = QLabel(
-            "Please install aideck[local_stt] to use local STT"
-        )
+        information_text = QLabel("Please install aideck[local_stt] to use local STT")
         settings_dialog.layout().addWidget(information_text)
         stt_model_select.setEnabled(False)
 

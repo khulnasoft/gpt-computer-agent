@@ -1,12 +1,13 @@
 # Create a python api and start_api function via flask
 
-from flask import Flask, request, jsonify
 import threading
 import time
+
 import pyautogui
+from flask import Flask, jsonify, request
+from waitress import serve
 from werkzeug.serving import make_server
 
-from waitress import serve
 app = Flask(__name__)
 
 
@@ -15,17 +16,11 @@ def status():
     return jsonify({"response": True})
 
 
-
-
 def the_input(text, screen, talk):
     print("Input:", text)
 
     from .agent.process import process_text_api
-    from .utils.db import (
-        screenshot_path,
-    )
-
-
+    from .utils.db import screenshot_path
 
     if screen != "true":
         result = process_text_api(text, None)
@@ -34,12 +29,7 @@ def the_input(text, screen, talk):
         screenshot.save(screenshot_path)
         result = process_text_api(text, screenshot_path)
 
-
-
-
-
     return jsonify({"response": result})
-
 
 
 @app.route("/input", methods=["POST"])
@@ -53,9 +43,6 @@ def input():
     talk = data["talk"]
 
     return the_input(text, screen, talk)
-
-
-
 
 
 @app.route("/request", methods=["POST"])
@@ -76,14 +63,12 @@ def the_request():
     return the_input(combined, screen, "false")
 
 
-
-
 @app.route("/screenshot", methods=["POST"])
 def screenshot():
     """
     This function receives a screenshot from the user and returns the response.
     """
-    from . import the_main_window, the_input_box
+    from . import the_input_box, the_main_window
 
     firsst_text = the_input_box.toPlainText()
     the_main_window.button_handler.just_screenshot()
@@ -467,10 +452,11 @@ def save_system_prompt():
     save_system_prompt(prompt)
     return jsonify({"response": "prompt saved."})
 
+
 @app.route("/save_anthropic_api_key", methods=["POST"])
 def save_anthropic_api_key():
     """
-    This api saves the 
+    This api saves the
     """
     data = request.json
     anthropic_api_key = data["anthropic_api_key"]
@@ -478,7 +464,6 @@ def save_anthropic_api_key():
 
     save_anthropic_api_key(anthropic_api_key)
     return jsonify({"response": "Anthropic API key saved."})
-
 
 
 @app.route("/save_openai_url", methods=["POST"])
@@ -494,8 +479,6 @@ def save_openai_url():
     return jsonify({"response": "OpenAI base URL saved."})
 
 
-
-
 @app.route("/save_api_version", methods=["POST"])
 def save_api_version():
     """
@@ -507,6 +490,7 @@ def save_api_version():
 
     save_api_version(api_version)
     return jsonify({"response": "API version saved."})
+
 
 @app.route("/save_model_settings", methods=["POST"])
 def save_model_settings():
@@ -607,9 +591,9 @@ def default_logo():
     This api enable default logo
     """
     from .utils.db import (
-        save_logo_file_path,
         icon_256_path,
         is_logo_active_setting_active,
+        save_logo_file_path,
     )
 
     save_logo_file_path(icon_256_path)
@@ -629,9 +613,9 @@ def custom_logo_upload():
     """
     file = request.files["logo"]
     from .utils.db import (
-        save_logo_file_path,
         custom_logo_path,
         is_logo_active_setting_active,
+        save_logo_file_path,
     )
 
     file.save(custom_logo_path)
@@ -688,6 +672,7 @@ def get_openai_models():
 
     return jsonify({"response": get_openai_models()})
 
+
 @app.route("/get_azureai_models", methods=["POST"])
 def get_azureai_models():
     """
@@ -728,13 +713,6 @@ def get_groq_models():
     return jsonify({"response": get_groq_models()})
 
 
-
-
-
-
-
-
-
 @app.route("/mouse_scroll_down", methods=["POST"])
 def mouse_scroll_down():
 
@@ -742,8 +720,11 @@ def mouse_scroll_down():
     amount = data["amount"]
 
     from .display_tools import mouse_scroll_
+
     mouse_scroll_("down", amount)
     return jsonify({"response": f"Mouse scrolled down by {amount}"})
+
+
 @app.route("/mouse_scroll_up", methods=["POST"])
 def mouse_scroll_up():
 
@@ -751,14 +732,9 @@ def mouse_scroll_up():
     amount = data["amount"]
 
     from .display_tools import mouse_scroll_
+
     mouse_scroll_("up", amount)
     return jsonify({"response": f"Mouse scrolled up by {amount}"})
-
-
-
-
-
-
 
 
 @app.route("/add_mcp", methods=["POST"])
@@ -774,28 +750,23 @@ def add_mcp():
     return jsonify({"response": "MCP added."})
 
 
-
-
 @app.route("/stop_server", methods=["POST"])
 def stop_server():
-
 
     try:
         try:
             from . import the_main_window
+
             the_main_window.close()
         except ImportError:
             from aideck import the_main_window
+
             the_main_window.close()
     except:
         pass
 
-    
-
     stop_api()
     exit(0)
-
-
 
 
 class ServerThread(threading.Thread):
@@ -829,6 +800,7 @@ def start_api(api=False):
 
     else:
         serve(app, host="0.0.0.0", port=7541)
+
 
 def stop_api():
     global server_thread

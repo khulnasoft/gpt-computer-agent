@@ -1,6 +1,6 @@
+from .agentic import PropositionList, RefinedTopic, Topic, TopicAssignmentList
+from .data_models import Chunk, Document, RAGSearchResult
 from .user import UserTraits
-from .agentic import PropositionList, Topic, TopicAssignmentList, RefinedTopic
-from .data_models import Document, Chunk, RAGSearchResult
 from .vector_schemas import VectorSearchResult
 
 __all__ = [

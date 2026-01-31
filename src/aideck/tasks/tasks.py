@@ -1,154 +1,155 @@
 import base64
 import time
+from collections.abc import Callable
+from typing import Any, Literal
+
 from pydantic import BaseModel
-
-
-from typing import Any, List, Dict, Optional, Type, Union, Callable, Literal
-
-
-
-from aideck.utils.printing import get_price_id_total_cost
-from pydantic_ai import Agent as PydanticAgent, BinaryContent
+from pydantic_ai import BinaryContent
 
 from aideck.knowledge_base.knowledge_base import KnowledgeBase
-from aideck.schemas.data_models import RAGSearchResult
-
 from aideck.tools.external_tool import ExternalToolCall
+from aideck.utils.printing import get_price_id_total_cost
 
 # Type aliases for better type safety
 CacheMethod = Literal["vector_search", "llm_call"]
-CacheEntry = Dict[str, Any]
+CacheEntry = dict[str, Any]
+
 
 class Task(BaseModel):
     description: str
-    attachments: Optional[List[str]] = None
+    attachments: list[str] | None = None
     tools: list[Any] = None
-    response_format: Union[Type[BaseModel], type[str], None] = str
+    response_format: type[BaseModel] | type[str] | None = str
     response_lang: str = "en"
     _response: Any = None
     context: Any = None
     _context_formatted: str | None = None
-    price_id_: Optional[str] = None
-    task_id_: Optional[str] = None
+    price_id_: str | None = None
+    task_id_: str | None = None
     not_main_task: bool = False
-    start_time: Optional[int] = None
-    end_time: Optional[int] = None
-    agent: Optional[Any] = None
-    response_lang: Optional[str] = None
-    enable_thinking_tool: Optional[bool] = None
-    enable_reasoning_tool: Optional[bool] = None
-    _tool_calls: List[Dict[str, Any]] = None
-    guardrail: Optional[Callable] = None
-    guardrail_retries: Optional[int] = None
+    start_time: int | None = None
+    end_time: int | None = None
+    agent: Any | None = None
+    response_lang: str | None = None
+    enable_thinking_tool: bool | None = None
+    enable_reasoning_tool: bool | None = None
+    _tool_calls: list[dict[str, Any]] = None
+    guardrail: Callable | None = None
+    guardrail_retries: int | None = None
     is_paused: bool = False
-    _tools_awaiting_external_execution: List[ExternalToolCall] = []
-    
+    _tools_awaiting_external_execution: list[ExternalToolCall] = []
+
     enable_cache: bool = False
     cache_method: Literal["vector_search", "llm_call"] = "vector_search"
     cache_threshold: float = 0.7
-    cache_embedding_provider: Optional[Any] = None
+    cache_embedding_provider: Any | None = None
     cache_duration_minutes: int = 60
-    _cache_manager: Optional[Any] = None  # Will be set by Agent
+    _cache_manager: Any | None = None  # Will be set by Agent
     _cache_hit: bool = False
-    _original_input: Optional[str] = None
-    _last_cache_entry: Optional[Dict[str, Any]] = None
-
-
+    _original_input: str | None = None
+    _last_cache_entry: dict[str, Any] | None = None
 
     def __init__(
-        self, 
-        description: str, 
-        attachments: Optional[List[str]] = None,
+        self,
+        description: str,
+        attachments: list[str] | None = None,
         tools: list[Any] = None,
-        response_format: Union[Type[BaseModel], type[str], None] = str,
+        response_format: type[BaseModel] | type[str] | None = str,
         response: Any = None,
         context: Any = None,
         _context_formatted: str | None = None,
-        price_id_: Optional[str] = None,
-        task_id_: Optional[str] = None,
+        price_id_: str | None = None,
+        task_id_: str | None = None,
         not_main_task: bool = False,
-        start_time: Optional[int] = None,
-        end_time: Optional[int] = None,
-        agent: Optional[Any] = None,
-        response_lang: Optional[str] = None,
-        enable_thinking_tool: Optional[bool] = None,
-        enable_reasoning_tool: Optional[bool] = None,
-        guardrail: Optional[Callable] = None,
-        guardrail_retries: Optional[int] = None,
+        start_time: int | None = None,
+        end_time: int | None = None,
+        agent: Any | None = None,
+        response_lang: str | None = None,
+        enable_thinking_tool: bool | None = None,
+        enable_reasoning_tool: bool | None = None,
+        guardrail: Callable | None = None,
+        guardrail_retries: int | None = None,
         is_paused: bool = False,
-        _tools_awaiting_external_execution: List[ExternalToolCall] = None,
+        _tools_awaiting_external_execution: list[ExternalToolCall] = None,
         enable_cache: bool = False,
         cache_method: Literal["vector_search", "llm_call"] = "vector_search",
         cache_threshold: float = 0.7,
-        cache_embedding_provider: Optional[Any] = None,
+        cache_embedding_provider: Any | None = None,
         cache_duration_minutes: int = 60,
-        **data
+        **data,
     ):
         if guardrail is not None and not callable(guardrail):
             raise TypeError("The 'guardrail' parameter must be a callable function.")
-        
+
         if cache_method not in ("vector_search", "llm_call"):
-            raise ValueError("cache_method must be either 'vector_search' or 'llm_call'")
-        
+            raise ValueError(
+                "cache_method must be either 'vector_search' or 'llm_call'"
+            )
+
         if not (0.0 <= cache_threshold <= 1.0):
             raise ValueError("cache_threshold must be between 0.0 and 1.0")
-        
+
         if cache_method == "vector_search" and cache_embedding_provider is None:
             try:
                 from aideck.embeddings.factory import auto_detect_best_embedding
+
                 cache_embedding_provider = auto_detect_best_embedding()
             except Exception:
-                raise ValueError("cache_embedding_provider is required when cache_method is 'vector_search'")
-        
+                raise ValueError(
+                    "cache_embedding_provider is required when cache_method is 'vector_search'"
+                )
+
         if description is not None:
             data["description"] = description
-            
+
         if tools is None:
             tools = []
-            
+
         if context is None:
             context = []
 
         if _tools_awaiting_external_execution is None:
             _tools_awaiting_external_execution = []
-            
-        data.update({
-            "attachments": attachments,
-            "tools": tools,
-            "response_format": response_format,
-            "_response": response,
-            "context": context,
-            "_context_formatted": _context_formatted,
-            "price_id_": price_id_,
-            "task_id_": task_id_,
-            "not_main_task": not_main_task,
-            "start_time": start_time,
-            "end_time": end_time,
-            "agent": agent,
-            "response_lang": response_lang,
-            "enable_thinking_tool": enable_thinking_tool,
-            "enable_reasoning_tool": enable_reasoning_tool,
-            "guardrail": guardrail,
-            "guardrail_retries": guardrail_retries,
-            "_tool_calls": [],
-            "is_paused": is_paused,
-            "_tools_awaiting_external_execution": _tools_awaiting_external_execution,
-            "enable_cache": enable_cache,
-            "cache_method": cache_method,
-            "cache_threshold": cache_threshold,
-            "cache_embedding_provider": cache_embedding_provider,
-            "cache_duration_minutes": cache_duration_minutes,
-            "_cache_manager": None,  # Will be set by Agent
-            "_cache_hit": False,
-            "_original_input": description,
-            "_last_cache_entry": None
-        })
-        
+
+        data.update(
+            {
+                "attachments": attachments,
+                "tools": tools,
+                "response_format": response_format,
+                "_response": response,
+                "context": context,
+                "_context_formatted": _context_formatted,
+                "price_id_": price_id_,
+                "task_id_": task_id_,
+                "not_main_task": not_main_task,
+                "start_time": start_time,
+                "end_time": end_time,
+                "agent": agent,
+                "response_lang": response_lang,
+                "enable_thinking_tool": enable_thinking_tool,
+                "enable_reasoning_tool": enable_reasoning_tool,
+                "guardrail": guardrail,
+                "guardrail_retries": guardrail_retries,
+                "_tool_calls": [],
+                "is_paused": is_paused,
+                "_tools_awaiting_external_execution": _tools_awaiting_external_execution,
+                "enable_cache": enable_cache,
+                "cache_method": cache_method,
+                "cache_threshold": cache_threshold,
+                "cache_embedding_provider": cache_embedding_provider,
+                "cache_duration_minutes": cache_duration_minutes,
+                "_cache_manager": None,  # Will be set by Agent
+                "_cache_hit": False,
+                "_original_input": description,
+                "_last_cache_entry": None,
+            }
+        )
+
         super().__init__(**data)
         self.validate_tools()
 
     @property
-    def duration(self) -> Optional[float]:
+    def duration(self) -> float | None:
         if self.start_time is None or self.end_time is None:
             return None
         return self.end_time - self.start_time
@@ -161,20 +162,20 @@ class Task(BaseModel):
         """
         if not self.tools:
             return
-            
+
         for tool in self.tools:
             # Check if the tool is a class
-            if isinstance(tool, type) or hasattr(tool, '__class__'):
+            if isinstance(tool, type) or hasattr(tool, "__class__"):
                 # Check if the class has a __control__ method
-                if hasattr(tool, '__control__') and callable(getattr(tool, '__control__')):
+                if hasattr(tool, "__control__") and callable(tool.__control__):
 
-                        control_result = tool.__control__()
+                    control_result = tool.__control__()
 
     @property
     def context_formatted(self) -> str | None:
         """
         Provides read-only access to the formatted context string.
-        
+
         This property retrieves the value of the internal `_context_formatted`
         attribute, which is expected to be populated by a context management
         process before task execution.
@@ -182,14 +183,14 @@ class Task(BaseModel):
         return self._context_formatted
 
     @property
-    def tools_awaiting_external_execution(self) -> List[ExternalToolCall]:
+    def tools_awaiting_external_execution(self) -> list[ExternalToolCall]:
         """
         Get the list of tool calls awaiting external execution.
         When the task is paused, this list should be iterated over,
         the tools executed, and the 'result' attribute of each item set.
         """
         return self._tools_awaiting_external_execution
-    
+
     @context_formatted.setter
     def context_formatted(self, value: str | None):
         """
@@ -203,15 +204,14 @@ class Task(BaseModel):
             value: The formatted context string to be assigned.
         """
         self._context_formatted = value
-    
+
     async def additional_description(self, client):
         if not self.context:
             return ""
-        
-            
+
         rag_results = []
         for context in self.context:
-            
+
             if isinstance(context, KnowledgeBase) and context.rag == True:
                 await context.setup_rag()
                 rag_result_objects = await context.query_async(self.description)
@@ -222,10 +222,12 @@ class Task(BaseModel):
                         cleaned_text = result.text.strip()
                         metadata_str = ""
                         if result.metadata:
-                            source = result.metadata.get('source', 'Unknown')
-                            page_number = result.metadata.get('page_number')
-                            chunk_id = result.chunk_id or result.metadata.get('chunk_id')
-                            
+                            source = result.metadata.get("source", "Unknown")
+                            page_number = result.metadata.get("page_number")
+                            chunk_id = result.chunk_id or result.metadata.get(
+                                "chunk_id"
+                            )
+
                             metadata_parts = [f"source: {source}"]
                             if page_number is not None:
                                 metadata_parts.append(f"page: {page_number}")
@@ -233,17 +235,16 @@ class Task(BaseModel):
                                 metadata_parts.append(f"chunk_id: {chunk_id}")
                             if result.score is not None:
                                 metadata_parts.append(f"score: {result.score:.3f}")
-                            
+
                             metadata_str = f" [metadata: {', '.join(metadata_parts)}]"
-                        
+
                         formatted_results.append(f"[{i}]{metadata_str} {cleaned_text}")
-                    
+
                     rag_results.extend(formatted_results)
-                
+
         if rag_results:
             return f"The following is the RAG data: <rag>{' '.join(rag_results)}</rag>"
         return ""
-
 
     @property
     def images_base_64(self):
@@ -252,13 +253,16 @@ class Task(BaseModel):
         base_64_images = []
         for image in self.images:
             with open(image, "rb") as image_file:
-                base_64_images.append(base64.b64encode(image_file.read()).decode('utf-8'))
+                base_64_images.append(
+                    base64.b64encode(image_file.read()).decode("utf-8")
+                )
         return base_64_images
 
     @property
     def price_id(self):
         if self.price_id_ is None:
             import uuid
+
             self.price_id_ = str(uuid.uuid4())
         return self.price_id_
 
@@ -266,9 +270,10 @@ class Task(BaseModel):
     def task_id(self):
         if self.task_id_ is None:
             import uuid
+
             self.task_id_ = str(uuid.uuid4())
         return self.task_id_
-    
+
     def get_task_id(self):
         return f"Task_{self.task_id[:8]}"
 
@@ -281,22 +286,18 @@ class Task(BaseModel):
         if type(self._response) == str:
             return self._response
 
-
-
         return self._response
-
-
 
     def get_total_cost(self):
         if self.price_id_ is None:
             return None
         return get_price_id_total_cost(self.price_id)
-    
+
     @property
-    def total_cost(self) -> Optional[float]:
+    def total_cost(self) -> float | None:
         """
         Get the total estimated cost of this task.
-        
+
         Returns:
             Optional[float]: The estimated cost in USD, or None if not available
         """
@@ -304,12 +305,12 @@ class Task(BaseModel):
         if the_total_cost and "estimated_cost" in the_total_cost:
             return the_total_cost["estimated_cost"]
         return None
-        
+
     @property
-    def total_input_token(self) -> Optional[int]:
+    def total_input_token(self) -> int | None:
         """
         Get the total number of input tokens used by this task.
-        
+
         Returns:
             Optional[int]: The number of input tokens, or None if not available
         """
@@ -317,12 +318,12 @@ class Task(BaseModel):
         if the_total_cost and "input_tokens" in the_total_cost:
             return the_total_cost["input_tokens"]
         return None
-        
+
     @property
-    def total_output_token(self) -> Optional[int]:
+    def total_output_token(self) -> int | None:
         """
         Get the total number of output tokens used by this task.
-        
+
         Returns:
             Optional[int]: The number of output tokens, or None if not available
         """
@@ -332,10 +333,10 @@ class Task(BaseModel):
         return None
 
     @property
-    def tool_calls(self) -> List[Dict[str, Any]]:
+    def tool_calls(self) -> list[dict[str, Any]]:
         """
         Get all tool calls made during this task's execution.
-        
+
         Returns:
             List[Dict[str, Any]]: A list of dictionaries containing information about tool calls,
             including tool name, parameters, and result.
@@ -343,11 +344,11 @@ class Task(BaseModel):
         if self._tool_calls is None:
             self._tool_calls = []
         return self._tool_calls
-        
-    def add_tool_call(self, tool_call: Dict[str, Any]) -> None:
+
+    def add_tool_call(self, tool_call: dict[str, Any]) -> None:
         """
         Add a tool call to the task's history.
-        
+
         Args:
             tool_call (Dict[str, Any]): Dictionary containing information about the tool call.
                 Should include 'tool_name', 'params', and 'tool_result' keys.
@@ -356,8 +357,6 @@ class Task(BaseModel):
             self._tool_calls = []
         self._tool_calls.append(tool_call)
 
-
-
     def canvas_agent_description(self):
         return "You are a canvas agent. You have tools. You can edit the canvas and get the current text of the canvas."
 
@@ -365,7 +364,7 @@ class Task(BaseModel):
         # Check if canvas tools have already been added to prevent duplicates
         canvas_functions = canvas.functions()
         canvas_description = self.canvas_agent_description()
-        
+
         # Check if canvas tools are already present
         canvas_already_added = False
         if canvas_functions:
@@ -374,30 +373,25 @@ class Task(BaseModel):
                 if canvas_func in self.tools:
                     canvas_already_added = True
                     break
-        
+
         # Only add canvas tools if they haven't been added before
         if not canvas_already_added:
             self.tools += canvas_functions
-            
+
         # Check if canvas description is already in the task description
         if canvas_description not in self.description:
             self.description += canvas_description
-
-
 
     def task_start(self, agent):
         self.start_time = time.time()
         if agent.canvas:
             self.add_canvas(agent.canvas)
 
-
     def task_end(self):
         self.end_time = time.time()
 
     def task_response(self, model_response):
         self._response = model_response.output
-
-
 
     def build_agent_input(self):
         """
@@ -413,78 +407,82 @@ class Task(BaseModel):
             return final_description
 
         input_list = [final_description]
-        
+
         for attachment_path in self.attachments:
             try:
                 with open(attachment_path, "rb") as attachment_file:
-                    attachment_data  = attachment_file.read()
-                
+                    attachment_data = attachment_file.read()
+
                 # Using mimetypes is more robust than just checking extensions
                 import mimetypes
+
                 media_type, _ = mimetypes.guess_type(attachment_path)
                 if media_type is None:
-                    media_type = "application/octet-stream" # Fallback
-                    
-                input_list.append(BinaryContent(data=attachment_data, media_type=media_type))
-                
+                    media_type = "application/octet-stream"  # Fallback
+
+                input_list.append(
+                    BinaryContent(data=attachment_data, media_type=media_type)
+                )
+
             except Exception as e:
                 print(f"Warning: Could not load image {attachment_path}: {e}")
 
         return input_list
 
-    
     def set_cache_manager(self, cache_manager: Any):
         """Set the cache manager for this task."""
         self._cache_manager = cache_manager
-    
-    async def get_cached_response(self, input_text: str, llm_provider: Optional[Any] = None) -> Optional[Any]:
+
+    async def get_cached_response(
+        self, input_text: str, llm_provider: Any | None = None
+    ) -> Any | None:
         """
         Get cached response for the given input text.
-        
+
         Args:
             input_text: The input text to search for in cache
             llm_provider: LLM provider for semantic comparison (for llm_call method)
-            
+
         Returns:
             Cached response if found, None otherwise
         """
         if not self.enable_cache or not self._cache_manager:
             return None
-        
+
         cached_response = await self._cache_manager.get_cached_response(
             input_text=input_text,
             cache_method=self.cache_method,
             cache_threshold=self.cache_threshold,
             duration_minutes=self.cache_duration_minutes,
             embedding_provider=self.cache_embedding_provider,
-            llm_provider=llm_provider
+            llm_provider=llm_provider,
         )
-        
+
         if cached_response is not None:
             self._cache_hit = True
             self._last_cache_entry = {"output": cached_response}
-        
+
         return cached_response
-    
+
     async def store_cache_entry(self, input_text: str, output: Any):
         """
         Store a new cache entry.
-        
+
         Args:
             input_text: The input text
             output: The corresponding output
         """
         if not self.enable_cache or not self._cache_manager:
             return
-        
+
         await self._cache_manager.store_cache_entry(
             input_text=input_text,
             output=output,
             cache_method=self.cache_method,
-            embedding_provider=self.cache_embedding_provider
+            embedding_provider=self.cache_embedding_provider,
         )
-    
-    def get_cache_stats(self) -> Dict[str, Any]:
+
+    def get_cache_stats(self) -> dict[str, Any]:
         """Get cache statistics."""
         if not self._cache_manager:
             return {
@@ -495,19 +493,21 @@ class Task(BaseModel):
                 "cache_method": self.cache_method,
                 "cache_threshold": self.cache_threshold,
                 "cache_duration_minutes": self.cache_duration_minutes,
-                "session_id": None
+                "session_id": None,
             }
-        
+
         stats = self._cache_manager.get_cache_stats()
-        stats.update({
-            "cache_method": self.cache_method,
-            "cache_threshold": self.cache_threshold,
-            "cache_duration_minutes": self.cache_duration_minutes,
-            "cache_hit": self._cache_hit
-        })
-        
+        stats.update(
+            {
+                "cache_method": self.cache_method,
+                "cache_threshold": self.cache_threshold,
+                "cache_duration_minutes": self.cache_duration_minutes,
+                "cache_hit": self._cache_hit,
+            }
+        )
+
         return stats
-    
+
     def clear_cache(self):
         """Clear all cache entries."""
         if self._cache_manager:

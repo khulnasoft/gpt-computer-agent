@@ -4,30 +4,22 @@ import sys
 import webbrowser
 
 
-
-
 def start_api():
     try:
         from .api import start_api
 
         start_api(api=True)
     except:
-        raise Exception(
-            "API could not be started, please install aideck[api]"
-        )
-
-
-
+        raise Exception("API could not be started, please install aideck[api]")
 
 
 def start(api=False):
     if api:
         return start_api()
-    from PyQt5.QtWidgets import QApplication
-    from PyQt5.QtGui import QIcon
-    from PyQt5.QtWidgets import QSystemTrayIcon, QMenu, QAction
-    from PyQt5.QtCore import Qt
     from pynput import keyboard
+    from PyQt5.QtCore import Qt
+    from PyQt5.QtWidgets import QAction, QApplication, QMenu, QSystemTrayIcon
+
     """
     Starts the computer agent application.
 
@@ -99,16 +91,16 @@ def start(api=False):
 
     try:
         from .utils.db import (
-            load_tts_model_settings,
-            load_stt_model_settings,
             is_logo_active_setting_active,
             load_logo_file_path,
+            load_stt_model_settings,
+            load_tts_model_settings,
         )
     except ImportError:
         from utils.db import (
-            load_tts_model_settings,
-            load_stt_model_settings,
             load_logo_file_path,
+            load_stt_model_settings,
+            load_tts_model_settings,
         )
 
     if load_tts_model_settings() != "openai":
@@ -135,8 +127,7 @@ def start(api=False):
 
     app = QApplication(sys.argv)
     ex = MainWindow()
-    from PyQt5 import QtGui
-    from PyQt5 import QtCore
+    from PyQt5 import QtCore, QtGui
 
     app_icon = QtGui.QIcon()
 

@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """Test runner for Aideck unit tests"""
 
-import sys
-import os
-import subprocess
 import argparse
+import subprocess
+import sys
 from pathlib import Path
+
 
 def run_tests(test_args=None):
     """Run pytest with the given arguments"""
@@ -15,13 +15,15 @@ def run_tests(test_args=None):
         cmd.extend(test_args)
 
     # Add default arguments
-    cmd.extend([
-        "-v",  # verbose output
-        "--tb=short",  # shorter traceback format
-        "--strict-markers",  # strict marker validation
-        "--disable-warnings",  # disable warnings
-        "tests/"  # test directory
-    ])
+    cmd.extend(
+        [
+            "-v",  # verbose output
+            "--tb=short",  # shorter traceback format
+            "--strict-markers",  # strict marker validation
+            "--disable-warnings",  # disable warnings
+            "tests/",  # test directory
+        ]
+    )
 
     print(f"Running: {' '.join(cmd)}")
     print("-" * 50)
@@ -36,42 +38,35 @@ def run_tests(test_args=None):
         print(f"Error running tests: {e}")
         return 1
 
+
 def main():
     """Main function to parse arguments and run tests"""
     parser = argparse.ArgumentParser(description="Run Aideck unit tests")
     parser.add_argument(
         "tests",
         nargs="*",
-        help="Specific test files or directories to run (default: all tests)"
+        help="Specific test files or directories to run (default: all tests)",
     )
     parser.add_argument(
-        "-c", "--coverage",
-        action="store_true",
-        help="Run tests with coverage report"
+        "-c", "--coverage", action="store_true", help="Run tests with coverage report"
     )
     parser.add_argument(
         "--cov-report",
         choices=["term", "html", "xml", "json"],
         default="term",
-        help="Coverage report format (default: term)"
+        help="Coverage report format (default: term)",
     )
     parser.add_argument(
-        "-k", "--keyword",
-        help="Only run tests matching the given keyword expression"
+        "-k", "--keyword", help="Only run tests matching the given keyword expression"
     )
     parser.add_argument(
-        "-m", "--marker",
-        help="Only run tests matching the given marker expression"
+        "-m", "--marker", help="Only run tests matching the given marker expression"
     )
     parser.add_argument(
-        "--pdb",
-        action="store_true",
-        help="Start the debugger on test failures"
+        "--pdb", action="store_true", help="Start the debugger on test failures"
     )
     parser.add_argument(
-        "--no-header",
-        action="store_true",
-        help="Don't show the header"
+        "--no-header", action="store_true", help="Don't show the header"
     )
 
     args = parser.parse_args()
@@ -84,10 +79,7 @@ def main():
     test_args = []
 
     if args.coverage:
-        test_args.extend([
-            "--cov=src/aideck",
-            f"--cov-report={args.cov_report}"
-        ])
+        test_args.extend(["--cov=src/aideck", f"--cov-report={args.cov_report}"])
 
     if args.keyword:
         test_args.extend(["-k", args.keyword])
@@ -114,6 +106,7 @@ def main():
             print(f"❌ Some tests failed (exit code: {exit_code})")
 
     return exit_code
+
 
 if __name__ == "__main__":
     sys.exit(main())

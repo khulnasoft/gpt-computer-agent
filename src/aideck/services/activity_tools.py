@@ -1,12 +1,13 @@
 """
 Activity tracking tools for the GPT Computer Agent.
 """
-from typing import Dict, List, Any, Optional
-from datetime import datetime
 import json
+from datetime import datetime
+from typing import Any, Dict, List, Optional
 
-from ..services.activity_tracker import activity_tracker, ActivityCategory
 from ..core.tools import tool
+from ..services.activity_tracker import ActivityCategory, activity_tracker
+
 
 @tool
 def track_activity(app_name: str, window_title: str, content_summary: str, user_activity: str) -> Dict[str, Any]:

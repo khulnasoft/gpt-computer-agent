@@ -15,7 +15,7 @@ This report provides an in-depth analysis of Apple Inc. (AAPL), Microsoft Corpor
 - **Industry & Sector**: Operates in Consumer Electronics within the Technology sector.
 - **Performance**: Current stock price at $211.16, with a 52-week range of $169.21 - $260.10.
 - **Market Cap**: Approximately $3.15 trillion.
-  
+
 ### Financial Analysis 💹
 
 - **Key Ratios**:
@@ -40,7 +40,7 @@ This report provides an in-depth analysis of Apple Inc. (AAPL), Microsoft Corpor
 - **Industry & Sector**: Software - Infrastructure under the Technology sector.
 - **Performance**: Stock trades at $503.32, with a 52-week range of $344.79 - $506.78.
 - **Market Cap**: Approximately $3.74 trillion.
-  
+
 ### Financial Analysis 💹
 
 - **Key Ratios**:
@@ -65,7 +65,7 @@ This report provides an in-depth analysis of Apple Inc. (AAPL), Microsoft Corpor
 - **Industry & Sector**: Internet Content & Information within the Communication Services sector.
 - **Performance**: Price at $180.19, with a 52-week range of $140.53 - $207.05.
 - **Market Cap**: Around $2.19 trillion.
-  
+
 ### Financial Analysis 💹
 
 - **Key Ratios**:
@@ -114,7 +114,7 @@ This report evaluates the investment potential of three leading technology compa
 - **Potential**: High, driven by its dominant position in cloud services and software infrastructure.
 - **Valuation**: Higher PE ratios reflect market expectations for strong growth, particularly in Azure and other cloud-based services.
 - **Competitive Advantages**: Diversified product portfolio, strong enterprise presence, and leading position in AI development.
-- **Market Positioning**: Well-positioned with a robust business model that leverages growth opportunities in AI and cloud services. 
+- **Market Positioning**: Well-positioned with a robust business model that leverages growth opportunities in AI and cloud services.
 
 ### Alphabet Inc. (GOOGL)
 
@@ -186,7 +186,7 @@ Based on the given company ranking and analysis, the portfolio allocation will b
 ### Overview
 
 - **Microsoft Corporation (MSFT)**: With Microsoft's strategic focus on AI and cloud services, bolstered by a diversified product base, the company presents a robust risk-reward profile. Its strategic management and enterprise presence ensure a sustainable growth trajectory.
-  
+
 - **Alphabet Inc. (GOOGL)**: Despite the regulatory pressures, Alphabet's valuation is attractive, and its leadership in digital advertising and AI initiatives provide a strong growth catalyst. The focus on cloud infrastructure investments will also drive long-term value.
 
 - **Apple Inc. (AAPL)**: While Apple enjoys significant competitive advantages like brand loyalty, its over-reliance on the China market and high beta risk could pose potential vulnerabilities. Nevertheless, its continued innovation secures a place in the portfolio.

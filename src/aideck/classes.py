@@ -1,8 +1,9 @@
-import time
-import traceback
+import hashlib
 import json
 import re
-import hashlib
+import time
+
+import sentry_sdk
 
 # Rich imports
 from rich.console import Console
@@ -12,10 +13,8 @@ from rich.style import Style
 from .remote import Remote_Client
 from .version import get_version
 
-
-import sentry_sdk
 sentry_sdk.init(
-    dsn="https://eed76b3c8eb23bbe1c2f6a796a03f1a9@o4508336623583232.ingest.us.sentry.io/4508556319195136",   
+    dsn="https://eed76b3c8eb23bbe1c2f6a796a03f1a9@o4508336623583232.ingest.us.sentry.io/4508556319195136",
     # Set traces_sample_rate to 1.0 to capture 100%
     # of transactions for tracing.
     traces_sample_rate=1.0,
@@ -23,13 +22,8 @@ sentry_sdk.init(
     server_name="gca_framework",
 )
 from .utils.user_id import load_user_id
+
 sentry_sdk.set_user({"id": load_user_id()})
-
-
-
-
-
-
 
 
 # Create a global Console object for styled output
@@ -39,23 +33,17 @@ console = Console()
 def extract_json(llm_output):
 
     # Use regex to extract the json then transform it to a python dict object ```json ````
-    json_str = re.search(r'```json\n(.*?)```', llm_output, re.DOTALL).group(1)
-
+    json_str = re.search(r"```json\n(.*?)```", llm_output, re.DOTALL).group(1)
 
     # transform the json string to a python dict object
     transformed_json = json.loads(json_str)
 
-
-
     return transformed_json
-
 
 
 def current_date_time():
     return time.strftime("%Y-%m-%d %H:%M:%S", time.localtime())
 
-    
-    
 
 class BaseClass:
     def __init__(self, screen=False):
@@ -73,13 +61,9 @@ class BaseClass:
     def add_task(self, task):
         self.task = task
 
-
-
-
     def sha_hash(self, text):
-        
-        return hashlib.sha256(text.encode()).hexdigest()
 
+        return hashlib.sha256(text.encode()).hexdigest()
 
 
 class BaseVerifier(BaseClass):
@@ -97,14 +81,13 @@ class TypeVerifier(BaseVerifier):
         self.type = type
         self.feedback = None
 
-    
     def verify(self, description, result):
         with sentry_sdk.start_transaction(op="task", name="Verify"):
             console.print(
                 Panel(
                     "[bold yellow]Verifying result with TypeVerifier...[/bold yellow]",
                     title="Verifier",
-                    style=Style(color="bright_white", bgcolor="black", bold=True)
+                    style=Style(color="bright_white", bgcolor="black", bold=True),
                 )
             )
 
@@ -129,7 +112,7 @@ Rules:
 - If the result is not verified , no problem its enough to "I am satified" to continue to the next task.
 - If the result is not true give an resolve cookbook as Feedback to resolve.
 
-    
+
 
     Getting current state:
     - See the screen (Optional, If the ai output is not enough)
@@ -146,22 +129,25 @@ Rules:
             control_point_span.set_data("request", the_request)
             control_point_span.set_data("screen", self.screen_task)
             control_point = self.client.request(
-                the_request
-                , "", screen=self.screen_task)
-            
+                the_request, "", screen=self.screen_task
+            )
+
             control_point_span.finish()
 
             if "I am sorry" in control_point:
                 self.feedback = control_point
 
-                raise Exception(f"Not satisfied with the result {self.task.description}")
+                raise Exception(
+                    f"Not satisfied with the result {self.task.description}"
+                )
 
-
-            
-            prompt = """
+            prompt = (
+                """
             Hi, now your responsibility is returning the answer in the requested format.
 
-            User only wants the result in the format of """f"""{self.type}"""+""".
+            User only wants the result in the format of """
+                f"""{self.type}"""
+                + """.
             Dont use any other format or any other type of data.
 
             Format recipe:
@@ -176,7 +162,7 @@ Rules:
                 ```json
                 {"key1": "value1", "key2": "value2", "key3": "value3"}
                 ```
-            
+
             3. list in list
                 Return the user want like this:
                 ```json
@@ -188,7 +174,7 @@ Rules:
                 ```json
                 [{"key1": "value1", "key2": "value2", "key3": "value3"}, {"key4": "value4", "key5": "value5", "key6": "value6"}]
                 ```
-            
+
             5. string
                 Return the user want like this:
                 ```json
@@ -200,46 +186,36 @@ Rules:
                 ```json
                 123
                 ```
-            
+
             7. float
                 Return the user want like this:
                 ```json
                 123.456
                 ```
-            
+
             8. bool
                 Return the user want like this:
                 ```json
                 true
                 ```
 
-                
+
 
             End of the day return result in ```json ``` format.
             """
-
-            
+            )
 
             self.client.change_profile(self.task.hash)
 
-
-            
-
             extracting_output_span = sentry_sdk.start_span(name="Extracting Output")
-            control_point_span.set_data("extracting_output_span", extracting_output_span)
+            control_point_span.set_data(
+                "extracting_output_span", extracting_output_span
+            )
             result = self.client.request(prompt, "", screen=self.screen_task)
             extracting_output_span.finish()
 
-
-
-        
-
             result = extract_json(result)
             return result
-
-
-
-            
 
 
 class Task(BaseClass):
@@ -257,18 +233,16 @@ class Task(BaseClass):
 
         self.hash = self.sha_hash(description)
 
-
     def run(self):
         with sentry_sdk.start_transaction(op="task", name="Run"):
             console.print(
                 Panel(
                     f"[bold green]Starting Task[/bold green]\n[b]Task Description:[/b] {self.description}",
                     title="Task",
-                    style=Style(color="bright_white", bgcolor="black", bold=True)
+                    style=Style(color="bright_white", bgcolor="black", bold=True),
                 )
             )
 
-            
             requesting_ai_span = sentry_sdk.start_span(name="Requesting AI")
 
             requesting_ai_span.set_data("verifier", self.verifier)
@@ -285,48 +259,58 @@ class Task(BaseClass):
                         Panel(
                             f"[yellow]Attempt {try_count}[/yellow]  ",
                             title="Retry",
-                            style=Style(color="bright_white", bgcolor="black", bold=True)
+                            style=Style(
+                                color="bright_white", bgcolor="black", bold=True
+                            ),
                         )
                     )
 
                     if try_count > 1:
-                        self.output = "User is not satisfied with the result. Please try again." if self.verifier.feedback is None else  self.verifier.feedback
+                        self.output = (
+                            "User is not satisfied with the result. Please try again."
+                            if self.verifier.feedback is None
+                            else self.verifier.feedback
+                        )
                     self.client.change_profile(self.hash)
-                    
-                    result = self.client.request(self.description, self.output, screen=self.screen_task)
-                    
+
+                    result = self.client.request(
+                        self.description, self.output, screen=self.screen_task
+                    )
+
                     time.sleep(1)
                     ai_result = result
                     try:
-                        self.client.change_profile(self.hash+"VERIFY")
+                        self.client.change_profile(self.hash + "VERIFY")
                         result = self.verifier.verify(self.description, result)
-                        console.print("[bold green]Verification successful![/bold green]\n")
+                        console.print(
+                            "[bold green]Verification successful![/bold green]\n"
+                        )
                         break
-                    except Exception as e:
+                    except Exception:
                         console.print(
                             Panel(
                                 f"[red]Verification failed[/red]\nAI Output: {ai_result}\nFeedback: {self.verifier.feedback}",
                                 title="Verification Error",
-                                style=Style(color="bright_white", bgcolor="black", bold=True)
+                                style=Style(
+                                    color="bright_white", bgcolor="black", bold=True
+                                ),
                             )
                         )
 
                         result = self.verifier.exception_return
-                        
 
             else:
-                result = self.client.request(self.description, self.output, screen=self.screen_task)
-
+                result = self.client.request(
+                    self.description, self.output, screen=self.screen_task
+                )
 
             requesting_ai_span.finish()
-
-
 
             console.print(
                 Panel(
                     "[bold green]Task Completed[/bold green]\n[bold]Final result ready.[/bold]",
                     title="Task Finished",
-                    style=Style(color="bright_white", bgcolor="black", bold=True)
+                    style=Style(color="bright_white", bgcolor="black", bold=True),
                 )
             )
 

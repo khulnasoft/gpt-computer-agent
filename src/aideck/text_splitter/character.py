@@ -2,14 +2,14 @@ from __future__ import annotations
 
 import logging
 import re
-from typing import List, Optional, Tuple
 
 from pydantic import Field
 
 from aideck.schemas.data_models import Chunk, Document
-from aideck.text_splitter.base import BaseChunkingConfig, BaseChunker
+from aideck.text_splitter.base import BaseChunker, BaseChunkingConfig
 
 logger = logging.getLogger(__name__)
+
 
 class CharacterChunkingConfig(BaseChunkingConfig):
     """
@@ -18,12 +18,13 @@ class CharacterChunkingConfig(BaseChunkingConfig):
     This configuration extends the base settings with parameters that control
     the splitting behavior based on a single, user-defined separator.
     """
+
     separator: str = Field(
         default="\n\n",
         description=(
             "The single, definitive string or regex pattern that will be used to "
             "split the document text. This acts as the primary boundary marker."
-        )
+        ),
     )
     is_separator_regex: bool = Field(
         default=False,
@@ -31,7 +32,7 @@ class CharacterChunkingConfig(BaseChunkingConfig):
             "If True, the separator is treated as a regular expression, enabling "
             "more complex and powerful splitting rules. If False, it is treated "
             "as a simple string literal."
-        )
+        ),
     )
     keep_separator: bool = Field(
         default=True,
@@ -39,7 +40,7 @@ class CharacterChunkingConfig(BaseChunkingConfig):
             "Determines whether the separator itself is kept as part of the chunks. "
             "Keeping the separator is often useful for preserving the original "
             "structure and context of the document."
-        )
+        ),
     )
 
 
@@ -52,11 +53,11 @@ class CharacterChunker(BaseChunker[CharacterChunkingConfig]):
     efficiency and perfect positional integrity of the final chunks.
     """
 
-    def __init__(self, config: Optional[CharacterChunkingConfig] = None):
+    def __init__(self, config: CharacterChunkingConfig | None = None):
         """Initializes the chunker with a specific or default configuration."""
         super().__init__(config or CharacterChunkingConfig())
 
-    def _chunk_document(self, document: Document) -> List[Chunk]:
+    def _chunk_document(self, document: Document) -> list[Chunk]:
         """
         The core implementation for splitting a single document by a character separator.
 
@@ -71,18 +72,24 @@ class CharacterChunker(BaseChunker[CharacterChunkingConfig]):
         if not content or content.isspace():
             return []
 
-        atomic_splits: List[Tuple[str, int, int]] = []
+        atomic_splits: list[tuple[str, int, int]] = []
         separator = self.config.separator
 
         if not separator:
             for i, char in enumerate(content):
                 atomic_splits.append((char, i, i + 1))
         else:
-            pattern = re.escape(separator) if not self.config.is_separator_regex else separator
+            pattern = (
+                re.escape(separator)
+                if not self.config.is_separator_regex
+                else separator
+            )
             cursor = 0
             for match in re.finditer(pattern, content):
                 if match.start() > cursor:
-                    atomic_splits.append((content[cursor:match.start()], cursor, match.start()))
+                    atomic_splits.append(
+                        (content[cursor : match.start()], cursor, match.start())
+                    )
                 if self.config.keep_separator:
                     atomic_splits.append((match.group(0), match.start(), match.end()))
                 cursor = match.end()
@@ -91,21 +98,23 @@ class CharacterChunker(BaseChunker[CharacterChunkingConfig]):
 
         if not atomic_splits:
             atomic_splits.append((content, 0, len(content)))
-        chunks: List[Chunk] = []
-        current_chunk_parts: List[Tuple[str, int, int]] = []
+        chunks: list[Chunk] = []
+        current_chunk_parts: list[tuple[str, int, int]] = []
         current_length = 0
         length_func = self.config.length_function
 
         for text, start_idx, end_idx in atomic_splits:
             part_length = length_func(text)
-            
+
             if part_length > self.config.chunk_size:
                 if current_chunk_parts:
                     chunk_start_idx = current_chunk_parts[0][1]
                     chunk_end_idx = current_chunk_parts[-1][2]
                     final_text = content[chunk_start_idx:chunk_end_idx]
                     chunks.append(
-                        self._create_chunk(document, final_text, chunk_start_idx, chunk_end_idx)
+                        self._create_chunk(
+                            document, final_text, chunk_start_idx, chunk_end_idx
+                        )
                     )
                     current_chunk_parts = []
                     current_length = 0
@@ -118,12 +127,17 @@ class CharacterChunker(BaseChunker[CharacterChunkingConfig]):
                 chunks.append(self._create_chunk(document, text, start_idx, end_idx))
                 continue
 
-            if current_length + part_length > self.config.chunk_size and current_chunk_parts:
+            if (
+                current_length + part_length > self.config.chunk_size
+                and current_chunk_parts
+            ):
                 chunk_start_idx = current_chunk_parts[0][1]
                 chunk_end_idx = current_chunk_parts[-1][2]
                 final_text = content[chunk_start_idx:chunk_end_idx]
                 chunks.append(
-                    self._create_chunk(document, final_text, chunk_start_idx, chunk_end_idx)
+                    self._create_chunk(
+                        document, final_text, chunk_start_idx, chunk_end_idx
+                    )
                 )
 
                 overlap_len = 0
@@ -134,9 +148,11 @@ class CharacterChunker(BaseChunker[CharacterChunkingConfig]):
                         break
                     overlap_len += length_func(part_text)
                     overlap_start_index = j
-                
+
                 current_chunk_parts = current_chunk_parts[overlap_start_index:]
-                current_length = sum(length_func(part[0]) for part in current_chunk_parts)
+                current_length = sum(
+                    length_func(part[0]) for part in current_chunk_parts
+                )
 
             current_chunk_parts.append((text, start_idx, end_idx))
             current_length += part_length
@@ -150,17 +166,16 @@ class CharacterChunker(BaseChunker[CharacterChunkingConfig]):
 
             if chunks and length_func(final_text) < min_chunk_size:
                 last_chunk = chunks.pop()
-                merged_text = content[last_chunk.start_index:chunk_end_idx]
+                merged_text = content[last_chunk.start_index : chunk_end_idx]
                 merged_chunk = self._create_chunk(
-                    document,
-                    merged_text,
-                    last_chunk.start_index,
-                    chunk_end_idx
+                    document, merged_text, last_chunk.start_index, chunk_end_idx
                 )
                 chunks.append(merged_chunk)
             else:
                 chunks.append(
-                    self._create_chunk(document, final_text, chunk_start_idx, chunk_end_idx)
+                    self._create_chunk(
+                        document, final_text, chunk_start_idx, chunk_end_idx
+                    )
                 )
 
         return chunks

@@ -1,10 +1,10 @@
 import time
-from typing import Optional, Type, Union, TypeVar, List
+from typing import TypeVar
 
 from motor.motor_asyncio import (
     AsyncIOMotorClient,
-    AsyncIOMotorDatabase,
     AsyncIOMotorCollection,
+    AsyncIOMotorDatabase,
 )
 from pydantic import BaseModel
 
@@ -44,10 +44,8 @@ class MongoStorage(Storage):
         self.sessions_collection_name = sessions_collection_name
         self.profiles_collection_name = profiles_collection_name
 
-        self._client: Optional[AsyncIOMotorClient] = None
-        self._db: Optional[AsyncIOMotorDatabase] = None
-
-
+        self._client: AsyncIOMotorClient | None = None
+        self._db: AsyncIOMotorDatabase | None = None
 
     def is_connected(self) -> bool:
         return self._run_async_from_sync(self.is_connected_async())
@@ -61,19 +59,17 @@ class MongoStorage(Storage):
     def create(self) -> None:
         return self._run_async_from_sync(self.create_async())
 
-    def read(self, object_id: str, model_type: Type[T]) -> Optional[T]:
+    def read(self, object_id: str, model_type: type[T]) -> T | None:
         return self._run_async_from_sync(self.read_async(object_id, model_type))
 
-    def upsert(self, data: Union[InteractionSession, UserProfile]) -> None:
+    def upsert(self, data: InteractionSession | UserProfile) -> None:
         return self._run_async_from_sync(self.upsert_async(data))
 
-    def delete(self, object_id: str, model_type: Type[BaseModel]) -> None:
+    def delete(self, object_id: str, model_type: type[BaseModel]) -> None:
         return self._run_async_from_sync(self.delete_async(object_id, model_type))
 
     def drop(self) -> None:
         return self._run_async_from_sync(self.drop_async())
-
-
 
     async def connect_async(self) -> None:
         if await self.is_connected_async():
@@ -110,7 +106,7 @@ class MongoStorage(Storage):
         sessions_collection = self._db[self.sessions_collection_name]
         await sessions_collection.create_index("user_id")
 
-    async def read_async(self, object_id: str, model_type: Type[T]) -> Optional[T]:
+    async def read_async(self, object_id: str, model_type: type[T]) -> T | None:
         collection = self._get_collection_for_model(model_type)
         id_field_name = self._get_id_field(model_type)
         doc = await collection.find_one({"_id": object_id})
@@ -119,7 +115,7 @@ class MongoStorage(Storage):
             return model_type.model_validate(doc)
         return None
 
-    async def upsert_async(self, data: Union[InteractionSession, UserProfile]) -> None:
+    async def upsert_async(self, data: InteractionSession | UserProfile) -> None:
         collection = self._get_collection_for_model(type(data))
         id_field_name = self._get_id_field(data)
         object_id = getattr(data, id_field_name)
@@ -128,7 +124,7 @@ class MongoStorage(Storage):
         doc["_id"] = doc.pop(id_field_name)
         await collection.replace_one({"_id": object_id}, doc, upsert=True)
 
-    async def delete_async(self, object_id: str, model_type: Type[BaseModel]) -> None:
+    async def delete_async(self, object_id: str, model_type: type[BaseModel]) -> None:
         collection = self._get_collection_for_model(model_type)
         await collection.delete_one({"_id": object_id})
 
@@ -144,7 +140,9 @@ class MongoStorage(Storage):
         except Exception:
             pass
 
-    async def read_sessions_for_user_async(self, user_id: str) -> List[InteractionSession]:
+    async def read_sessions_for_user_async(
+        self, user_id: str
+    ) -> list[InteractionSession]:
         """
         Retrieves all interaction sessions associated with a specific user ID,
         leveraging the secondary index on the `user_id` field for high performance.
@@ -160,17 +158,15 @@ class MongoStorage(Storage):
         cursor = collection.find({"user_id": user_id})
         sessions = []
         id_field_name = self._get_id_field(InteractionSession)
-        
+
         async for doc in cursor:
             doc[id_field_name] = doc.pop("_id")
             sessions.append(InteractionSession.model_validate(doc))
-            
+
         return sessions
 
-
-
     def _get_collection_for_model(
-        self, model_type: Type[BaseModel]
+        self, model_type: type[BaseModel]
     ) -> AsyncIOMotorCollection:
         if self._db is None:
             raise ConnectionError(
@@ -186,7 +182,7 @@ class MongoStorage(Storage):
             )
 
     @staticmethod
-    def _get_id_field(model_or_type: Union[BaseModel, Type[BaseModel]]) -> str:
+    def _get_id_field(model_or_type: BaseModel | type[BaseModel]) -> str:
         model_type = (
             model_or_type if isinstance(model_or_type, type) else type(model_or_type)
         )

@@ -1,24 +1,23 @@
-from .tool import tool
+from typing import Dict, List
+
+from .external_tool import ExternalToolCall
 from .processor import ToolConfig, ToolKit
 from .pseudo_tools import plan_and_execute
-from .thought import Thought, AnalysisResult
-from .external_tool import ExternalToolCall
+from .thought import AnalysisResult, Thought
+from .tool import tool
 
-
-
-
-
-from typing import Dict, List
 try:
     from ddgs import DDGS
 except ImportError:
     from duckduckgo_search import DDGS
+
+import json
+
+import pandas as pd
 import requests
+import yfinance as yf
 from bs4 import BeautifulSoup
 
-import yfinance as yf
-import json
-import pandas as pd
 
 class YFinanceTools:
     def __init__(
@@ -43,7 +42,11 @@ class YFinanceTools:
         try:
             stock = yf.Ticker(symbol)
             price = stock.info.get("regularMarketPrice", stock.info.get("currentPrice"))
-            return f"{price:.4f}" if price else f"Could not fetch current price for {symbol}"
+            return (
+                f"{price:.4f}"
+                if price
+                else f"Could not fetch current price for {symbol}"
+            )
         except Exception as e:
             return f"Error fetching current price for {symbol}: {e}"
 
@@ -61,7 +64,9 @@ class YFinanceTools:
             recs = yf.Ticker(symbol).recommendations
             if recs is not None and isinstance(recs, (pd.DataFrame, pd.Series)):
                 result = recs.to_json(orient="index")
-                return result if result is not None else f"No recommendations for {symbol}"
+                return (
+                    result if result is not None else f"No recommendations for {symbol}"
+                )
             elif recs is not None:
                 return json.dumps(recs, indent=2)
             else:
@@ -107,7 +112,11 @@ class YFinanceTools:
             financials = stock.financials
             if isinstance(financials, (pd.DataFrame, pd.Series)):
                 result = financials.to_json(orient="index")
-                return result if result is not None else f"No income statements for {symbol}"
+                return (
+                    result
+                    if result is not None
+                    else f"No income statements for {symbol}"
+                )
             elif financials is not None:
                 return json.dumps(financials, indent=2)
             else:
@@ -123,13 +132,19 @@ class YFinanceTools:
         except Exception as e:
             return f"Error fetching key financial ratios for {symbol}: {e}"
 
-    def get_historical_stock_prices(self, symbol: str, period: str = "1mo", interval: str = "1d") -> str:
+    def get_historical_stock_prices(
+        self, symbol: str, period: str = "1mo", interval: str = "1d"
+    ) -> str:
         try:
             stock = yf.Ticker(symbol)
             historical_price = stock.history(period=period, interval=interval)
             if isinstance(historical_price, (pd.DataFrame, pd.Series)):
                 result = historical_price.to_json(orient="index")
-                return result if result is not None else f"No historical prices for {symbol}"
+                return (
+                    result
+                    if result is not None
+                    else f"No historical prices for {symbol}"
+                )
             elif historical_price is not None:
                 return json.dumps(historical_price, indent=2)
             else:
@@ -142,7 +157,11 @@ class YFinanceTools:
             indicators = yf.Ticker(symbol).history(period=period)
             if isinstance(indicators, (pd.DataFrame, pd.Series)):
                 result = indicators.to_json(orient="index")
-                return result if result is not None else f"No technical indicators for {symbol}"
+                return (
+                    result
+                    if result is not None
+                    else f"No technical indicators for {symbol}"
+                )
             elif indicators is not None:
                 return json.dumps(indicators, indent=2)
             else:
@@ -168,14 +187,14 @@ class YFinanceTools:
         ]
 
 
-def Search(query: str, max_results: int = 10) -> List[Dict[str, str]]:
+def Search(query: str, max_results: int = 10) -> list[dict[str, str]]:
     """
     Search DuckDuckGo for the given query and return text results.
-    
+
     Args:
         query: The search query
         max_results: Maximum number of results to return (default: 10)
-        
+
     Returns:
         List of dictionaries containing search results with keys: title, href, body
     """
@@ -184,7 +203,7 @@ def Search(query: str, max_results: int = 10) -> List[Dict[str, str]]:
         try:
             results = list(ddgs.text(query, max_results=max_results))
             return results
-        except Exception as e:
+        except Exception:
             # Return empty list on error to maintain consistent return type
             return []
 
@@ -192,11 +211,11 @@ def Search(query: str, max_results: int = 10) -> List[Dict[str, str]]:
 def WebSearch(query: str, max_results: int = 10) -> str:
     """
     Search the web for the given query and return formatted results.
-    
+
     Args:
         query: The search query
         max_results: Maximum number of results to return (default: 10)
-        
+
     Returns:
         Formatted string containing search results
     """
@@ -204,13 +223,15 @@ def WebSearch(query: str, max_results: int = 10) -> str:
     with DDGS() as ddgs:
         try:
             results = list(ddgs.text(query, max_results=max_results))
-            
+
             formatted_results = f"Web search results for: {query}\n\n"
             for i, result in enumerate(results, 1):
                 formatted_results += f"{i}. {result.get('title', 'No title')}\n"
                 formatted_results += f"   URL: {result.get('href', 'No URL')}\n"
-                formatted_results += f"   Description: {result.get('body', 'No description')}\n\n"
-            
+                formatted_results += (
+                    f"   Description: {result.get('body', 'No description')}\n\n"
+                )
+
             return formatted_results
         except Exception as e:
             return f"Error performing web search: {str(e)}"
@@ -219,40 +240,40 @@ def WebSearch(query: str, max_results: int = 10) -> str:
 def WebRead(url: str) -> str:
     """
     Read and extract text content from a web page.
-    
+
     Args:
         url: The URL to read from
-        
+
     Returns:
         Extracted text content from the webpage
     """
     session = requests.Session()
     try:
         headers = {
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
+            "User-Agent": "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36"
         }
-        
+
         response = session.get(url, headers=headers, timeout=30)
         response.raise_for_status()
-        
-        soup = BeautifulSoup(response.content, 'html.parser')
-        
+
+        soup = BeautifulSoup(response.content, "html.parser")
+
         # Remove script and style elements
         for script in soup(["script", "style"]):
             script.decompose()
-        
+
         # Get text content
         text = soup.get_text()
-        
+
         # Clean up text
         lines = (line.strip() for line in text.splitlines())
         chunks = (phrase.strip() for line in lines for phrase in line.split("  "))
-        text = ' '.join(chunk for chunk in chunks if chunk)
-        
+        text = " ".join(chunk for chunk in chunks if chunk)
+
         # Limit text length to avoid overwhelming output
         if len(text) > 5000:
             text = text[:5000] + "... [Content truncated]"
-        
+
         return f"Content from {url}:\n\n{text}"
     except requests.exceptions.RequestException as e:
         return f"Error reading from {url}: {str(e)}"
@@ -260,5 +281,3 @@ def WebRead(url: str) -> str:
         return f"Error processing content from {url}: {str(e)}"
     finally:
         session.close()
-
-    

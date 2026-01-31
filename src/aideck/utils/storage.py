@@ -29,21 +29,21 @@ class Conversation(BaseModel):
 
 class Storage:
     """Persistent storage for conversations and agent state."""
-    
+
     def __init__(self, db_path: Union[str, Path] = "gpt_agent.db"):
         """Initialize the storage.
-        
+
         Args:
             db_path: Path to the SQLite database file.
         """
         self.db_path = Path(db_path)
         self._init_db()
-    
+
     def _init_db(self) -> None:
         """Initialize the database schema."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Create conversations table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS conversations (
@@ -54,7 +54,7 @@ class Storage:
                     metadata TEXT NOT NULL
                 )
             """)
-            
+
             # Create messages table
             cursor.execute("""
                 CREATE TABLE IF NOT EXISTS messages (
@@ -67,67 +67,67 @@ class Storage:
                     FOREIGN KEY (conversation_id) REFERENCES conversations (id)
                 )
             """)
-            
+
             # Create indexes
             cursor.execute("""
-                CREATE INDEX IF NOT EXISTS idx_messages_conversation_id 
+                CREATE INDEX IF NOT EXISTS idx_messages_conversation_id
                 ON messages (conversation_id)
             """)
-            
+
             cursor.execute("""
-                CREATE INDEX IF NOT EXISTS idx_conversations_updated_at 
+                CREATE INDEX IF NOT EXISTS idx_conversations_updated_at
                 ON conversations (updated_at)
             """)
-            
+
             conn.commit()
-    
+
     def create_conversation(self, title: str = "New Conversation") -> str:
         """Create a new conversation.
-        
+
         Args:
             title: Title for the new conversation.
-            
+
         Returns:
             The ID of the created conversation.
         """
         conversation = Conversation(title=title)
         self._save_conversation(conversation)
         return conversation.id
-    
+
     def get_conversation(self, conversation_id: str) -> Optional[Conversation]:
         """Get a conversation by ID.
-        
+
         Args:
             conversation_id: ID of the conversation to retrieve.
-            
+
         Returns:
             The conversation, or None if not found.
         """
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            
+
             # Get conversation
             cursor.execute(
-                "SELECT * FROM conversations WHERE id = ?", 
+                "SELECT * FROM conversations WHERE id = ?",
                 (conversation_id,)
             )
             row = cursor.fetchone()
-            
+
             if not row:
                 return None
-            
+
             # Get messages
             cursor.execute(
                 """
-                SELECT role, content, timestamp, metadata 
-                FROM messages 
-                WHERE conversation_id = ? 
+                SELECT role, content, timestamp, metadata
+                FROM messages
+                WHERE conversation_id = ?
                 ORDER BY timestamp ASC
                 """,
                 (conversation_id,)
             )
-            
+
             messages = []
             for msg_row in cursor.fetchall():
                 messages.append(Message(
@@ -136,7 +136,7 @@ class Storage:
                     timestamp=datetime.fromisoformat(msg_row['timestamp']),
                     metadata=json.loads(msg_row['metadata'])
                 ))
-            
+
             return Conversation(
                 id=row['id'],
                 title=row['title'],
@@ -145,41 +145,41 @@ class Storage:
                 messages=messages,
                 metadata=json.loads(row['metadata'])
             )
-    
+
     def list_conversations(self, limit: int = 10, offset: int = 0) -> List[Dict[str, Any]]:
         """List recent conversations.
-        
+
         Args:
             limit: Maximum number of conversations to return.
             offset: Number of conversations to skip.
-            
+
         Returns:
             List of conversations with basic information.
         """
         with sqlite3.connect(self.db_path) as conn:
             conn.row_factory = sqlite3.Row
             cursor = conn.cursor()
-            
+
             cursor.execute("""
-                SELECT id, title, created_at, updated_at 
-                FROM conversations 
-                ORDER BY updated_at DESC 
+                SELECT id, title, created_at, updated_at
+                FROM conversations
+                ORDER BY updated_at DESC
                 LIMIT ? OFFSET ?
                 """,
                 (limit, offset)
             )
-            
+
             return [dict(row) for row in cursor.fetchall()]
-    
+
     def add_message(
-        self, 
-        conversation_id: str, 
-        role: str, 
+        self,
+        conversation_id: str,
+        role: str,
         content: str,
         metadata: Optional[Dict[str, Any]] = None
     ) -> None:
         """Add a message to a conversation.
-        
+
         Args:
             conversation_id: ID of the conversation.
             role: Role of the message sender ('user', 'agent', 'system', or 'tool').
@@ -188,22 +188,22 @@ class Storage:
         """
         if metadata is None:
             metadata = {}
-        
+
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Check if conversation exists
             cursor.execute(
-                "SELECT id FROM conversations WHERE id = ?", 
+                "SELECT id FROM conversations WHERE id = ?",
                 (conversation_id,)
             )
             if not cursor.fetchone():
                 raise ValueError(f"Conversation {conversation_id} not found")
-            
+
             # Insert message
             cursor.execute(
                 """
-                INSERT INTO messages 
+                INSERT INTO messages
                 (conversation_id, role, content, timestamp, metadata)
                 VALUES (?, ?, ?, ?, ?)
                 """,
@@ -215,28 +215,28 @@ class Storage:
                     json.dumps(metadata)
                 )
             )
-            
+
             # Update conversation's updated_at
             cursor.execute(
                 """
-                UPDATE conversations 
-                SET updated_at = ? 
+                UPDATE conversations
+                SET updated_at = ?
                 WHERE id = ?
                 """,
                 (datetime.utcnow().isoformat(), conversation_id)
             )
-            
+
             conn.commit()
-    
+
     def _save_conversation(self, conversation: Conversation) -> None:
         """Save a conversation to the database."""
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Insert or update conversation
             cursor.execute(
                 """
-                INSERT OR REPLACE INTO conversations 
+                INSERT OR REPLACE INTO conversations
                 (id, title, created_at, updated_at, metadata)
                 VALUES (?, ?, ?, ?, ?)
                 """,
@@ -248,18 +248,18 @@ class Storage:
                     json.dumps(conversation.metadata)
                 )
             )
-            
+
             # Delete existing messages
             cursor.execute(
                 "DELETE FROM messages WHERE conversation_id = ?",
                 (conversation.id,)
             )
-            
+
             # Insert messages
             for msg in conversation.messages:
                 cursor.execute(
                     """
-                    INSERT INTO messages 
+                    INSERT INTO messages
                     (conversation_id, role, content, timestamp, metadata)
                     VALUES (?, ?, ?, ?, ?)
                     """,
@@ -271,30 +271,30 @@ class Storage:
                         json.dumps(msg.metadata)
                     )
                 )
-            
+
             conn.commit()
-    
+
     def delete_conversation(self, conversation_id: str) -> None:
         """Delete a conversation and all its messages.
-        
+
         Args:
             conversation_id: ID of the conversation to delete.
         """
         with sqlite3.connect(self.db_path) as conn:
             cursor = conn.cursor()
-            
+
             # Delete messages
             cursor.execute(
                 "DELETE FROM messages WHERE conversation_id = ?",
                 (conversation_id,)
             )
-            
+
             # Delete conversation
             cursor.execute(
                 "DELETE FROM conversations WHERE id = ?",
                 (conversation_id,)
             )
-            
+
             conn.commit()
 
 # Singleton instance

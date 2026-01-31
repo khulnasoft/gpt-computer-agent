@@ -190,7 +190,7 @@ Talk with agent, about user and computer. With this api you can create an consul
 `Extract the user redis config file.`
 ```
 
-With this questions you will make a shortcut for your needs. 
+With this questions you will make a shortcut for your needs.
 **You can collect informations from user computer or directly from user or user computer.**
 
 ```python

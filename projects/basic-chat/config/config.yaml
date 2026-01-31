@@ -1,0 +1,33 @@
+# Basic Chat Agent Configuration
+
+agent:
+  name: "Basic Chat Assistant"
+  description: "A helpful AI assistant for basic conversations"
+  model: "openai/gpt-4o"
+  temperature: 0.7
+  max_tokens: 1000
+  system_prompt: |
+    You are a helpful AI assistant. You can help with conversations,
+    answer questions, tell jokes, and use available tools when needed.
+    Be friendly, concise, and helpful.
+
+memory:
+  enabled: true
+  limit: 5000
+  cleanup_interval: 3600  # 1 hour
+
+tools:
+  enabled: true
+  auto_execute: true
+  timeout: 30
+
+conversation:
+  max_messages: 100
+  save_history: true
+  context_window: 10
+
+logging:
+  level: "INFO"
+  file: "logs/chat_agent.log"
+  max_size: "10MB"
+  backup_count: 5

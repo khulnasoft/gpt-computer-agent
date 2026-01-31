@@ -1,0 +1,66 @@
+# ARMv7 Dockerfile for Aideck GPT Agent
+# Optimized for ARMv7 architecture (Raspberry Pi, etc.)
+
+FROM arm32v7/python:3.11-slim
+
+# Set environment variables
+ENV PYTHONDONTWRITEBYTECODE=1 \
+    PYTHONUNBUFFERED=1 \
+    DEBIAN_FRONTEND=noninteractive
+
+# Install system dependencies
+RUN apt-get update && apt-get install -y \
+    build-essential \
+    curl \
+    git \
+    libffi-dev \
+    libssl-dev \
+    libjpeg-dev \
+    libpng-dev \
+    libwebp-dev \
+    libz-dev \
+    pkg-config \
+    sound-theme-freedesktop \
+    alsa-utils \
+    portaudio19-dev \
+    gcc \
+    g++ \
+    && rm -rf /var/lib/apt/lists/*
+
+# Create app directory
+WORKDIR /app
+
+# Copy requirements first for better caching
+COPY pyproject.toml uv.lock ./
+
+# Install uv for faster dependency management
+RUN pip install uv
+
+# Install dependencies with uv (optimized for ARMv7)
+RUN uv sync --frozen --no-dev --index-strategy unsafe-best-match
+
+# Copy application code
+COPY src/ ./src/
+COPY docker/ ./docker/
+
+# Install the application
+RUN uv pip install -e .
+
+# Create non-root user
+RUN useradd --create-home --shell /bin/bash aideck && \
+    chown -R aideck:aideck /app
+
+USER aideck
+
+# Create necessary directories
+RUN mkdir -p /app/logs /app/data /app/uploads
+
+# Expose ports
+EXPOSE 8000 8501
+
+# Health check
+HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
+    CMD curl -f http://localhost:8000/health || exit 1
+
+# Default command
+CMD ["uv", "run", "python", "-m", "aideck.api", "--host", "0.0.0.0", "--port", "8000"]

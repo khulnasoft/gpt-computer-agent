@@ -1,23 +1,18 @@
 import os
-import uuid
+
 from dotenv import load_dotenv
 
 try:
-    from .folder import currently_dir, artifacts_dir, media_dir
+    from .folder import artifacts_dir, media_dir
     from .kot_db import kot_db_
     from .user_id import *
 except:
-    from folder import currently_dir, artifacts_dir, media_dir
+    from folder import artifacts_dir, media_dir
     from kot_db import kot_db_
     from user_id import *
 
 
-
-
 load_dotenv(".env")
-
-
-
 
 
 mic_record_location = os.path.join(artifacts_dir, "mic_record.wav")
@@ -46,10 +41,11 @@ def get_history_db():
     return os.path.join(artifacts_dir, f"history_{the_profile}.db")
 
 
-
 # API KEY SAVING AND LOADING
 def save_api_key(api_key):
     kot_db_.set("openai_api_key", api_key)
+
+
 def load_api_key():
     if kot_db_.get("openai_api_key"):
         return kot_db_.get("openai_api_key")
@@ -60,8 +56,11 @@ def load_api_key():
             return env_variable
         return "CHANGE_ME"
 
+
 def save_anthropic_api_key(api_key):
     kot_db_.set("anthropic_api_key", api_key)
+
+
 def load_anthropic_api_key():
     if kot_db_.get("anthropic_api_key"):
         return kot_db_.get("anthropic_api_key")
@@ -76,6 +75,8 @@ def load_anthropic_api_key():
 # OPENAI URL SAVING AND LOADING
 def save_openai_url(url):
     kot_db_.set("openai_url", url)
+
+
 def load_openai_url():
     if kot_db_.get("openai_url"):
         return kot_db_.get("openai_url")
@@ -83,10 +84,10 @@ def load_openai_url():
         return "default"
 
 
-
-
 def save_system_prompt(prompt):
     kot_db_.set("system_prompt", prompt)
+
+
 def load_system_prompt():
     if kot_db_.get("system_prompt"):
         return kot_db_.get("system_prompt")
@@ -94,10 +95,11 @@ def load_system_prompt():
         return "Hi, you are an platform for vertical AI. You need to understant the user aspect and then trying to do these things and give valuation."
 
 
-
 # API VERSION SAVING AND LOADING
 def save_api_version(url):
     kot_db_.set("api_version", url)
+
+
 def load_api_version():
     if kot_db_.get("api_version"):
         return kot_db_.get("api_version")
@@ -118,7 +120,7 @@ def load_model_settings():
     """Load the model settings from a file."""
     if not os.path.exists(model_settings_db):
         return "gpt-4o"
-    with open(model_settings_db, "r") as f:
+    with open(model_settings_db) as f:
         return f.read()
 
 
@@ -141,7 +143,7 @@ def is_just_text_model_active():
     """Check if the just text model is active."""
     if not os.path.exists(just_text_model):
         return False
-    with open(just_text_model, "r") as f:
+    with open(just_text_model) as f:
         return f.read() == "1"
 
 
@@ -183,10 +185,8 @@ def load_groq_api_key():
             return env
         else:
             return "CHANGE_ME"
-    with open(groqkey, "r") as f:
+    with open(groqkey) as f:
         return f.read()
-
-
 
 
 collapse_setting = os.path.join(artifacts_dir, "collapse_setting.db")
@@ -208,7 +208,7 @@ def is_collapse_setting_active():
     """Check if the collapse setting is active."""
     if not os.path.exists(collapse_setting):
         return False
-    with open(collapse_setting, "r") as f:
+    with open(collapse_setting) as f:
         return f.read() == "1"
 
 
@@ -235,7 +235,7 @@ def is_dark_mode_active():
     """Check if the dark mode setting is active."""
     if not os.path.exists(style_setting):
         return True
-    with open(style_setting, "r") as f:
+    with open(style_setting) as f:
         return f.read() == "1"
 
 
@@ -257,7 +257,7 @@ def load_google_api_key():
             return env
         else:
             return "CHANGE_ME"
-    with open(googlekey, "r") as f:
+    with open(googlekey) as f:
         return f.read()
 
 
@@ -280,7 +280,7 @@ def is_predefined_agents_setting_active():
     """Check if the predefined agents setting setting is active."""
     if not os.path.exists(predefined_agents_setting):
         return True
-    with open(predefined_agents_setting, "r") as f:
+    with open(predefined_agents_setting) as f:
         return f.read() == "1"
 
 
@@ -303,7 +303,7 @@ def is_online_tools_setting_active():
     """Check if the online_tools setting is active."""
     if not os.path.exists(online_tools_setting):
         return False
-    with open(online_tools_setting, "r") as f:
+    with open(online_tools_setting) as f:
         return f.read() == "1"
 
 
@@ -326,7 +326,7 @@ def is_auto_stop_recording_setting_active():
     """Check if the auto_stop_recording setting is active."""
     if not os.path.exists(auto_stop_recording_setting):
         return True
-    with open(auto_stop_recording_setting, "r") as f:
+    with open(auto_stop_recording_setting) as f:
         return f.read() == "1"
 
 
@@ -343,7 +343,7 @@ def load_pvporcupine_api_key():
     """Load the Pvporcupine AI API key from a file or environment variables."""
     if not os.path.exists(pvporcupine_api_key):
         return "CHANGE_ME"
-    with open(pvporcupine_api_key, "r") as f:
+    with open(pvporcupine_api_key) as f:
         return f.read()
 
 
@@ -370,7 +370,7 @@ def is_wake_word_active():
         return False
     if not os.path.exists(wake_word_setting):
         return True
-    with open(wake_word_setting, "r") as f:
+    with open(wake_word_setting) as f:
         return f.read() == "1"
 
 
@@ -393,7 +393,7 @@ def is_wake_word_screen_setting_active():
     """Check if the wake_word_screen setting is active."""
     if not os.path.exists(wake_word_screen_setting):
         return True
-    with open(wake_word_screen_setting, "r") as f:
+    with open(wake_word_screen_setting) as f:
         return f.read() == "1"
 
 
@@ -418,7 +418,7 @@ def is_continuously_conversations_setting_active():
     """Check if the continuously_conversations setting is active."""
     if not os.path.exists(continuously_conversations_setting):
         return False
-    with open(continuously_conversations_setting, "r") as f:
+    with open(continuously_conversations_setting) as f:
         return f.read() == "1"
 
 
@@ -435,7 +435,7 @@ def load_tts_model_settings():
     """Load the tts model settings from a file."""
     if not os.path.exists(tts_model_settings_db):
         return "openai"
-    with open(tts_model_settings_db, "r") as f:
+    with open(tts_model_settings_db) as f:
         return f.read()
 
 
@@ -452,7 +452,7 @@ def load_stt_model_settings():
     """Load the stt model settings from a file."""
     if not os.path.exists(stt_model_settings_db):
         return "openai"
-    with open(stt_model_settings_db, "r") as f:
+    with open(stt_model_settings_db) as f:
         return f.read()
 
 
@@ -475,7 +475,7 @@ def is_logo_active_setting_active():
     """Check if the logo_active_setting is active."""
     if not os.path.exists(logo_active_setting):
         return False
-    with open(logo_active_setting, "r") as f:
+    with open(logo_active_setting) as f:
         return f.read() == "1"
 
 
@@ -492,7 +492,7 @@ def load_logo_file_path():
     """Load the logo_file_path from a file."""
     if not os.path.exists(logo_file_path):
         return icon_256_path
-    with open(logo_file_path, "r") as f:
+    with open(logo_file_path) as f:
         return f.read()
 
 
@@ -518,7 +518,7 @@ def is_long_gca_setting_active():
     """Check if the long_gca_setting is active."""
     if not os.path.exists(long_gca_setting):
         return True
-    with open(long_gca_setting, "r") as f:
+    with open(long_gca_setting) as f:
         return f.read() == "1"
 
 
@@ -535,14 +535,15 @@ def load_location_setting():
     """Load the location_setting from a file."""
     if not os.path.exists(location_setting):
         return "right"
-    with open(location_setting, "r") as f:
+    with open(location_setting) as f:
         return f.read()
-
 
 
 # OPENAI URL SAVING AND LOADING
 def save_aws_access_key_id(id):
     kot_db_.set("aws_access_key_id", id)
+
+
 def load_aws_access_key_id():
     if kot_db_.get("aws_access_key_id"):
         return kot_db_.get("aws_access_key_id")
@@ -553,9 +554,10 @@ def load_aws_access_key_id():
 # OPENAI URL SAVING AND LOADING
 def save_aws_secret_access_key(key):
     kot_db_.set("aws_secret_access_key", key)
+
+
 def load_aws_secret_access_key():
     if kot_db_.get("aws_secret_access_key"):
         return kot_db_.get("aws_secret_access_key")
     else:
         return "default"
-

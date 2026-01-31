@@ -1,9 +1,9 @@
 from langchain.tools import tool
 
 try:
-    from .utils.db import load_api_key
     from .llm import get_model
     from .top_bar_wrapper import wrapper
+    from .utils.db import load_api_key
 except ImportError:
     from top_bar_wrapper import wrapper
 

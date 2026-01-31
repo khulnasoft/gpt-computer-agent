@@ -3,12 +3,12 @@ Integration example showing how to use the improved activity tracking system
 with the existing workday summarizer.
 """
 
-from datetime import datetime
-from typing import Dict, List, Any
 import json
+from datetime import datetime
 
 # Import the improved activity tracker
-from .improved_activity_tracker import generate_activity_summary, categorize_activity
+from .improved_activity_tracker import generate_activity_summary
+
 
 def improved_workday_summarizer():
     """
@@ -39,36 +39,36 @@ def improved_workday_summarizer():
                 "app_name": "Visual Studio Code",
                 "window_title": "activity_tracker.py - GPT Computer Agent",
                 "content_summary": "Writing Python code for activity tracking system",
-                "user_activity": "coding and implementing new features"
+                "user_activity": "coding and implementing new features",
             },
             {
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "app_name": "Microsoft Teams",
                 "window_title": "Team Standup Meeting",
                 "content_summary": "Daily team synchronization meeting",
-                "user_activity": "participating in team standup discussion"
+                "user_activity": "participating in team standup discussion",
             },
             {
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "app_name": "Chrome",
                 "window_title": "GitHub - Pull Requests",
                 "content_summary": "Reviewing code changes and pull requests",
-                "user_activity": "code review and collaboration"
+                "user_activity": "code review and collaboration",
             },
             {
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "app_name": "Slack",
                 "window_title": "General - Team Communication",
                 "content_summary": "Team chat and quick communications",
-                "user_activity": "communicating with team members"
+                "user_activity": "communicating with team members",
             },
             {
                 "timestamp": datetime.now().strftime("%Y-%m-%d %H:%M:%S"),
                 "app_name": "YouTube",
                 "window_title": "Python Tutorial - Advanced Concepts",
                 "content_summary": "Educational video about Python programming",
-                "user_activity": "learning new programming techniques"
-            }
+                "user_activity": "learning new programming techniques",
+            },
         ]
 
         # Add sample activity to log
@@ -79,25 +79,27 @@ def improved_workday_summarizer():
     summary = generate_activity_summary(activity_log)
 
     # Display results
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
     print("📊 IMPROVED WORKDAY SUMMARY")
-    print("="*50)
+    print("=" * 50)
     print(f"📅 Date: {summary['date']}")
     print(f"⏱️  Total Tracked: {summary['total_tracked_minutes']} minutes")
     print(f"📱 Apps Used: {len(summary['apps_used'])}")
 
     print("\n📈 TIME DISTRIBUTION:")
     print("-" * 30)
-    for category, data in summary['time_distribution'].items():
-        if data['minutes'] > 0:
-            print(f"• {category.title()}: {data['minutes']} min ({data['percentage']}%)")
+    for category, data in summary["time_distribution"].items():
+        if data["minutes"] > 0:
+            print(
+                f"• {category.title()}: {data['minutes']} min ({data['percentage']}%)"
+            )
 
     print("\n📋 DETAILED BREAKDOWN:")
     print("-" * 30)
-    work_min = summary['summary']['work_minutes']
-    comm_min = summary['summary']['communication_minutes']
-    break_min = summary['summary']['breaks_minutes']
-    uncat_min = summary['summary']['uncategorized_minutes']
+    work_min = summary["summary"]["work_minutes"]
+    comm_min = summary["summary"]["communication_minutes"]
+    break_min = summary["summary"]["breaks_minutes"]
+    uncat_min = summary["summary"]["uncategorized_minutes"]
 
     print(f"💼 Work: {work_min} minutes")
     print(f"💬 Communication: {comm_min} minutes")
@@ -119,20 +121,23 @@ def improved_workday_summarizer():
         elif productivity_score >= 40:
             print("⚠️  Moderate productivity. Try to minimize distractions.")
         else:
-            print("🔧 Low productivity detected. Consider setting specific goals and taking regular breaks.")
+            print(
+                "🔧 Low productivity detected. Consider setting specific goals and taking regular breaks."
+            )
 
-    print("\n" + "="*50)
+    print("\n" + "=" * 50)
 
     # Save detailed results
     timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
     filename = f"improved_workday_summary_{timestamp}.json"
 
-    with open(filename, 'w') as f:
+    with open(filename, "w") as f:
         json.dump({"activity_log": activity_log, "summary": summary}, f, indent=2)
 
     print(f"✅ Detailed results saved to: {filename}")
 
     return summary
+
 
 if __name__ == "__main__":
     # Run the improved workday summarizer

@@ -1,16 +1,14 @@
 """Unit tests for Aideck folder utilities"""
 
-import pytest
-import tempfile
 import os
-from pathlib import Path
-from unittest.mock import patch
 
 # Add src to path for testing
 import sys
+from pathlib import Path
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from aideck.utils.folder import currently_dir, artifacts_dir, media_dir
+from aideck.utils.folder import artifacts_dir, currently_dir, media_dir
 
 
 class TestFolderUtils:

@@ -1,12 +1,11 @@
-import uuid
 import os
-
+import uuid
 
 try:
-    from .folder import currently_dir, artifacts_dir, media_dir
+    from .folder import artifacts_dir
 
 except:
-    from folder import currently_dir, artifacts_dir, media_dir
+    from folder import artifacts_dir
 
 
 user_id_db = os.path.join(artifacts_dir, "user_id.db")
@@ -24,7 +23,7 @@ def load_user_id():
     """Load the unique user ID from a file."""
     if not os.path.exists(user_id_db):
         return save_user_id()
-    with open(user_id_db, "r") as f:
+    with open(user_id_db) as f:
         return f.read()
 
 
@@ -33,7 +32,3 @@ def change_user_id(user_id):
     with open(user_id_db, "w") as f:
         f.write(user_id)
         return user_id
-    
-
-
-

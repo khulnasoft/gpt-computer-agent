@@ -1,22 +1,29 @@
 """Unit tests for Aideck common utilities"""
 
-import pytest
 import json
-import yaml
-import tempfile
 import os
-from pathlib import Path
-from unittest.mock import patch, mock_open
-from datetime import datetime
 
 # Add src to path for testing
 import sys
+import tempfile
+from datetime import datetime
+from pathlib import Path
+
+import pytest
+import yaml
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
 from aideck.utils.common import (
-    load_config, save_config, get_timestamp, is_url,
-    calculate_checksum, ensure_directory, get_file_extension,
-    format_bytes, setup_logging, get_environment_info
+    calculate_checksum,
+    ensure_directory,
+    format_bytes,
+    get_environment_info,
+    get_file_extension,
+    get_timestamp,
+    is_url,
+    load_config,
+    save_config,
 )
 
 
@@ -27,7 +34,7 @@ class TestLoadConfig:
         """Test loading JSON configuration"""
         test_config = {"key": "value", "number": 42}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             json.dump(test_config, f)
             temp_file = f.name
 
@@ -41,7 +48,7 @@ class TestLoadConfig:
         """Test loading YAML configuration"""
         test_config = {"key": "value", "number": 42}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             yaml.dump(test_config, f)
             temp_file = f.name
 
@@ -58,7 +65,7 @@ class TestLoadConfig:
 
     def test_load_unsupported_format(self):
         """Test loading unsupported file format"""
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.txt', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".txt", delete=False) as f:
             f.write("some text")
             temp_file = f.name
 
@@ -76,13 +83,13 @@ class TestSaveConfig:
         """Test saving JSON configuration"""
         test_config = {"key": "value", "number": 42}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.json', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".json", delete=False) as f:
             temp_file = f.name
 
         try:
             save_config(test_config, temp_file)
 
-            with open(temp_file, 'r') as f:
+            with open(temp_file) as f:
                 saved_config = json.load(f)
 
             assert saved_config == test_config
@@ -93,13 +100,13 @@ class TestSaveConfig:
         """Test saving YAML configuration"""
         test_config = {"key": "value", "number": 42}
 
-        with tempfile.NamedTemporaryFile(mode='w', suffix='.yaml', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="w", suffix=".yaml", delete=False) as f:
             temp_file = f.name
 
         try:
             save_config(test_config, temp_file)
 
-            with open(temp_file, 'r') as f:
+            with open(temp_file) as f:
                 saved_config = yaml.safe_load(f)
 
             assert saved_config == test_config
@@ -115,7 +122,7 @@ class TestGetTimestamp:
         timestamp = get_timestamp()
         # Should be in YYYYMMDD_HHMMSS format
         assert len(timestamp) == 15
-        assert timestamp[8] == '_'
+        assert timestamp[8] == "_"
 
     def test_get_timestamp_custom_format(self):
         """Test get_timestamp with custom format"""
@@ -161,13 +168,13 @@ class TestCalculateChecksum:
     def test_calculate_checksum_sha256(self):
         """Test checksum calculation with SHA256"""
         # Create a test file
-        with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False) as f:
             test_data = b"Hello, World!"
             f.write(test_data)
             temp_file = f.name
 
         try:
-            checksum = calculate_checksum(temp_file, 'sha256')
+            checksum = calculate_checksum(temp_file, "sha256")
             assert len(checksum) == 64  # SHA256 produces 64 character hex string
             assert checksum.isalnum()
         finally:
@@ -175,13 +182,13 @@ class TestCalculateChecksum:
 
     def test_calculate_checksum_md5(self):
         """Test checksum calculation with MD5"""
-        with tempfile.NamedTemporaryFile(mode='wb', delete=False) as f:
+        with tempfile.NamedTemporaryFile(mode="wb", delete=False) as f:
             test_data = b"Hello, World!"
             f.write(test_data)
             temp_file = f.name
 
         try:
-            checksum = calculate_checksum(temp_file, 'md5')
+            checksum = calculate_checksum(temp_file, "md5")
             assert len(checksum) == 32  # MD5 produces 32 character hex string
             assert checksum.isalnum()
         finally:
@@ -295,10 +302,19 @@ class TestGetEnvironmentInfo:
         info = get_environment_info()
 
         expected_keys = [
-            "platform", "platform_release", "platform_version",
-            "architecture", "python_version", "python_implementation",
-            "python_compiler", "working_directory", "executable",
-            "pid", "cpu_count", "user", "home"
+            "platform",
+            "platform_release",
+            "platform_version",
+            "architecture",
+            "python_version",
+            "python_implementation",
+            "python_compiler",
+            "working_directory",
+            "executable",
+            "pid",
+            "cpu_count",
+            "user",
+            "home",
         ]
 
         for key in expected_keys:

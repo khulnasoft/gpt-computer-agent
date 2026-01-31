@@ -1,16 +1,15 @@
 """Unit tests for Aideck API endpoints"""
 
-import pytest
-from pathlib import Path
-from unittest.mock import Mock, patch, AsyncMock
-from fastapi.testclient import TestClient
-import json
-
 # Add src to path for testing
 import sys
+from pathlib import Path
+from unittest.mock import AsyncMock, Mock, patch
+
+import pytest
+
 sys.path.insert(0, str(Path(__file__).parent.parent / "src"))
 
-from aideck.api.app import app
+from aideck.api import app
 
 
 class TestAPIEndpoints:
@@ -19,7 +18,8 @@ class TestAPIEndpoints:
     @pytest.fixture
     def client(self):
         """Create test client"""
-        return TestClient(app)
+        app.config["TESTING"] = True
+        return app.test_client()
 
     def test_read_root(self, client):
         """Test root endpoint"""
@@ -35,7 +35,9 @@ class TestAPIEndpoints:
 
     def test_create_conversation(self, client):
         """Test create conversation"""
-        response = client.post("/api/conversations", params={"title": "Test Conversation"})
+        response = client.post(
+            "/api/conversations", params={"title": "Test Conversation"}
+        )
         assert response.status_code == 200
         data = response.json()
         assert "conversation_id" in data
@@ -65,12 +67,9 @@ class TestAPIEndpoints:
 
     def test_create_message_no_conversation_id(self, client):
         """Test create message without conversation_id"""
-        message_data = {
-            "content": "Hello, world!",
-            "metadata": {}
-        }
+        message_data = {"content": "Hello, world!", "metadata": {}}
 
-        with patch('aideck.api.app.agent') as mock_agent:
+        with patch("aideck.api.app.agent") as mock_agent:
             # Mock agent response
             mock_response = Mock()
             mock_response.content = "Hello! How can I help you?"
@@ -92,10 +91,10 @@ class TestAPIEndpoints:
         message_data = {
             "content": "Hello, world!",
             "conversation_id": conversation_id,
-            "metadata": {}
+            "metadata": {},
         }
 
-        with patch('aideck.api.app.agent') as mock_agent:
+        with patch("aideck.api.app.agent") as mock_agent:
             # Mock agent response
             mock_response = Mock()
             mock_response.content = "Hello! How can I help you?"
@@ -110,12 +109,9 @@ class TestAPIEndpoints:
 
     def test_create_message_agent_error(self, client):
         """Test create message with agent error"""
-        message_data = {
-            "content": "Hello, world!",
-            "metadata": {}
-        }
+        message_data = {"content": "Hello, world!", "metadata": {}}
 
-        with patch('aideck.api.app.agent') as mock_agent:
+        with patch("aideck.api.app.agent") as mock_agent:
             # Mock agent error
             mock_agent.run = AsyncMock(side_effect=Exception("Agent error"))
 
@@ -135,7 +131,11 @@ class TestAPIEndpoints:
         response = client.get("/api/conversations")
         # CORS headers might be present
         # This test checks if they exist without failing if they don't
-        cors_headers = ['access-control-allow-origin', 'access-control-allow-methods', 'access-control-allow-headers']
+        cors_headers = [
+            "access-control-allow-origin",
+            "access-control-allow-methods",
+            "access-control-allow-headers",
+        ]
         for header in cors_headers:
             if header in response.headers:
                 assert response.headers[header] is not None
@@ -144,7 +144,10 @@ class TestAPIEndpoints:
         """Test API prefix is working"""
         # The API should be available at /api/ endpoints
         response = client.get("/api/conversations")
-        assert response.status_code in [200, 404]  # 404 is acceptable if no conversations exist
+        assert response.status_code in [
+            200,
+            404,
+        ]  # 404 is acceptable if no conversations exist
 
     def test_json_content_type(self, client):
         """Test JSON responses have correct content type"""
@@ -159,9 +162,9 @@ class TestAPIEndpoints:
         assert response.status_code == 422
 
         # Test with invalid metadata
-        response = client.post("/api/messages", json={
-            "content": "test",
-            "metadata": "invalid_metadata"  # Should be dict
-        })
+        response = client.post(
+            "/api/messages",
+            json={"content": "test", "metadata": "invalid_metadata"},  # Should be dict
+        )
         # Should return 422 for invalid field type
         assert response.status_code == 422

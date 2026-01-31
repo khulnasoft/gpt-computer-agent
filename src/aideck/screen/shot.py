@@ -1,14 +1,13 @@
 import base64
-import pyautogui
 
 try:
+    from ..cu.computer import screenshot_action_
     from ..gui.signal import signal_handler
     from ..utils.db import just_screenshot_path
-    from ..cu.computer import screenshot_action_
 except ImportError:
+    from cu.computer import screenshot_action_
     from gui.signal import signal_handler
     from utils.db import just_screenshot_path
-    from cu.computer import screenshot_action_
 
 
 def encode_image(image_path):

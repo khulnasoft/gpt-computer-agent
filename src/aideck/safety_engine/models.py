@@ -2,39 +2,41 @@
 Data models for AI Safety Engine
 """
 
-from typing import List, Optional, Dict, Any
+from typing import Any
+
 from pydantic import BaseModel
 
 
 class PolicyInput(BaseModel):
     """Input data for policy processing"""
-    input_texts: Optional[List[str]] = None
-    input_images: Optional[List[str]] = None
-    input_videos: Optional[List[str]] = None
-    input_audio: Optional[List[str]] = None
-    input_files: Optional[List[str]] = None
-    extra_data: Optional[Dict[str, Any]] = None
 
+    input_texts: list[str] | None = None
+    input_images: list[str] | None = None
+    input_videos: list[str] | None = None
+    input_audio: list[str] | None = None
+    input_files: list[str] | None = None
+    extra_data: dict[str, Any] | None = None
 
 
 class RuleOutput(BaseModel):
     """Result from rule processing"""
+
     confidence: float
     content_type: str
     details: str
-    triggered_keywords: Optional[List[str]] = None
-
+    triggered_keywords: list[str] | None = None
 
 
 class PolicyOutput(BaseModel):
     """Result from policy execution"""
-    output_texts: Optional[List[str]] = None
-    output_images: Optional[List[str]] = None
-    output_videos: Optional[List[str]] = None
-    output_audio: Optional[List[str]] = None
-    output_files: Optional[List[str]] = None
-    action_output: Optional[Dict[str, Any]] = None
-    transformation_map: Optional[Dict[int, Dict[str, str]]] = None
+
+    output_texts: list[str] | None = None
+    output_images: list[str] | None = None
+    output_videos: list[str] | None = None
+    output_audio: list[str] | None = None
+    output_files: list[str] | None = None
+    action_output: dict[str, Any] | None = None
+    transformation_map: dict[int, dict[str, str]] | None = None
 
 
 # Backward compatibility aliases

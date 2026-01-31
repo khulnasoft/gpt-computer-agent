@@ -1,9 +1,10 @@
 """Test configuration and fixtures for Aideck"""
 
-import pytest
 import asyncio
-from typing import Generator, AsyncGenerator
 from pathlib import Path
+from unittest.mock import AsyncMock, Mock
+
+import pytest
 
 # Test configuration
 pytest_plugins = ["pytest_asyncio"]
@@ -56,5 +57,55 @@ def sample_json():
         "name": "Test Item",
         "description": "A test item for unit testing",
         "active": True,
-        "tags": ["test", "unit", "sample"]
+        "tags": ["test", "unit", "sample"],
+    }
+
+
+@pytest.fixture
+def mock_openai_client():
+    """Mock OpenAI client for testing."""
+    client = Mock()
+    client.chat = Mock()
+    client.chat.completions = Mock()
+    client.chat.completions.create = AsyncMock()
+    return client
+
+
+@pytest.fixture
+def mock_model_provider():
+    """Mock model provider for testing."""
+    provider = Mock()
+    provider._provision = AsyncMock()
+    return provider
+
+
+@pytest.fixture
+def sample_conversation_messages():
+    """Sample conversation messages for testing."""
+    return [
+        {"role": "system", "content": "You are a helpful AI assistant."},
+        {"role": "user", "content": "Hello, how are you?"},
+        {"role": "assistant", "content": "I'm doing well, thank you for asking!"},
+    ]
+
+
+@pytest.fixture
+def sample_tool_call():
+    """Sample tool call for testing."""
+    return {
+        "id": "call_123",
+        "type": "function",
+        "function": {"name": "calculator", "arguments": '{"expression": "2 + 2"}'},
+    }
+
+
+@pytest.fixture
+def mock_tool_result():
+    """Mock tool result for testing."""
+    return {
+        "tool_name": "calculator",
+        "tool_call_id": "call_123",
+        "result": 4,
+        "success": True,
+        "error": None,
     }

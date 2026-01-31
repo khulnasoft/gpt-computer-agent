@@ -1,21 +1,20 @@
-from loguru import logger
-from pathlib import Path
-from typing import Optional, Dict, Any
 import sys
-import json
-import os
+from pathlib import Path
+
+from loguru import logger
+
 
 def configure_logging(
     log_level: str = "INFO",
-    log_format: Optional[str] = None,
-    log_file: Optional[str] = None,
+    log_format: str | None = None,
+    log_file: str | None = None,
     rotation: str = "100 MB",
     retention: str = "30 days",
-    serialize: bool = False
+    serialize: bool = False,
 ) -> None:
     """
     Configure logging with loguru.
-    
+
     Args:
         log_level: Logging level (DEBUG, INFO, WARNING, ERROR, CRITICAL)
         log_format: Custom log format string
@@ -32,10 +31,10 @@ def configure_logging(
             "<cyan>{name}</cyan>:<cyan>{function}</cyan>:<cyan>{line}</cyan> - "
             "<level>{message}</level>"
         )
-    
+
     # Remove default handler
     logger.remove()
-    
+
     # Add stderr handler
     logger.add(
         sys.stderr,
@@ -43,14 +42,14 @@ def configure_logging(
         format=log_format,
         colorize=True,
         backtrace=True,
-        diagnose=True
+        diagnose=True,
     )
-    
+
     # Add file handler if log_file is specified
     if log_file:
         log_path = Path(log_file)
         log_path.parent.mkdir(parents=True, exist_ok=True)
-        
+
         # Configure file logging
         logger.add(
             str(log_path),
@@ -61,48 +60,52 @@ def configure_logging(
             enqueue=True,  # For async logging
             backtrace=True,
             diagnose=True,
-            serialize=serialize
+            serialize=serialize,
         )
+
 
 class InterceptHandler:
     """Intercept standard logging and redirect to loguru."""
+
     @staticmethod
     def setup():
         import logging
-        from loguru import logger
-        
+
         logging.basicConfig(handlers=[InterceptHandler()], level=0, force=True)
-        
+
         # Disable uvicorn access logs by default
         logging.getLogger("uvicorn.access").handlers = []
         logging.getLogger("uvicorn").handlers = []
         logging.getLogger("uvicorn.error").handlers = []
-    
+
     def emit(self, record):
         from loguru import logger
-        
+
         try:
             level = logger.level(record.levelname).name
         except ValueError:
             level = record.levelno
-        
+
         # Find caller from where the logging call was made
         frame, depth = sys._getframe(6), 6
         while frame and frame.f_code.co_filename == logging.__file__:
             frame = frame.f_back
             depth += 1
-        
+
         logger.opt(depth=depth, exception=record.exc_info).log(
             level, record.getMessage()
         )
+
 
 def get_logger(name: str = None) -> logger:
     """Get a logger instance with the given name."""
     if name is None:
         import inspect
-        name = inspect.currentframe().f_back.f_globals.get('__name__')
-    
+
+        name = inspect.currentframe().f_back.f_globals.get("__name__")
+
     return logger.bind(logger_name=name)
+
 
 # Initialize logging when module is imported
 configure_logging()

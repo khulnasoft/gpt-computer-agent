@@ -1,10 +1,10 @@
 """Module for managing the version updates of a python package."""
 
-import os
-import sys
-import re
 import logging
+import os
+import re
 import shlex
+import sys
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -18,7 +18,7 @@ def read_version():
     Returns:
         str or None: The version number of the package if found, otherwise None.
     """
-    with open("aideck/__init__.py", "r") as file:
+    with open("aideck/__init__.py") as file:
         for line in file:
             match = re.search(r"__version__ = '(.*)'", line)
             if match:
@@ -65,7 +65,9 @@ def write_version(version):
     """
     with open("aideck/__init__.py", "r+") as file:
         content = file.read()
-        content = re.sub(r"__version__ = '.*'", f"__version__ = '{version}'", content)  # fmt: off
+        content = re.sub(
+            r"__version__ = '.*'", f"__version__ = '{version}'", content
+        )  # fmt: off
         file.seek(0)
         file.write(content)
 
@@ -81,7 +83,9 @@ def update_version(version):
     for file in files:
         with open(file, "r+") as f:
             content = f.read()
-            content = re.sub(r'    version=".*"', f'    version="{version}"', content)  # fmt: off
+            content = re.sub(
+                r'    version=".*"', f'    version="{version}"', content
+            )  # fmt: off
             f.seek(0)
             f.write(content)
 

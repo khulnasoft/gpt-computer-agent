@@ -1,8 +1,8 @@
 from __future__ import annotations
-from contextlib import asynccontextmanager
-from typing import TYPE_CHECKING, Any, Dict, List, Optional
-import asyncio # This import is crucial for the 'finally' block
 
+import asyncio  # This import is crucial for the 'finally' block
+from contextlib import asynccontextmanager
+from typing import TYPE_CHECKING, Any
 
 if TYPE_CHECKING:
     from aideck.storage.memory.memory import Memory
@@ -20,7 +20,7 @@ class MemoryManager:
         response and update all relevant memories in the storage backend.
     """
 
-    def __init__(self, memory: Optional[Memory]):
+    def __init__(self, memory: Memory | None):
         """
         Initializes the MemoryManager.
 
@@ -28,14 +28,14 @@ class MemoryManager:
             memory: The configured Memory object from the parent agent.
         """
         self.memory = memory
-        self._prepared_inputs: Dict[str, Any] = {
+        self._prepared_inputs: dict[str, Any] = {
             "message_history": [],
             "context_injection": "",
-            "system_prompt_injection": ""
+            "system_prompt_injection": "",
         }
-        self._model_response: Optional[Any] = None
+        self._model_response: Any | None = None
 
-    def get_message_history(self) -> List[Any]:
+    def get_message_history(self) -> list[Any]:
         """
         Provides the prepared message history (full session memory) to the
         agent's core run method.
@@ -73,10 +73,12 @@ class MemoryManager:
 
         if self.memory:
             self._prepared_inputs = await self.memory.prepare_inputs_for_task()
-        
+
         try:
             yield self
         finally:
             if self.memory and self._model_response:
-                task = asyncio.create_task(self.memory.update_memories_after_task(self._model_response))
+                task = asyncio.create_task(
+                    self.memory.update_memories_after_task(self._model_response)
+                )
                 await task

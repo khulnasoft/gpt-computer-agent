@@ -36,7 +36,7 @@ def init_db():
     """
     from ..models.user import User, RefreshToken
     Base.metadata.create_all(bind=engine)
-    
+
     # Create first superuser if no users exist
     db = SessionLocal()
     try:

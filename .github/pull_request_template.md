@@ -3,7 +3,7 @@ Thank you for contributing to GPT-Computer!
 So that your PR can be handled effectively, please populate the following fields
 -->
 
-**Category**: 
+**Category**:
 > One of: Bugfix / Feature / Code style update / Refactoring Only / Build related changes /  Documentation / Other (please specify)
 
 **Overview**
