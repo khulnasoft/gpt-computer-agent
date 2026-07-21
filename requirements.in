@@ -15,7 +15,7 @@ pydub==0.25.1
 pyscreeze==0.1.30
 pyperclip==1.8.2
 pydantic==2.10.3
-pillow==10.3.0
+pillow==12.3.0
 langchainhub==0.1.18
 langchain-experimental==0.3.3
 opentelemetry-sdk==1.24.0
